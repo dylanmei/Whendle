@@ -1,0 +1,31 @@
+[
+	{
+		"source": "app\/assistants\/app-assistant.js"
+	},
+    {
+        "source": "app\/assistants\/stage-assistant.js"
+    },
+	{
+		"scenes": "startup",
+		"source": "app\/assistants\/startup-assistant.js"
+	},
+	{
+		"scenes": "clocks",
+		"source": "app\/assistants\/clocks-assistant.js"
+	},
+	{
+		"source": "app\/api\/whendle.js"
+	},
+	{
+		"source": "app\/api\/settings.js"
+	},
+	{
+		"source": "app\/api\/database.js"
+	},
+	{
+		"source": "app\/api\/schema.js"
+	},
+	{
+		"source": "app\/api\/migrators.js"
+	}
+]
