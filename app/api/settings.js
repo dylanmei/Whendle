@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2009, Dylan Meissner <dylanmei@gmail.com>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
 
 Whendle.SettingsService = Class.create({
 	initialize: function(cookie) {
@@ -22,100 +37,3 @@ Whendle.SettingsService = Class.create({
 		return this._data.version;
 	}
 });
-    
-	/*
-    initialize: function()  {
-        // Update globals with preferences or create it.
-        // With v0.4 start migrating preferences
-        this.cookieData = new Mojo.Model.Cookie("comPalmAppNewsPrefs");
-        var oldNewsPrefs = this.cookieData.get();
-        if (oldNewsPrefs && oldNewsPrefs.newsVersionString) {
-            // Create cookie or update News globals if preferences already exists
-            if (oldNewsPrefs.newsVersionString == News.versionString)    {
-                    News.featureFeedEnable = oldNewsPrefs.featureFeedEnable;
-                    News.featureStoryInterval = oldNewsPrefs.featureStoryInterval;
-                    News.feedUpdateInterval = oldNewsPrefs.feedUpdateInterval;
-                    News.versionString = oldNewsPrefs.newsVersionString;
-                    News.notificationEnable = oldNewsPrefs.notificationEnable;
-                    News.feedUpdateBackgroundEnable = oldNewsPrefs.feedUpdateBackgroundEnable;
-                    News.updateDialog = false;
-             } else {
-                 // migrate old preferences here on updates of News app     
-                 switch (oldNewsPrefs.newsVersionString) {
-        
-                    case "0.4" :
-                    // last DB version, capture prefs and set update flag to "0.4" to convert after first database read
-                    if (oldNewsPrefs.featureStoryInterval !== undefined) {
-                        News.featureStoryInterval = oldNewsPrefs.featureStoryInterval;
-                    }
-                    if (oldNewsPrefs.feedUpdateInterval !== undefined) {
-                        News.feedUpdateInterval = oldNewsPrefs.feedUpdateInterval;
-                    News.dbUpdate = "0.4";
-                    }
-                    break;
-            
-                    case "0.6" : 
-                        switch (News.feedUpdateInterval) {
-                            case "300000" :
-                                News.feedUpdateInterval = "00:00:30";
-                            break;
-                    
-                            case "900000" :
-                                News.feedUpdateInterval = "00:05:00";
-                            break;
-                    
-                            case "3600000" :
-                                News.feedUpdateInterval = "00:15:00";
-                            break;
-                    
-                            case "14400000" :
-                                News.feedUpdateInterval = "04:00:00";
-                            break;
-                    
-                            case "86400000" :
-                                News.feedUpdateInterval = "23:59:59";
-                            break;
-                        }
-                    break;
-                    
-                    case "0.77" : 
-                        News.featureFeedEnable = oldNewsPrefs.featureFeedEnable;
-                        News.featureStoryInterval = oldNewsPrefs.featureStoryInterval;
-                        News.feedUpdateInterval = oldNewsPrefs.feedUpdateInterval;
-                        News.versionString = oldNewsPrefs.newsVersionString;
-                        News.notificationEnable = oldNewsPrefs.notificationEnable;
-                        News.feedUpdateBackgroundEnable = oldNewsPrefs.feedUpdateBackgroundEnable;
-                    break;
-                    
-                    //  Removed News.featureIndexFeed
-                    case "0.83" : 
-                        News.featureFeedEnable = oldNewsPrefs.featureFeedEnable;
-                        News.featureStoryInterval = oldNewsPrefs.featureStoryInterval;
-                        News.feedUpdateInterval = oldNewsPrefs.feedUpdateInterval;
-                        News.versionString = oldNewsPrefs.newsVersionString;
-                        News.notificationEnable = oldNewsPrefs.notificationEnable;
-                        News.feedUpdateBackgroundEnable = oldNewsPrefs.feedUpdateBackgroundEnable;
-                    break;
-                }            
-            }
-        }
-
-        this.storeCookie();
-        
-    },
-    
-    //  store - function to update stored cookie with global values
-    storeCookie: function() {
-        // For version 0.7 and beyond, extend stored preferences 
-        // to News.notificationEnable and feedUpdateBackgroundEnable
-        this.cookieData.put(    {  
-            featureFeedEnable: News.featureFeedEnable,                                                
-            feedUpdateInterval: News.feedUpdateInterval,
-            featureStoryInterval: News.featureStoryInterval,
-            newsVersionString: News.versionString,
-            notificationEnable: News.notificationEnable,
-            feedUpdateBackgroundEnable: News.feedUpdateBackgroundEnable
-        });
-    }
-	
-	*/
