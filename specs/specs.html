@@ -1,0 +1,29 @@
+<html>
+	<head>
+		<link type="text/css" rel="stylesheet" href="../jspec/lib/jspec.css" />
+		<script src="prototype.js"></script>
+		<script src="../jspec/lib/jspec.js"></script>
+		<script>
+function runSuites() {
+	JSpec
+		.exec('spec.database.js')
+		.exec('spec.schema.js')
+		.exec('spec.migrators.js')
+	.run({ failuresOnly: false })
+	.report();
+}
+		</script>
+
+<!-- systems under test -->
+		<script src="../whendle/api/whendle.js"></script>
+		<script src="../whendle/api/database.js"></script>
+		<script src="../whendle/api/schema.js"></script>
+		<script src="../whendle/api/migrators.js"></script>
+
+	</head>
+	<body class="jspec" onLoad="runSuites();">
+		<div id="jspec-top"><h2 id="jspec-title">JSpec <em><script>document.write(JSpec.version)</script></em></h2></div>
+		<div id="jspec"><div class="loading"></div></div>
+		<div id="jspec-bottom"></div>
+	</body>
+</html>

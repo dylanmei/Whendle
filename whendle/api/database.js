@@ -25,14 +25,14 @@
 //
 
 Whendle.DatabaseService = Class.create({
-	initialize: function() {
-		this._db = openDatabase('Whendle', 1, 'Whendle Database', 65536);
+	initialize: function(database) {
+		this._datasource = database || openDatabase('Whendle', 1, 'Whendle Database', 65536);
 	},
 
 	scalar: function(statement, parameters, on_result, on_error) {
 		on_result = this._on_scalar.bind(this, on_result || Prototype.emptyFunction);
 		on_error = this._on_error.bind(this, on_error || Prototype.emptyFunction);
-		this._db.transaction(function(trx) {
+		this._datasource.transaction(function(trx) {
 			trx.executeSql(statement, parameters || [], on_result, on_error);
 		});
 	},
@@ -40,7 +40,7 @@ Whendle.DatabaseService = Class.create({
 	rowset: function(statement, parameters, on_results, on_error) {
 		on_results = this._on_rowset.bind(this, on_results || Prototype.emptyFunction);
 		on_error = this._on_error.bind(this, on_error || Prototype.emptyFunction);
-		this._db.transaction(function(trx) {
+		this._datasource.transaction(function(trx) {
 			trx.executeSql(statement, parameters || [], on_results, on_error);
 		});	
 	},
@@ -52,7 +52,6 @@ Whendle.DatabaseService = Class.create({
 			var columns = Object.keys(row);
 			value = row[columns[0]];
 		}
-		
 		callback(value);
 	},
 	
