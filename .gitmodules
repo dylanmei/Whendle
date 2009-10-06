@@ -1,0 +1,3 @@
+[submodule "jspec"]
+	path = jspec
+	url = git://github.com/visionmedia/jspec.git
