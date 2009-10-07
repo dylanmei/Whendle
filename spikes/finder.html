@@ -52,7 +52,7 @@ List = Class.create(Class.Observable, {
 		var row = new Element('div', { 'class': 'finder-row' })
 			.insert(this._new_label('finder-row-name', place.name))
 			.insert(this._new_label('finder-row-info', '#{area}, #{country}'.interpolate(place)))
-			.insert(this._new_label('finder-row-time', 'time?'));
+			.insert(this._new_label('finder-row-time', ''));
 		row.observe('click', this._on_select.bind(this,
 			{ 'name': place.name, 'longitude': place.longitude, 'latitude': place.latitude }));
 		this._insert_row(row);
@@ -103,11 +103,12 @@ function init_inputbox() {
 			.addClassName('active')
 			.stopObserving('keydown')	
 			.stopObserving('mousedown');	
+		
+		new Form.Element.Observer('input', 0.5, input_changed);
 	}
 	
 	input.observe('keydown', clear_tip);
 	input.observe('mousedown', clear_tip);
-	new Form.Element.Observer('input', 0.5, input_changed);
 }
 
 function input_changed() {
@@ -128,15 +129,17 @@ function input_changed() {
 	).delay(1, value);
 }
 
-function fetch_locations(text) {
-	trace('fetching locations for: ' + text);
+function fetch_locations(text, index) {
+	index = index || 0;
+	trace('fetching locations for: #{text} (index=#{index})'
+		.interpolate({ 'text': text, 'index': index }));
 
 	var url = URL_SEARCH_BY_NAME + '?' +
-		encode_finder_query(text);
+		encode_finder_query(text, index);
 		
 	new Whendle.AjaxService().load(
 		url,
-		on_locations_fetched
+		on_locations_fetched.bind(document, index > 0)
 	);	
 }
 
@@ -152,8 +155,9 @@ function fetch_timezone(lat, lng) {
 	);
 }
 
-function encode_finder_query(text) {
+function encode_finder_query(text, index) {
 	return Object.toQueryString({
+		startRow: index,
 		name: text + '*',
 		maxRows: 10,
 		featureClass: ['A', 'P']
@@ -167,15 +171,17 @@ function encode_time_query(lat, lng) {
 	});
 }
 
-function on_locations_fetched(response) {
+function on_locations_fetched(appending, response) {
 	//trace(Object.toJSON(response));
 
 	var total = response.totalResultsCount || 0;
 	var geonames = total ? response.geonames : [];
 	var count = geonames.length;
 	
-	trace('places fetched: ' + count + ' of ' + total);
-	$.list.clear();
+	if (!appending) {
+		trace('places fetched: ' + count + ' of ' + total);
+		$.list.clear();
+	}
 	
 	$.list.total(total);
 	geonames.each(function(gn) {
@@ -186,7 +192,7 @@ function on_locations_fetched(response) {
 			latitude: gn.lat,
 			longitude: gn.lng
 		});
-	});		
+	});
 }
 
 function on_timezone_fetched(response) {
@@ -201,13 +207,14 @@ function trace(s) {
 
 document.observe('dom:loaded', function() {
 	init_inputbox();
+
 	$.list = new List($('list'));
 	$.list.observe(':select', function(ev) {
-		trace(Object.toJSON(ev));
+		fetch_timezone(ev.memo.latitude, ev.memo.longitude);
 	});
 	
 	$.list.observe(':append', function(ev) {
-		trace(Object.toJSON(ev));
+		fetch_locations($F('input').strip(), ev.memo.index);
 	});
 });
 
@@ -226,6 +233,7 @@ document.observe('dom:loaded', function() {
 .finder-row, .finder-appender {
 	padding: 10px;
 	border-bottom: 1px solid #ccc;
+	cursor: pointer;
 }
 .finder-row-name {
 	display: block;
