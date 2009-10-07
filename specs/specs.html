@@ -1,10 +1,12 @@
 <html>
 	<head>
-		<link type="text/css" rel="stylesheet" href="../jspec/lib/jspec.css" />
-		<script src="prototype.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js"></script>
 		<script src="../jspec/lib/jspec.js"></script>
 		<script>
 function runSuites() {
+	$('v').insert('<div>Whendle #{w}, Prototype #{p}</div>'
+		.interpolate({ w: Whendle.version, p: Prototype.Version }));
+
 	JSpec
 		.exec('spec.database.js')
 		.exec('spec.schema.js')
@@ -20,9 +22,12 @@ function runSuites() {
 		<script src="../whendle/api/schema.js"></script>
 		<script src="../whendle/api/migrators.js"></script>
 
+		<link type="text/css" rel="stylesheet" href="../jspec/lib/jspec.css" />
 	</head>
 	<body class="jspec" onLoad="runSuites();">
-		<div id="jspec-top"><h2 id="jspec-title">JSpec <em><script>document.write(JSpec.version)</script></em></h2></div>
+		<div id="v" style="position:absolute;top:12px;left:24px;"></div>
+		<div id="jspec-top"><h2 id="jspec-title">JSpec <em><script>document.write(JSpec.version)</script></em></h2>
+		</div>
 		<div id="jspec"><div class="loading"></div></div>
 		<div id="jspec-bottom"></div>
 	</body>
