@@ -13,13 +13,102 @@
 URL_SEARCH_BY_NAME = 'http://ws.geonames.org/searchJSON';
 URL_TIMEZONE_BY_LOCATION = 'http://ws.geonames.org/timezoneJSON';
 
+List = Class.create({
+	initialize: function(container) {
+		this._container = container;
+		this._container.observe('click',
+			this._on_container_click.bind(this));
+		this.clear();
+	},
+	
+	clear: function() {
+		this._container.childElements()
+			.each(function(el) { el.remove(); }
+		);
+		this._total = 0;
+		this._insert_appender();
+	},
+
+	_insert_appender: function() {
+		this._appender = new Element('div', { 'class': 'list-appender' })
+			.insert(this._new_label('list-row-link', ''))
+			.hide();
+		this._container.insert(this._appender);
+	},
+	
+	_on_container_click: function(ev) {
+		var list_row = ev.srcElement;
+		if (!list_row.hasClassName('list-row')) {
+			list_row = list_row.up('.list-row');
+		}
+		if (list_row) {
+			trace('TODO: fetch lat ' + list_row.latitude + ', lng ' + list_row.longitude);
+		}
+		
+		var append_row = ev.srcElement;
+		if (!append_row.hasClassName('list-appender')) {
+			append_row = append_row.up('.list-appender');
+		}
+		if (append_row) {
+			trace('TODO: fetch idx ' + this.count());
+		}
+	},
+	
+	add: function(place) {
+		var row = new Element('div', { 'class': 'list-row' })
+			.insert(this._new_label('list-row-name', place.name))
+			.insert(this._new_label('list-row-info', '#{area}, #{country}'.interpolate(place)))
+			.insert(this._new_label('list-row-time', 'time?'));
+		row.latitude = place.latitude;
+		row.longitude = place.longitude;
+		this._insert_row(row);
+	},
+	
+	_new_label: function(class_name, text) {
+		var label = new Element('span', { 'class': class_name });
+		label.innerHTML = text;
+		return label;
+	},
+	
+	_insert_row: function(row) {
+		this._appender.insert({ 'before': row });
+		this._update_appender();
+	},
+	
+	count: function() {
+		return $$('.list-row').size();
+	},
+	
+	total: function(count) {
+		if (arguments.length) {
+			this._total = count;
+			this._update_appender();
+		}
+		return this._total;
+	},
+	
+	_update_appender: function() {
+		var current_count = this.count();
+		var total_remaining = this.total() - current_count;
+
+		this._appender.down('.list-row-link').innerHTML =
+			'#{count} more...'.interpolate({ 'count': total_remaining });
+		if (total_remaining > 0) {
+			this._appender.show();
+		}
+		else {
+			this._appender.hide();
+		}
+	}
+});
+
 function init_app() {
-	init_input();
-	new Form.Element.Observer('input', 0.5, input_changed);
+	init_inputbox();
+	$.list = new List($('list'));
 }
 
-function init_input() {
-	var input = $('input');
+function init_inputbox() {
+	$.input = $('input');
 	var clear_tip = function() {
 		input.setValue('')
 			.addClassName('active')
@@ -29,6 +118,7 @@ function init_input() {
 	
 	input.observe('keydown', clear_tip);
 	input.observe('mousedown', clear_tip);
+	new Form.Element.Observer('input', 0.5, input_changed);
 }
 
 function input_changed() {
@@ -91,82 +181,27 @@ function encode_time_query(lat, lng) {
 function on_locations_fetched(response) {
 	//trace(Object.toJSON(response));
 
-	var total = response.totalResultsCount;
-	var count = total ? response.geonames.length : 0;
-	erase_output_elements();
+	var total = response.totalResultsCount || 0;
+	var geonames = total ? response.geonames : [];
+	var count = geonames.length;
 	
-	trace('locations fetched: ' + count + ' of ' + total);
+	trace('places fetched: ' + count + ' of ' + total);
+	$.list.clear();
 	
-	if (count > 0) {
-		append_output_elements(response.geonames);
-//		if (count < total) {
-//			append_appending_element(10, total - 10);
-//		}
-	}
+	$.list.total(total);
+	geonames.each(function(gn) {
+		$.list.add({
+			name: gn.name,
+			area: gn.adminName1,
+			country: gn.countryName,
+			latitude: gn.lat,
+			longitude: gn.lng
+		});
+	});		
 }
 
 function on_timezone_fetched(response) {
 	trace(Object.toJSON(response));
-}
-
-function erase_output_elements() {
-	$('output').childElements()
-		.each(function(e) {
-			e.remove();
-		}
-	);
-}
-
-function append_output_elements(geonames) {
-	geonames.each(function(gn) {
-		$('output').insert(create_output_element(gn));
-	});
-}
-
-function append_appending_element(next_index, count_remaining) {
-	var el = new Element('div', { 'class': 'location' });
-	var label = new Element('span', { 'class': 'location-append' });
-	label.innerHTML = 'Get more locations...';
-	el.insert(label);
-	
-	var info = new Element('span', { 'class': 'location-info' });
-	info.innerHTML = 'There are ' + count_remaining + ' more locations';
-	el.insert(info);
-	$('output').insert(el);
-}
-
-function create_output_element(geoname) {
-	var el = new Element('div', { 'class': 'location' });
-	var name = new Element('span', { 'class': 'location-name' });
-	name.innerHTML = geoname.name;
-	el.insert(name);
-	
-	if (geoname.countryName.strip().length) {
-		var info = new Element('span', { 'class': 'location-info' });
-		var template = geoname.adminName1.strip().length > 0
-			? '#{state}, #{country}'
-			: '#{country}'
-		info.innerHTML = template.interpolate({
-			'state':geoname.adminName1,
-			'country': geoname.countryName
-		});
-
-		el.insert(info);
-	}
-	
-	var time = new Element('span', { 'class': 'location-time' });
-	time.innerHTML = 'time?';
-	time.observe('click', function(ev) {
-		ev.stop();
-		fetch_timezone(geoname.lat, geoname.lng);
-	});
-	el.insert(time);
-	
-	el.observe('click', function() {
-		trace(Object.toJSON(geoname));
-	});
-	
-	return el;
 }
 
 function trace(s) {
@@ -186,25 +221,23 @@ function trace(s) {
 	-webkit-border-radius: 6px;
 	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
 }
-.location {
+.list-row, .list-appender {
 	padding: 10px;
 	border-bottom: 1px solid #ccc;
 }
-.location-name {
+.list-row-name {
 	display: block;
 	font-size: 1.2em;
 	font-weight: bold;
 }
-.location-append {
-	display: block;
-	font-size: 1.2em;
-	color: blue;
-}
-.location-info {
+.list-row-info {
 	display: block;
 	font-size: 0.9em;
 }
-.location-time {
+.list-row-link {
+	color: blue;
+}
+.list-row-time {
 	position: relative;
 	bottom: 30px;
 	float: right;
@@ -235,7 +268,7 @@ input[type=text].active {
 	<input id="input" type="text" value="Find a location..." />
 	<hr />
 </form>
-<div id="output">
+<div id="list">
 <!--
 	<div class="location">
 		<span class="location-name">Seattle</span>
