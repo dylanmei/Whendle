@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>Whendle - finder</title>
+	<!-- Use Geonames.org to find locations (names, latitude, longitude, timezone) via a text search -->
+	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1.0/prototype.js" type="text/javascript"></script>
+	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
+	<script src="../whendle/api/ajax.js" type="text/javascript"></script>
+	<script>
+
+URL_SEARCH_BY_NAME = 'http://ws.geonames.org/searchJSON';
+URL_TIMEZONE_BY_LOCATION = 'http://ws.geonames.org/timezoneJSON';
+
+function init_app() {
+	init_input();
+	new Form.Element.Observer('input', 0.5, input_changed);
+}
+
+function init_input() {
+	var input = $('input');
+	var clear_tip = function() {
+		input.setValue('')
+			.addClassName('active')
+			.stopObserving('keydown')	
+			.stopObserving('mousedown');	
+	}
+	
+	input.observe('keydown', clear_tip);
+	input.observe('mousedown', clear_tip);
+}
+
+function input_changed() {
+	var value = $F('input').strip();
+	if (value.length < 3) return;
+	
+	trace('input changed');
+	
+	if ($('input').timer !== undefined) {
+		window.clearTimeout($('input').timer);
+	}
+	
+	$('input').timer = (
+		function(value) {
+			delete $('input').timer;
+			fetch_locations(value);
+		}
+	).delay(1, value);
+}
+
+function fetch_locations(text) {
+	trace('fetching locations for: ' + text);
+
+	var url = URL_SEARCH_BY_NAME + '?' +
+		encode_finder_query(text);
+		
+	new Whendle.AjaxService().load(
+		url,
+		on_locations_fetched
+	);	
+}
+
+function fetch_timezone(lat, lng) {
+	trace('fetching time for: ' + lat + ',' + lng);
+	
+	var url = URL_TIMEZONE_BY_LOCATION + '?' +
+		Object.toQueryString({'lat': lat, 'lng': lng});
+	
+	new Whendle.AjaxService().load(
+		url,
+		on_timezone_fetched
+	);
+}
+
+function encode_finder_query(text) {
+	return Object.toQueryString({
+		name: text + '*',
+		maxRows: 10,
+		featureClass: ['A', 'P']
+	});
+}
+
+function encode_time_query(lat, lng) {
+	return Object.toQueryString({
+		lat: lat,
+		lng: lng
+	});
+}
+
+function on_locations_fetched(response) {
+	//trace(Object.toJSON(response));
+
+	var total = response.totalResultsCount;
+	var count = total ? response.geonames.length : 0;
+	erase_output_elements();
+	
+	trace('locations fetched: ' + count + ' of ' + total);
+	
+	if (count > 0) {
+		append_output_elements(response.geonames);
+//		if (count < total) {
+//			append_appending_element(10, total - 10);
+//		}
+	}
+}
+
+function on_timezone_fetched(response) {
+	trace(Object.toJSON(response));
+}
+
+function erase_output_elements() {
+	$('output').childElements()
+		.each(function(e) {
+			e.remove();
+		}
+	);
+}
+
+function append_output_elements(geonames) {
+	geonames.each(function(gn) {
+		$('output').insert(create_output_element(gn));
+	});
+}
+
+function append_appending_element(next_index, count_remaining) {
+	var el = new Element('div', { 'class': 'location' });
+	var label = new Element('span', { 'class': 'location-append' });
+	label.innerHTML = 'Get more locations...';
+	el.insert(label);
+	
+	var info = new Element('span', { 'class': 'location-info' });
+	info.innerHTML = 'There are ' + count_remaining + ' more locations';
+	el.insert(info);
+	$('output').insert(el);
+}
+
+function create_output_element(geoname) {
+	var el = new Element('div', { 'class': 'location' });
+	var name = new Element('span', { 'class': 'location-name' });
+	name.innerHTML = geoname.name;
+	el.insert(name);
+	
+	if (geoname.countryName.strip().length) {
+		var info = new Element('span', { 'class': 'location-info' });
+		var template = geoname.adminName1.strip().length > 0
+			? '#{state}, #{country}'
+			: '#{country}'
+		info.innerHTML = template.interpolate({
+			'state':geoname.adminName1,
+			'country': geoname.countryName
+		});
+
+		el.insert(info);
+	}
+	
+	var time = new Element('span', { 'class': 'location-time' });
+	time.innerHTML = 'time?';
+	time.observe('click', function(ev) {
+		ev.stop();
+		fetch_timezone(geoname.lat, geoname.lng);
+	});
+	el.insert(time);
+	
+	el.observe('click', function() {
+		trace(Object.toJSON(geoname));
+	});
+	
+	return el;
+}
+
+function trace(s) {
+	window.counter = window.counter + 1 || 1;
+	var counter = window.counter.toPaddedString(3);
+	$('trace').innerHTML += counter + '-> ' + s + '<br />';
+}
+	</script>
+	
+	<link href="../whendle/res/whendle.css" media="screen" rel="stylesheet" type="text/css" />
+	<style>
+.app {
+	width: 400px;
+	min-height: 400px;
+	margin: 40px auto;
+	border: 1px solid black;
+	-webkit-border-radius: 6px;
+	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
+}
+.location {
+	padding: 10px;
+	border-bottom: 1px solid #ccc;
+}
+.location-name {
+	display: block;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+.location-append {
+	display: block;
+	font-size: 1.2em;
+	color: blue;
+}
+.location-info {
+	display: block;
+	font-size: 0.9em;
+}
+.location-time {
+	position: relative;
+	bottom: 30px;
+	float: right;
+	font-size: 0.9;
+}
+
+hr, form {
+	margin: 0;
+	padding: 0;
+}
+input[type=text] {
+	border: none;
+	width: 95%;
+	margin: 0.4em 0.4em;
+	color: #666666;
+	font-style: italic;
+}
+
+input[type=text].active {
+	color: black;
+	font-style: normal;
+}
+	</style>
+</head>
+<body onload="init_app();">
+<div class="app">
+<form onsubmit="return false;">
+	<input id="input" type="text" value="Find a location..." />
+	<hr />
+</form>
+<div id="output">
+<!--
+	<div class="location">
+		<span class="location-name">Seattle</span>
+		<span class="location-info">Washington, United States</span>
+		<span class="location-time">time?</span>
+	</div>
+-->
+</div>
+</div>
+<tt id="trace">
+</tt>
+</body>
+</html>
