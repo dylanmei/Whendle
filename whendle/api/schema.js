@@ -26,7 +26,12 @@
 
 Whendle.SchemaService = Class.create({
 	initialize: function(database) {
-		this.database = database;
+		this._version = '0.0';
+		this._database = database;
+	},
+	
+	version: function() {
+		return this._version;
 	},
 	
 	read: function(on_complete, on_error) {
@@ -34,7 +39,7 @@ Whendle.SchemaService = Class.create({
 		on_complete = this._on_version_exists.bind(this, on_complete || Prototype.emptyFunction, on_error);
 		
 		// ensure the version exists
-		this.database.scalar(
+		this._database.scalar(
 			'select count(1) from sqlite_master where type=\'table\' and name=\'whendle\'', [],
 			on_complete,
 			on_error
@@ -46,34 +51,45 @@ Whendle.SchemaService = Class.create({
 		on_complete = on_complete || Prototype.emptyFunction;
 		
 		// run the migrator
-		migrator.go(on_complete, on_error);
+		migrator.go(this._on_version_updated.bind(this, on_complete), on_error);
 	},
 	
 	destroy: function(on_complete, on_error) {
-		this.database.scalar('drop table if exists \'whendle\'', [],
+		this._version = '0.0';
+		this._database.scalar('drop table if exists \'whendle\'', [],
 			on_complete || Prototype.emptyFunction,
 			on_error || Prototype.emptyFunction
 		);
 	},
 
 	migrator: function(version) {
-		switch (version) {
+		switch (version || this._version) {
 			case '0.0':
-				return new Whendle.Migrator_0_1(this.database);
+				return new Whendle.Migrator_0_1(this._database);
 		}
 		
 		return null;
 	},
 	
 	_on_version_exists: function(on_complete, on_error, exists) {
-		if (exists) {
-			this.database.scalar('select version from whendle order by id desc limit 1', [],
-				on_complete,
-				on_error
-			);
+		if (!exists) {
+			on_complete(this._version);
+			return;
 		}
-		else {
-			on_complete('0.0');
-		}
+		
+		this._database.scalar('select version from whendle order by id desc limit 1', [],
+			this._on_select_version.bind(this, on_complete),
+			on_error
+		);
+	},
+	
+	_on_select_version: function(on_complete, version) {
+		this._version = version;
+		on_complete(version);
+	},
+	
+	_on_version_updated: function(on_complete, version) {
+		this._version = version;
+		on_complete(version);
 	}
 });
