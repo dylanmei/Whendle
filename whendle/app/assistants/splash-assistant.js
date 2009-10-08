@@ -12,19 +12,28 @@ SplashAssistant.prototype.setup = function() {
 	this.database_ready = true;
 	this.database_error = false;
 
-	var first_launch = this.settings.is_empty();
-	if (first_launch || this.settings.version() != Whendle.version) {
+	var is_initializing = this.settings.is_empty();
+	var is_updating = false;
+
+	if (is_initializing || this.settings.version() != Whendle.version) {
+		is_updating = true;
 		this.update_settings();
 	}
-
-	if (first_launch || this.schema.version() != Whendle.schema_version) {
+	
+	//this.schema.destroy();
+	if (is_initializing || this.schema.version() != Whendle.schema_version) {
+		is_updating = true;
 		this.database_ready = false;
 		this.update_schema();
 	}
+	
+	if (is_initializing || is_updating) {
+		// wait on splash screen for at least 3 seconds
+		this.wait_for_dependencies.bind(this)
+			.delay(3, this.start_application.bind(this));
+	}
 
-	// wait on splash screen for at least 3 seconds
-	this.wait_for_dependencies.bind(this)
-		.delay(3, this.start_application.bind(this));
+	this.setup_widgets(is_initializing, is_updating);
 };
 
 SplashAssistant.prototype.update_schema = function(version) {
@@ -72,3 +81,39 @@ SplashAssistant.prototype.wait_for_dependencies = function(on_ready) {
 SplashAssistant.prototype.start_application = function() {
 	this.stageController.swapScene('clocks');
 };
+
+SplashAssistant.prototype.setup_widgets = function(is_initializing, is_updating) {
+    this.controller.setupWidget('spinner',
+         { spinnerSize: 'small' },
+         { spinning: true }
+	);
+	
+	if (is_initializing) {
+		this.controller.get('message').innerHTML = 'starting up for the first time...';
+	}
+	else if (is_updating) {
+		this.controller.get('message').innerHTML = 'updating a few things...';
+	}
+	else {
+		this.controller.get('spinner').remove();
+		this.controller.get('message').innerHTML = 'tap to continue...';
+
+		this.tap_handler = this.on_tap.bind(this);
+		Mojo.Event.listen(this.controller.document,
+			Mojo.Event.tap, this.tap_handler);
+	}
+}
+
+SplashAssistant.prototype.cleanup = function(event) {
+	/* remove any event handlers you added in activate and do any other cleanup that should happen before
+	   this scene is popped or another scene is pushed on top */
+	if (this.tap_handler) {
+		Mojo.Event.stopListening(this.controller.document, Mojo.Event.tap, this.tap_handler);
+		delete this.tap_handler;
+	}
+}
+
+SplashAssistant.prototype.on_tap = function() {
+	this.start_application();
+}
+

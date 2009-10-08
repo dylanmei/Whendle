@@ -1,12 +1,11 @@
 
 function ClocksAssistant() {
-	Mojo.Log.info('constructing clocks scene...');
 }
 
 ClocksAssistant.prototype.setup = function() {
 	/* this function is for setup tasks that have to happen when the scene is first created */
 	
-	Mojo.Log.info('running clocks scene...');
+	Mojo.Log.info('setting up clocks scene...');
 
 	/* use Mojo.View.render to render view templates and add them to the scene, if needed. */
 	

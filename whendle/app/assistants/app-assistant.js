@@ -36,7 +36,6 @@ AppAssistant.prototype.try_focus_stage = function() {
 };
 
 AppAssistant.prototype.wait_for_dependencies = function(on_complete) {
-//	Whendle.schema().destroy(on_complete);
 	Whendle.schema().read(on_complete,
 		this.on_schema_error.bind(this)
 	);	
@@ -56,10 +55,10 @@ AppAssistant.prototype.launch = function() {
 };
 
 AppAssistant.prototype.should_show_splash = function() {
-	return (this.is_new_install() || this.is_database_stale());
+	return Whendle.show_splash || this.are_settings_stale() || this.is_database_stale();
 }
 
-AppAssistant.prototype.is_new_install = function() {
+AppAssistant.prototype.are_settings_stale = function() {
 	var settings = Whendle.settings();
 	return settings.is_empty();
 }
