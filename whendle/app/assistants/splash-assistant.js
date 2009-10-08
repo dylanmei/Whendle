@@ -1,5 +1,5 @@
 
-function StartupAssistant(settings, database, schema) {
+function SplashAssistant(settings, database, schema) {
 	this.appController = Mojo.Controller.getAppController();
     this.stageController = this.appController.getStageController(Whendle.stage_name);
 	
@@ -8,7 +8,7 @@ function StartupAssistant(settings, database, schema) {
 	this.schema = schema || Whendle.schema();
 };
 
-StartupAssistant.prototype.setup = function() {
+SplashAssistant.prototype.setup = function() {
 	this.ready = false;
 	this.error = false;
 	
@@ -21,7 +21,7 @@ StartupAssistant.prototype.setup = function() {
 		.delay(3, this.start_application.bind(this));
 };
 
-StartupAssistant.prototype.wait_for_dependencies = function(on_ready) {
+SplashAssistant.prototype.wait_for_dependencies = function(on_ready) {
 	if (this.ready) {
 		on_ready();
 	}
@@ -34,7 +34,7 @@ StartupAssistant.prototype.wait_for_dependencies = function(on_ready) {
 	}
 };
 
-StartupAssistant.prototype.update_schema = function(version) {
+SplashAssistant.prototype.update_schema = function(version) {
 	version = version || this.schema.version();
 	var migrator = this.schema.migrator(version);
 	if (!migrator) {
@@ -48,38 +48,38 @@ StartupAssistant.prototype.update_schema = function(version) {
 	}
 };
 
-StartupAssistant.prototype.on_schema_updated = function(version) {
+SplashAssistant.prototype.on_schema_updated = function(version) {
 	Mojo.Log.info('schema updated: ', version);
 	this.update_schema(version);
 };
 
-StartupAssistant.prototype.on_schema_error = function(error) {
+SplashAssistant.prototype.on_schema_error = function(error) {
 	Mojo.Log.info('error preparing schema: ', error.message);
 	this.error = true;
 }
 
-StartupAssistant.prototype.on_database_version = function(version) {
+SplashAssistant.prototype.on_database_version = function(version) {
 	Mojo.Log.info('database version', typeof(version));
 	this.ready = true;
 }
 
-StartupAssistant.prototype.start_application = function() {
+SplashAssistant.prototype.start_application = function() {
 	this.stageController.swapScene('clocks');
 };
 
-StartupAssistant.prototype.activate = function(event) {
+SplashAssistant.prototype.activate = function(event) {
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 	  //Mojo.Log.info('startup activate');
 }
 
-StartupAssistant.prototype.deactivate = function(event) {
+SplashAssistant.prototype.deactivate = function(event) {
 	/* remove any event handlers you added in activate and do any other cleanup that should happen before
 	   this scene is popped or another scene is pushed on top */
 	  //Mojo.Log.info('startup deactivate');
 }
 
-StartupAssistant.prototype.cleanup = function(event) {
+SplashAssistant.prototype.cleanup = function(event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
 	  //Mojo.Log.info('startup cleanup');

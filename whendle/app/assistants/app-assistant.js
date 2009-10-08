@@ -49,7 +49,7 @@ AppAssistant.prototype.on_schema_error = function(error) {
 AppAssistant.prototype.launch = function() {
 	var schema = Whendle.schema();
 	var scene = schema.version() != Whendle.schema_version
-		? 'startup' : 'clocks';
+		? 'splash' : 'clocks';
 
 	this.controller.createStageWithCallback(
 		{ name: Whendle.stage_name, lightweight: true },
