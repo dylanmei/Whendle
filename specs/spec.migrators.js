@@ -4,13 +4,11 @@ describe('Migrator (base)', function() {
 	migrator = new Whendle.Migrator('ABC', database);
 
 	describe('When jobs are complete', function() {
-		before(function() {
-			on_success = function(v) { expect(v).to(equal, 'ABC'); }
-			on_failure = function(e) { fail('failure callback was unexpected.'); }
-		});
-		
 		it('should call the success function with its version', function() {
-			migrator.go(on_success, on_failure);
+			migrator.go(
+				function(v) { expect(v).to(equal, 'ABC'); },
+				function(e) { fail('callback unexpected'); }
+			);
 		});
 	});
 });
@@ -26,31 +24,31 @@ describe('Migrator (simple)', function() {
 	
 	describe('When jobs are complete', function() {
 		before(function() {
-			on_success = function(v) { expect(v).to(equal, 'XYZ'); }
-			on_failure = function(e) { fail('failure callback was unexpected.'); }
-
 			stub(database, 'scalar').and_return(function(s, p, on_result) {
 				on_result(1);
 			});	
 		});
 		
 		it('should call the success function with its version', function() {
-			migrator.go(on_success, on_failure);
+			migrator.go(
+				function(v) { expect(v).to(equal, 'XYZ'); },
+				function(e) { fail('callback unexpected'); }
+			);
 		});
 	});
 	
 	describe('When running a job causes an error', function() {
 		before(function() {
-			on_success = function(v) { fail('success callback was unexpected.') }
-			on_failure = function(e) { expect(e).to(have_property, 'message', 'oh pooh'); }
-			
 			stub(database, 'scalar').and_return(function(s, p, r, on_error) {
 				on_error({ code: 0, message: 'oh pooh' });
 			});			
 		});
 		
 		it('should call the failure function with an error', function() {
-			migrator.go(on_success, on_failure);
+			migrator.go(
+				function(v) { fail('success callback was unexpected.') },
+				function(e) { expect(e).to(have_property, 'message', 'oh pooh'); }
+			);
 		});			
 	});
 });
