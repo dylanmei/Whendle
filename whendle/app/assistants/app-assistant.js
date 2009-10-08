@@ -47,21 +47,34 @@ AppAssistant.prototype.on_schema_error = function(error) {
 };
 
 AppAssistant.prototype.launch = function() {
-	var schema = Whendle.schema();
-	var scene = schema.version() != Whendle.schema_version
+	var scene_name = this.should_show_splash()
 		? 'splash' : 'clocks';
 
 	this.controller.createStageWithCallback(
 		{ name: Whendle.stage_name, lightweight: true },
-		this.get_scene_loader(scene), 'card');
+		this.get_scene_loader(scene_name), 'card');
 };
+
+AppAssistant.prototype.should_show_splash = function() {
+	return (this.is_new_install() || this.is_database_stale());
+}
+
+AppAssistant.prototype.is_new_install = function() {
+	var settings = Whendle.settings();
+	return settings.is_empty();
+}
+
+AppAssistant.prototype.is_database_stale = function() {
+	var schema = Whendle.schema();
+	return schema.version() != Whendle.schema_version;
+}
 
 AppAssistant.prototype.get_scene_loader = function(name) {
 	return (function(stageController) { stageController.pushScene(name); });
 };
 
 AppAssistant.prototype.prepare_services = function() {
-//	Whendle.services('Whendle.settings', new Whendle.SettingsService());
+	Whendle.services('Whendle.settings', new Whendle.SettingsService());
 	Whendle.services('Whendle.database', new Whendle.DatabaseService());
 	Whendle.services('Whendle.schema', new Whendle.SchemaService(Whendle.database()));
 };

@@ -34,7 +34,7 @@ Whendle.SettingsService = Class.create({
 		return this.version() === undefined;
 	},
 	
-	flush: function() {
+	save: function() {
 		this._cookie.put({
 			version: this.version()
 		});

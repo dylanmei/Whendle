@@ -9,10 +9,16 @@ function SplashAssistant(settings, database, schema) {
 };
 
 SplashAssistant.prototype.setup = function() {
-	this.ready = false;
-	this.error = false;
-	
-	if (this.schema.version() != Whendle.schema_version) {
+	this.database_ready = true;
+	this.database_error = false;
+
+	var first_launch = this.settings.is_empty();
+	if (first_launch || this.settings.version() != Whendle.version) {
+		this.update_settings();
+	}
+
+	if (first_launch || this.schema.version() != Whendle.schema_version) {
+		this.database_ready = false;
 		this.update_schema();
 	}
 
@@ -21,24 +27,11 @@ SplashAssistant.prototype.setup = function() {
 		.delay(3, this.start_application.bind(this));
 };
 
-SplashAssistant.prototype.wait_for_dependencies = function(on_ready) {
-	if (this.ready) {
-		on_ready();
-	}
-	else if (this.error) {
-		Mojo.Log.info('error loading dependencies');
-	}
-	else {
-		this.wait_for_dependencies.bind(this)
-			.delay(0.2, on_ready);
-	}
-};
-
 SplashAssistant.prototype.update_schema = function(version) {
 	version = version || this.schema.version();
 	var migrator = this.schema.migrator(version);
 	if (!migrator) {
-		this.ready = true;
+		this.database_ready = true;
 	}
 	else {
 		this.schema.update(migrator,
@@ -49,38 +42,33 @@ SplashAssistant.prototype.update_schema = function(version) {
 };
 
 SplashAssistant.prototype.on_schema_updated = function(version) {
-	Mojo.Log.info('schema updated: ', version);
+	Mojo.Log.info('schema updated to', version);
 	this.update_schema(version);
 };
 
 SplashAssistant.prototype.on_schema_error = function(error) {
 	Mojo.Log.info('error preparing schema: ', error.message);
-	this.error = true;
+	this.database_error = true;
 }
 
-SplashAssistant.prototype.on_database_version = function(version) {
-	Mojo.Log.info('database version', typeof(version));
-	this.ready = true;
+SplashAssistant.prototype.update_settings = function() {
+	this.settings.version(Whendle.version);
+	this.settings.save();
 }
+
+SplashAssistant.prototype.wait_for_dependencies = function(on_ready) {
+	if (this.database_ready) {
+		on_ready();
+	}
+	else if (this.database_error) {
+		Mojo.Log.info('error loading dependencies');
+	}
+	else {
+		this.wait_for_dependencies.bind(this)
+			.delay(0.2, on_ready);
+	}
+};
 
 SplashAssistant.prototype.start_application = function() {
 	this.stageController.swapScene('clocks');
 };
-
-SplashAssistant.prototype.activate = function(event) {
-	/* put in event handlers here that should only be in effect when this scene is active. For
-	   example, key handlers that are observing the document */
-	  //Mojo.Log.info('startup activate');
-}
-
-SplashAssistant.prototype.deactivate = function(event) {
-	/* remove any event handlers you added in activate and do any other cleanup that should happen before
-	   this scene is popped or another scene is pushed on top */
-	  //Mojo.Log.info('startup deactivate');
-}
-
-SplashAssistant.prototype.cleanup = function(event) {
-	/* this function should do any cleanup needed before the scene is destroyed as 
-	   a result of being popped off the scene stack */
-	  //Mojo.Log.info('startup cleanup');
-}
