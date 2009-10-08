@@ -11,6 +11,9 @@ function SplashAssistant(settings, database, schema) {
 SplashAssistant.prototype.setup = function() {
 	this.database_ready = true;
 	this.database_error = false;
+	
+	//this.schema.destroy();
+	//this.settings.version(undefined);
 
 	var is_initializing = this.settings.is_empty();
 	var is_updating = false;
@@ -20,7 +23,6 @@ SplashAssistant.prototype.setup = function() {
 		this.update_settings();
 	}
 	
-	//this.schema.destroy();
 	if (is_initializing || this.schema.version() != Whendle.schema_version) {
 		is_updating = true;
 		this.database_ready = false;
@@ -89,14 +91,14 @@ SplashAssistant.prototype.setup_widgets = function(is_initializing, is_updating)
 	);
 	
 	if (is_initializing) {
-		this.controller.get('message').innerHTML = 'starting up for the first time...';
+		this.controller.get('message').innerHTML = $L('splash_message_first_time');
 	}
 	else if (is_updating) {
-		this.controller.get('message').innerHTML = 'updating a few things...';
+		this.controller.get('message').innerHTML = $L('splash_message_updating');
 	}
 	else {
 		this.controller.get('spinner').remove();
-		this.controller.get('message').innerHTML = 'tap to continue...';
+		this.controller.get('message').innerHTML = $L('splash_message_continue');
 
 		this.tap_handler = this.on_tap.bind(this);
 		Mojo.Event.listen(this.controller.document,

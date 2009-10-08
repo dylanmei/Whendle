@@ -6,5 +6,5 @@
 	"noWindow" : "true",
  	"main": "index.html",
 	"title": "Whendle",
-	"icon": "res/icon.png"
+	"icon": "lib/icon.png"
 }
