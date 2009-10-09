@@ -12,8 +12,13 @@ SplashAssistant.prototype.setup = function() {
 	this.database_ready = true;
 	this.database_error = false;
 	
-	//this.schema.destroy();
-	//this.settings.version(undefined);
+	if (Whendle.reset_schema) {
+		this.schema.destroy();
+	}
+
+	if (Whendle.reset_settings) {
+		this.settings.destroy();
+	}
 
 	var is_initializing = this.settings.is_empty();
 	var is_updating = false;

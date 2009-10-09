@@ -28,7 +28,14 @@ Whendle = {
 	version: '0.1.0',
 	schema_version: '0.1',
 	stage_name: 'whendle-card-stage',
+
 	show_splash: false,
+	reset_schema: false,
+	reset_settings: false,
+	
+	Events: {
+		load_ready: ':loadready'
+	},
 	
 	services: function(name, instance) {
 		if (!Whendle._services)

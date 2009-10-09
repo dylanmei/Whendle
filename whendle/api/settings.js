@@ -34,10 +34,17 @@ Whendle.SettingsService = Class.create({
 		return this.version() === undefined;
 	},
 	
+	destroy: function() {
+		this._data = {};
+	},
+	
 	save: function() {
-		this._cookie.put({
-			version: this.version()
-		});
+		var version = this.version();
+		if (version) {
+			this._cookie.put({
+				'version': version
+			});
+		}
 	},
 
 	version: function(v) {

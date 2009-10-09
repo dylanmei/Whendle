@@ -1,5 +1,6 @@
 {
-	  "splash_message_first_time": "starting up for the first time..."
-	, "splash_message_updating": "updating a few things..."
-	, "splash_message_continue": "tap to continue..."
+	  "splash_message_first_time": "Starting up for the first time..."
+	, "splash_message_updating": "Updating a few things..."
+	, "splash_message_continue": "Tap to continue..."
+	, "clocklist_find_location": "Find a location..."
 }

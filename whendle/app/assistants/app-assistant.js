@@ -59,11 +59,13 @@ AppAssistant.prototype.should_show_splash = function() {
 }
 
 AppAssistant.prototype.are_settings_stale = function() {
+	if (Whendle.reset_settings) return true;
 	var settings = Whendle.settings();
 	return settings.is_empty();
 }
 
 AppAssistant.prototype.is_database_stale = function() {
+	if (Whendle.reset_schema) return true;
 	var schema = Whendle.schema();
 	return schema.version() != Whendle.schema_version;
 }

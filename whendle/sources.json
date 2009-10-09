@@ -18,5 +18,7 @@
 	{ "source": "api\/settings.js" },
 	{ "source": "api\/database.js" },
 	{ "source": "api\/schema.js" },
-	{ "source": "api\/migrators.js" }
+	{ "source": "api\/migrators.js" },
+	
+	{ "source": "api\/clocklist.js" }
 ]

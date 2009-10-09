@@ -77,9 +77,11 @@ Whendle.Migrator_0_1 = Class.create(Whendle.Migrator, {
 	go: function($super, on_complete, on_error) {
 	
 		this.queue_job('create table if not exists whendle (id integer primary key autoincrement not null, version text not null)', [],
-			on_complete, on_error, 'create table whendle');
+			on_complete, on_error, 'create whendle table');
 		this.queue_job('insert into whendle (version) values (\'0.1\')', [],
 			on_complete, on_error, 'insert version 0.1');
+		this.queue_job('create table if not exists clocks (id integer primary key autoincrement not null, place text not null, area text, country text, latitude real, longitude real, timezone text, offset intger, gmt_offset integer, dst_offset integer)', [],
+			on_complete, on_error, 'create clocks table');
 		
 		$super(on_complete, on_error);
 	}

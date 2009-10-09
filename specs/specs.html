@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js"></script>
+		<script src="../whendle/lib/prototype.observable.js"></script>
 		<script src="../jspec/lib/jspec.js"></script>
 		<script>
 function runSuites() {
@@ -11,7 +12,8 @@ function runSuites() {
 		.exec('spec.database.js')
 		.exec('spec.schema.js')
 		.exec('spec.migrators.js')
-	.run({ failuresOnly: false })
+		.exec('spec.clocklist.js')
+	.run({ failuresOnly: true })
 	.report();
 }
 		</script>
@@ -21,6 +23,7 @@ function runSuites() {
 		<script src="../whendle/api/database.js"></script>
 		<script src="../whendle/api/schema.js"></script>
 		<script src="../whendle/api/migrators.js"></script>
+		<script src="../whendle/api/clocklist.js"></script>
 
 		<link type="text/css" rel="stylesheet" href="../jspec/lib/jspec.css" />
 	</head>
