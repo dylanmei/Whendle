@@ -28,7 +28,7 @@ AppAssistant.prototype.try_focus_stage = function() {
 	var existingController = this.controller.getStageController(Whendle.stage_name);
 	if (existingController) {
 		Mojo.Log.info('focusing stage');
-		existingController.popScenesTo('clocks');    
+		existingController.popScenesTo('clocklist');    
 		existingController.activate();
 		return true;
 	}
@@ -47,7 +47,7 @@ AppAssistant.prototype.on_schema_error = function(error) {
 
 AppAssistant.prototype.launch = function() {
 	var scene_name = this.should_show_splash()
-		? 'splash' : 'clocks';
+		? 'splash' : 'clocklist';
 
 	this.controller.createStageWithCallback(
 		{ name: Whendle.stage_name, lightweight: true },

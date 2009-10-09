@@ -10,9 +10,10 @@
 		"source": "app\/assistants\/splash-assistant.js"
 	},
 	{
-		"scenes": "clocks",
-		"source": "app\/assistants\/clocks-assistant.js"
+		"scenes": "clocklist",
+		"source": "app\/assistants\/clocklist-assistant.js"
 	},
+	{ "source": "lib\/prototype.observable.js" },
 	{ "source": "api\/whendle.js" },
 	{ "source": "api\/settings.js" },
 	{ "source": "api\/database.js" },
