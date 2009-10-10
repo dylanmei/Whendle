@@ -3,11 +3,13 @@ Whendle.AjaxService = Class.create({
 	initialize: function() {
 	},
 	
-	load: function(resource, on_ready) {
+	load: function(resource, on_ready, on_error) {
+		var error_handler = this._on_error.bind(this, on_error || Prototype.emptyFunction);
 	    new Ajax.Request(resource, {
 	        method: 'get',
 			asynchronous: true,
-			onSuccess: this._on_response.bind(this, on_ready)
+			onSuccess: this._on_response.bind(this, on_ready),
+			onFailure: error_handler
 	    });
 	},
 	
@@ -20,5 +22,17 @@ Whendle.AjaxService = Class.create({
 		}
 
 		ready_callback(response);
+	},
+	
+	_on_error: function(on_error, data) {
+		var request = data.request;
+		var error = { 'code': 0, 'message': 'Ajax error' };
+
+		if (request && request.transport) {
+			error.code = request.transport.status;
+			error.message = error.code + ' ' + request.transport.statusText;
+		}
+		
+		on_error(error);
 	}
 });

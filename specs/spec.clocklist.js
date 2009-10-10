@@ -3,7 +3,7 @@ describe('Clocklist', function() {
 	database = new Object();
 	view = new (Class.create(Whendle.Clocklist.View, {
 		initialize: function($super) { $super(); },
-		load: function(load_results, load_error) { clocks = load_results; error = load_error; }
+		load: function(a, b) { clocks = a; error = b; }
 	}))();
 	
 	before(function() {
@@ -22,9 +22,12 @@ describe('Clocklist', function() {
 			view.fire(Whendle.Events.load_ready, {});
 		});
 		
-		it('should not load any clocks', function() {
+		it('should not provide any clocks', function() {
 			expect(Object.isArray(clocks)).to(be, true);
 			expect(clocks).to(be_empty);
+		});
+		
+		it('should not provide an error', function() {
 			expect(error).to(be_undefined);
 		});
 	});
@@ -38,9 +41,12 @@ describe('Clocklist', function() {
 			view.fire(Whendle.Events.load_ready, {});
 		});
 	
-		it('should load clocks', function() {
+		it('should provide clocks', function() {
 			expect(Object.isArray(clocks)).to(be, true);
 			expect(clocks).to(have_length, 2);
+		});
+		
+		it('should not provide an error', function() {
 			expect(error).to(be_undefined);
 		});
 	});
@@ -53,9 +59,12 @@ describe('Clocklist', function() {
 
 			view.fire(Whendle.Events.load_ready, {});
 		});
-	
-		it('should call the load function with an error', function() {
+
+		it('should not provide any clocks', function() {
 			expect(clocks).to(be_null);
+		});
+	
+		it('should provide an error', function() {
 			expect(error).to(have_property, 'message', 'oh pooh');
 		});
 	});

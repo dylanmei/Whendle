@@ -13,9 +13,10 @@ Whendle.Clocklist.View = Class.create(Class.Observable, {
 
 Whendle.Clocklist.Presenter = Class.create({
 	initialize: function(view, database) {
+		this._database = database || Whendle.database();
+
 		view.observe(Whendle.Events.load_ready,
 			this._on_load_ready.bind(this, view));
-		this._database = database || Whendle.database();
 	},
 	
 	_on_load_ready: function(view) {

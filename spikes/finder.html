@@ -6,12 +6,13 @@
 	<title>Whendle - finder</title>
 	<!-- Use Geonames.org to find locations (names, latitude, longitude, timezone) via a text search -->
 	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
+	<script src="../whendle/lib/prototype.observable.js" type="text/javascript"></script>
 	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
 	<script src="../whendle/api/ajax.js" type="text/javascript"></script>
-	<script src="../whendle/lib/prototype.observable.js" type="text/javascript"></script>
+	<script src="../whendle/api/finder.js" type="text/javascript"></script>
 	<script>
 
-URL_SEARCH_BY_NAME = 'http://ws.geonames.org/searchJSON';
+//URL_SEARCH_BY_NAME = 'http://ws.geonames.org/searchJSON';
 URL_TIMEZONE_BY_LOCATION = 'http://ws.geonames.org/timezoneJSON';
 
 List = Class.create(Class.Observable, {
@@ -96,52 +97,100 @@ List = Class.create(Class.Observable, {
 	}
 });
 
-function init_inputbox() {
-	$.input = $('input');
-	var clear_tip = function() {
-		input.setValue('')
-			.addClassName('active')
-			.stopObserving('keydown')	
-			.stopObserving('mousedown');	
+View = Class.create(Whendle.Finder.View, {
+	initialize: function($super) {
+		$super();
+		new Whendle.Finder.Presenter(this, 
+			new Whendle.AjaxService(),
+			new Object());
+			
+		this.setup();
+	},
+	
+	setup: function() {
+		this._list = this.new_list();
+		this._input = this.new_input();
+	},
+	
+	new_list: function() {
+		var list = new List($('list'));
+		var self = this;
 		
-		new Form.Element.Observer('input', 0.5, input_changed);
-	}
+//		list.observe(':select', function(ev) {
+//			fetch_timezone(ev.memo.latitude, ev.memo.longitude);
+//		});
+		return list
+			.observe(':append', function(ev) {
+				self.fetch_locations($F('input').strip(), ev.memo.index);
+			});
+	},
 	
-	input.observe('keydown', clear_tip);
-	input.observe('mousedown', clear_tip);
-}
-
-function input_changed() {
-	var value = $F('input').strip();
-	if (value.length < 3) return;
+	fetch_locations: function(text, index) {
+		index = index || 0;
+		trace('fetching locations for: #{text} (index=#{index})'
+			.interpolate({ 'text': text, 'index': index }));
+		
+		this.fire(Whendle.Events.search, { 'start': index, 'query': text });
+	},
 	
-	trace('input changed');
-	
-	if ($('input').timer !== undefined) {
-		window.clearTimeout($('input').timer);
-	}
-	
-	$('input').timer = (
-		function(value) {
-			delete $('input').timer;
-			fetch_locations(value);
+	new_input: function() {
+		var input = $('input');
+		var self = this;
+		var clear_tip = function() {
+			input.setValue('')
+				.addClassName('active')
+				.stopObserving('keydown')	
+				.stopObserving('mousedown');	
+			
+			new Form.Element.Observer('input', 0.5,
+				self.on_input_changed.bind(self));
 		}
-	).delay(1, value);
-}
-
-function fetch_locations(text, index) {
-	index = index || 0;
-	trace('fetching locations for: #{text} (index=#{index})'
-		.interpolate({ 'text': text, 'index': index }));
-
-	var url = URL_SEARCH_BY_NAME + '?' +
-		encode_finder_query(text, index);
 		
-	new Whendle.AjaxService().load(
-		url,
-		on_locations_fetched.bind(document, index > 0)
-	);	
-}
+		return input
+			.observe('keydown', clear_tip)
+			.observe('mousedown', clear_tip);
+	},
+	
+	on_input_changed: function() {
+		var value = $F('input').strip();
+		if (value.length < 4) return;
+		
+		trace('input changed');
+		
+		if ($('input').timer !== undefined) {
+			window.clearTimeout($('input').timer);
+		}
+		
+		var self = this;
+		$('input').timer = (
+			function(value) {
+				delete $('input').timer;
+				self.fetch_locations(value);
+			}
+		).delay(1, value);
+	},
+	
+	loaded: function(places, index, total, error) {
+		if (error) trace('error:', Object.toJSON(error));
+		
+		var list = this._list;
+		if (index == 0) {
+			trace('places fetched: ' + places.length + ' of ' + total);
+			list.clear();
+		}
+
+		list.total(total);
+		places.each(function(p) {
+			list.add({
+				name: p.name,
+				area: p.adminName1,
+				country: p.countryName,
+				latitude: p.lat,
+				longitude: p.lng
+			});
+		});		
+	}
+});
 
 function fetch_timezone(lat, lng) {
 	trace('fetching time for: ' + lat + ',' + lng);
@@ -155,43 +204,10 @@ function fetch_timezone(lat, lng) {
 	);
 }
 
-function encode_finder_query(text, index) {
-	return Object.toQueryString({
-		startRow: index,
-		name: text + '*',
-		maxRows: 10,
-		featureClass: ['A', 'P']
-	});
-}
-
 function encode_time_query(lat, lng) {
 	return Object.toQueryString({
 		lat: lat,
 		lng: lng
-	});
-}
-
-function on_locations_fetched(appending, response) {
-	//trace(Object.toJSON(response));
-
-	var total = response.totalResultsCount || 0;
-	var geonames = total ? response.geonames : [];
-	var count = geonames.length;
-	
-	if (!appending) {
-		trace('places fetched: ' + count + ' of ' + total);
-		$.list.clear();
-	}
-	
-	$.list.total(total);
-	geonames.each(function(gn) {
-		$.list.add({
-			name: gn.name,
-			area: gn.adminName1,
-			country: gn.countryName,
-			latitude: gn.lat,
-			longitude: gn.lng
-		});
 	});
 }
 
@@ -206,16 +222,7 @@ function trace(s) {
 }
 
 document.observe('dom:loaded', function() {
-	init_inputbox();
-
-	$.list = new List($('list'));
-	$.list.observe(':select', function(ev) {
-		fetch_timezone(ev.memo.latitude, ev.memo.longitude);
-	});
-	
-	$.list.observe(':append', function(ev) {
-		fetch_locations($F('input').strip(), ev.memo.index);
-	});
+	$.view = new View();
 });
 
 	</script>

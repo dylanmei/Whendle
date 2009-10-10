@@ -34,7 +34,9 @@ Whendle = {
 	reset_settings: false,
 	
 	Events: {
-		load_ready: ':loadready'
+		load_ready: ':loadready',
+		search: ':search',
+		select: ':select'
 	},
 	
 	services: function(name, instance) {
