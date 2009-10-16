@@ -2,6 +2,9 @@
 ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
 	initialize: function($super) {
 		$super();
+		this.appController = Mojo.Controller.getAppController();
+		this.stageController = this.appController.getStageController(Whendle.stage_name);
+		
 		this._presenter = new Whendle.Clocklist.Presenter(this);
 	},
 	
@@ -17,7 +20,7 @@ ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
 		this.controller.setupWidget('list', {
 				itemTemplate: 'clocklist/list-item',
 				listTemplate: 'clocklist/list',
-				addItemLabel:$L('clocklist_find_location'), 
+				addItemLabel: $L('clocklist_find_location'), 
 				swipeToDelete: true,
 				renderLimit: 40,
 				reorderable: false
@@ -33,7 +36,6 @@ ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
 	load: function(clocks, error) {
 		if (this.report_error(error)) return;
 		
-		//this.model.items = [{ 'place': 'Seattle', 'area': 'Washington', 'country': 'USA' }];
 		this.model.items = clocks;
 		this.controller.modelChanged(this.model, this);
 	},
@@ -45,18 +47,20 @@ ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
 	},
 	
 	on_find_tapped: function() {
-		Mojo.Log.info('find tapped...');
+		this.stageController.pushScene({ name: 'finder' });
+//		Whendle.Finder.push_scene(this);
+//		Mojo.Log.info('find tapped...');
 	},
 	
 	activate: function(event) {
-//		Mojo.Log.info('activating clocks scene...');
+		Mojo.Log.info('activating clocks scene...');
 	},
 	
 	deactivate: function(event) {
-//		Mojo.Log.info('deactivating clocks scene...');
+		Mojo.Log.info('deactivating clocks scene...');
 	},
 	
 	cleanup: function(event) {
-//		Mojo.Log.info('cleaning up clocks scene...');
+		Mojo.Log.info('cleaning up clocks scene...');
 	}
 });

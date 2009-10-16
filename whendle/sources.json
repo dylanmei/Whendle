@@ -1,4 +1,18 @@
 [
+	{ "source": "lib\/prototype.observable.js" },
+
+	{ "source": "api\/whendle.js" },
+	{ "source": "api\/settings.js" },
+	{ "source": "api\/database.js" },
+	{ "source": "api\/schema.js" },
+	{ "source": "api\/migrators.js" },
+	{ "source": "api\/ajax.js" },
+	{ "source": "api\/clocklist.js" },
+	{ "source": "api\/finder.js" },
+	
+	{ "source": "widgets\/search-text.js" },
+	{ "source": "widgets\/search-list.js" },
+	
 	{
 		"source": "app\/assistants\/app-assistant.js"
 	},
@@ -10,16 +24,11 @@
 		"source": "app\/assistants\/splash-assistant.js"
 	},
 	{
+		"scenes": "finder",
+		"source": "app\/assistants\/finder-assistant.js"
+	},
+	{
 		"scenes": "clocklist",
 		"source": "app\/assistants\/clocklist-assistant.js"
-	},
-	{ "source": "lib\/prototype.observable.js" },
-	{ "source": "api\/whendle.js" },
-	{ "source": "api\/settings.js" },
-	{ "source": "api\/database.js" },
-	{ "source": "api\/schema.js" },
-	{ "source": "api\/migrators.js" },
-	
-	{ "source": "api\/clocklist.js" },
-	{ "source": "api\/finder.js" }
+	}
 ]
