@@ -19,6 +19,14 @@
 	padding-top: 50px;
 }
 
-.finder-appender {
-	padding: 8px;
+.finder-status {
+}
+
+.finder-spinner {
+	float: left;
+	margin-left: 8px;
+}
+
+.finder-text {
+	margin-left: 8px;
 }

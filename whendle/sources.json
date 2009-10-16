@@ -11,6 +11,7 @@
 	{ "source": "api\/finder.js" },
 	
 	{ "source": "app\/widgets\/search-text.js" },
+	{ "source": "app\/widgets\/search-status.js" },
 	
 	{
 		"source": "app\/assistants\/app-assistant.js"
