@@ -10,8 +10,7 @@
 	{ "source": "api\/clocklist.js" },
 	{ "source": "api\/finder.js" },
 	
-	{ "source": "widgets\/search-text.js" },
-	{ "source": "widgets\/search-list.js" },
+	{ "source": "app\/widgets\/search-text.js" },
 	
 	{
 		"source": "app\/assistants\/app-assistant.js"

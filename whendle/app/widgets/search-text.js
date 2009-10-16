@@ -105,7 +105,7 @@ Mojo.Widget.SearchText = Class.create({
 		this.detach_events();
 	},
 	
-	this.clear_timer: function() {
+	clear_timer: function() {
 		this._timer = undefined;
 	},
 	
