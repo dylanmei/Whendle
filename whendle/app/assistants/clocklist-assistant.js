@@ -33,7 +33,7 @@ ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
 		this.controller.listen('list', Mojo.Event.listAdd, this.on_find_tapped.bind(this));
 	},
 	
-	load: function(clocks, error) {
+	loaded: function(clocks, error) {
 		if (this.report_error(error)) return;
 		
 		this.model.items = clocks;

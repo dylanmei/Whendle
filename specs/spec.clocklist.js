@@ -3,7 +3,7 @@ describe('Clocklist', function() {
 	database = new Object();
 	view = new (Class.create(Whendle.Clocklist.View, {
 		initialize: function($super) { $super(); },
-		load: function(a, b) { clocks = a; error = b; }
+		loaded: function(a, b) { clocks = a; error = b; }
 	}))();
 	
 	before(function() {

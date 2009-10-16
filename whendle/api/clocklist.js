@@ -7,7 +7,7 @@ Whendle.Clocklist.View = Class.create(Class.Observable, {
 		$super(element);
 	},
 	
-	load: function(clocks, error) {
+	loaded: function(clocks, error) {
 	}
 });
 
@@ -27,10 +27,10 @@ Whendle.Clocklist.Presenter = Class.create({
 	},
 	
 	_on_load_clocks: function(view, results) {
-		view.load(results);
+		view.loaded(results);
 	},
 	
 	_on_load_error: function(view, error) {
-		view.load(null, error);
+		view.loaded(null, error);
 	}
 });
