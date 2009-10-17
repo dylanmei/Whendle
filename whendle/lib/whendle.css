@@ -7,16 +7,16 @@
 
 .splash-spinner {
 	float: left;
-	margin-left: 8px;
+	margin-left: 10px;
 }
 
 .splash-message {
-	margin-left: 8px;
+	margin-left: 10px;
 }
 
 .finder-list {
 	/* makes room for search box */
-	padding-top: 50px;
+	padding-top: 46px;
 }
 
 .finder-status {
@@ -24,9 +24,14 @@
 
 .finder-spinner {
 	float: left;
-	margin-left: 8px;
+	margin-left: 10px;
 }
 
 .finder-text {
-	margin-left: 8px;
+	margin-left: 10px;
+}
+
+.finder-row .palm-row-wrapper,
+.clocklist-row .palm-row-wrapper {
+	padding: 4px 10px 8px 10px;
 }
