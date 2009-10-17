@@ -9,6 +9,7 @@
 	{ "source": "api\/ajax.js" },
 	{ "source": "api\/clocklist.js" },
 	{ "source": "api\/finder.js" },
+	{ "source": "api\/location.js" },
 	
 	{ "source": "app\/widgets\/search-text.js" },
 	{ "source": "app\/widgets\/search-status.js" },

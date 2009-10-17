@@ -58,8 +58,20 @@ Whendle.Finder.Presenter = Class.create({
 	
 	_on_search_results: function(view, index, results) {
 		var total = results.totalResultsCount || 0;
-		var places = results.geonames;
+		//var places = results.geonames;
+		var mapper = function(gn) { return this._new_location(gn); }
+		var places = results.geonames.collect(mapper.bind(this));
 		view.loaded(places, index, total);
+	},
+	
+	_new_location: function(geoname) {
+		return new Whendle.Location(
+			geoname.name,
+			geoname.adminName1,
+			geoname.countryName,
+			geoname.lat,
+			geoname.lng
+		);
 	},
 	
 	_on_search_error: function(view, error) {

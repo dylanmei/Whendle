@@ -20,6 +20,8 @@
 }
 
 .finder-status {
+	padding-top: 8px;
+	padding-bottom: 12px;
 }
 
 .finder-spinner {
