@@ -54,12 +54,11 @@ Whendle.SchemaService = Class.create({
 		migrator.go(this._on_version_updated.bind(this, on_complete), on_error);
 	},
 	
-	destroy: function(on_complete, on_error) {
+	destroy: function() {
+		Mojo.Log.info('destroy called...');
 		this._version = '0.0';
-		this._database.scalar('drop table if exists \'whendle\'', [],
-			on_complete || Prototype.emptyFunction,
-			on_error || Prototype.emptyFunction
-		);
+		this._database.scalar('drop table if exists \'whendle\'', []);
+		this._database.scalar('drop table if exists \'clocks\'', []);
 	},
 
 	migrator: function(version) {
