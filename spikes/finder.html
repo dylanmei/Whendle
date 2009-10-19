@@ -57,7 +57,8 @@ List = Class.create(Whendle.View, {
 	add: function(location) {
 		var row = new Element('div', { 'class': 'finder-row' })
 			.insert(this._new_label('finder-row-name', location.name))
-			.insert(this._new_label('finder-row-info', '#{area}, #{country}'.interpolate(location)))
+			.insert(this._new_label('finder-row-info', '#{district}, #{country}'.interpolate(location)))
+			//.insert(this._new_label('finder-row-info', location.area))
 			.insert(this._new_label('finder-row-time', ''));
 		row.observe('click', this._on_select.bind(this, location));
 		this._insert_row(row);

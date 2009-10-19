@@ -39,8 +39,8 @@ Whendle = {
 		select: ':select'
 	},
 	
-	Strings: function(v) {
-		return (typeof($L) == 'undefined') ? v : $L(v);
+	Strings: function(key, def) {
+		return (typeof($L) == 'undefined') ? (def || key) : $L(key);
 	},
 	
 	services: function(name, instance) {

@@ -25,28 +25,31 @@
 //
 
 Whendle.Location = Class.create({
-	initialize: function(name, area, country, latitude, longitude) {
+	initialize: function(name, district, country, latitude, longitude) {
 		this.name = name || '';
-		this.area = area || '';
+		this.district = district || '';
 		this.country = country || '';
 		this.latitude = latitude || 0;
 		this.longitude = longitude || 0;
-		this.place = this.format_place();
 	},
 	
-	format_place: function() {
-		var has_area = this.area.length > 0;
+	format_area: function() {
+		var format = '';
+		var has_district = this.district.length > 0;
 		var has_country = this.country.length > 0;
-		if (has_area && has_country) {
-			return Whendle.Strings('location_place_area_country').interpolate(this);
+		if (has_district && has_country) {
+			format = Whendle.Strings('location_area_district_country', '#{district}, #{country}')
 		}
-		else if (has_area) {
-			return Whendle.Strings('location_place_area').interpolate(this);
+		else if (has_district) {
+			format = Whendle.Strings('location_area_district', '#{district}');
 		}
 		else if (has_country) {
-			return Whendle.Strings('location_place_country').interpolate(this);
+			format = Whendle.Strings('location_area_country', '#{country}');
 		}
-		
-		return '';
+		return format.interpolate(this);
 	}
 });
+
+with (Whendle.Location.prototype) {
+	__defineGetter__('area', function() { return this.format_area(); });
+}

@@ -131,13 +131,13 @@ Whendle.Finder.Presenter = Class.create({
 		var clock = this._new_clock(location, results);
 		
 		this._database.scalar(
-			'insert into clocks (place,area,country,latitude,longitude,timezone,offset) values (?,?,?,?,?,?,?)',
+			'insert into clocks (location,district,country,latitude,longitude,timezone,offset) values (?,?,?,?,?,?,?)',
 			[
-				clock.location.name,
-				clock.location.area,
-				clock.location.country,
-				clock.location.latitude,
-				clock.location.longitude,
+				location.name,
+				location.district,
+				location.country,
+				location.latitude,
+				location.longitude,
 				clock.timezone,
 				clock.offset
 			],
@@ -149,9 +149,13 @@ Whendle.Finder.Presenter = Class.create({
 	_new_clock: function(location, timeinfo) {
 		return new Whendle.Clock(
 			location,
-			timeinfo.timezoneId,
+			this._format_timezone(timeinfo.timezoneId),
 			timeinfo.rawOffset
 		);
+	},
+	
+	_format_timezone: function(timezone) {
+		return timezone.replace('_', ' ');
 	},
 	
 	_on_clock_saved: function(view, clock) {

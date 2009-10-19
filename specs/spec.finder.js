@@ -143,11 +143,10 @@ describe('Finder (Select)', function() {
 		
 		it('should provide a clock with the location information', function() {
 			expect(clock).not_to(be_undefined);
-			expect(clock.location.name).to(equal, 'A');
-			expect(clock.location.area).to(equal, 'B');
-			expect(clock.location.country).to(equal, 'C');
-			expect(clock.location.latitude).to(equal, 1);
-			expect(clock.location.longitude).to(equal, 23);
+			expect(clock.location).to(equal, 'A');
+			expect(clock.area).to(equal, 'B, C');
+			expect(clock.latitude).to(equal, 1);
+			expect(clock.longitude).to(equal, 23);
 		});
 		
 		it('should provide a clock with timezone information', function() {

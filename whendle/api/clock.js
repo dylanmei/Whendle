@@ -26,9 +26,15 @@
 
 Whendle.Clock = Class.create({
 	initialize: function(location, timezone, offset) {
-		this.location = location;
+		this._location = location;
+		this.timezone = (timezone || '').replace('_', ' '); // fixme: move me to source of problem, the geonames response
 		this.offset = offset || 0;
-		this.timezone = (timezone || '').replace('_', ' ');
-		this.name = location.name;
 	}
 });
+
+with (Whendle.Clock.prototype) {
+	__defineGetter__('location', function() { return this._location.name; });
+	__defineGetter__('area', function() { return this._location.area; });
+	__defineGetter__('latitude', function() { return this._location.latitude; });
+	__defineGetter__('longitude', function() { return this._location.longitude; });
+}

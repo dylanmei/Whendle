@@ -6,7 +6,7 @@
 	, "finder_input_hint": "Find a location..."
 	, "finder_more_results": "#{count} more..."
 	, "finder_search_status": "Searching for #{text}..."
-	, "location_place_area_country": "#{area}, #{country}"
-	, "location_place_area": "#{area}"
-	, "location_place_country": "#{country}"
+	, "location_area_district_country": "#{district}, #{country}"
+	, "location_area_district": "#{district}"
+	, "location_area_country": "#{country}"
 }
