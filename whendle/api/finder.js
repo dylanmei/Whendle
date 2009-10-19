@@ -1,9 +1,9 @@
 Whendle.Finder = {
 };
 
-Whendle.Finder.View = Class.create(Class.Observable, {
-	initialize: function($super, element) {
-		$super(element);
+Whendle.Finder.View = Class.create(Whendle.View, {
+	initialize: function($super) {
+		$super();
 	},
 	
 	loaded: function(places, index, total, error) {
@@ -28,7 +28,7 @@ Whendle.Finder.Presenter = Class.create({
 	},
 	
 	_on_search: function(view, event) {
-		if (!(event = event.memo)) return;
+		if (!event) return;
 
 		var start = event.start || 0;
 		var rows = event.rows || 10;
@@ -57,10 +57,14 @@ Whendle.Finder.Presenter = Class.create({
 	},
 	
 	_on_search_results: function(view, index, results) {
+		var places = [];
 		var total = results.totalResultsCount || 0;
-		//var places = results.geonames;
-		var mapper = function(gn) { return this._new_location(gn); }
-		var places = results.geonames.collect(mapper.bind(this));
+
+		if (total) {
+			var mapper = function(gn) { return this._new_location(gn); }
+			places = results.geonames.collect(mapper.bind(this));
+		}
+		
 		view.loaded(places, index, total);
 	},
 	
@@ -78,7 +82,7 @@ Whendle.Finder.Presenter = Class.create({
 		view.loaded(null, 0, 0, error);
 	},
 	
-	_on_select: function(view, place) {
-//		Mojo.Log.info('Finder._on_select...');
-	},
+	_on_select: function(view, event) {
+		view.selected(null, null);
+	}
 });

@@ -2,7 +2,7 @@
 Whendle.Clocklist = {
 };
 
-Whendle.Clocklist.View = Class.create(Class.Observable, {
+Whendle.Clocklist.View = Class.create(Whendle.View, {
 	initialize: function($super, element) {
 		$super(element);
 	},

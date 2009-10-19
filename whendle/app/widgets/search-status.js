@@ -4,6 +4,7 @@ Mojo.Widget.SearchStatus = Class.create({
 		var id = this.make_identifier();
 		this.render_widget(id);
 		this.setup_children(id);
+		this.attach_events();
 		this.controller.exposeMethods(['spin', 'stop', 'reset']);
 	},
 	
@@ -31,12 +32,24 @@ Mojo.Widget.SearchStatus = Class.create({
 		this.controller.instantiateChildWidgets();
 	},
 	
+	attach_events: function() {
+		this.tap_handler = this.on_tap.bind(this);
+		this.controller.listen(this.controller.element, Mojo.Event.tap, this.tap_handler, true);
+	},
+	
+	on_tap: function(event) {
+		if (this.spinning || this.text.innerHTML == '')
+			Event.stop(event);
+	},
+	
 	spin: function(message) {
+		this.spinning = true;
 		this.spinner.mojo.start();
 		this.text.update(message);
 	},
 	
 	stop: function(message) {
+		this.spinning = false;
 		this.spinner.mojo.stop();
 		this.text.update(message);
 	},
@@ -46,7 +59,10 @@ Mojo.Widget.SearchStatus = Class.create({
 	},
 	
 	cleanup: function() {
-		this.controller.stopListening(this.text.id,
-			Mojo.Event.tap, this.text.tap_handler);
+		this.detach_events();
+	},
+	
+	detach_events: function() {
+		this.controller.stopListening(this.text.id, Mojo.Event.tap, this.tap_handler);
 	}
 });

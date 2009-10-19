@@ -1,7 +1,6 @@
 [
-	{ "source": "lib\/prototype.observable.js" },
-
 	{ "source": "api\/whendle.js" },
+	{ "source": "api\/view.js" },
 	{ "source": "api\/settings.js" },
 	{ "source": "api\/database.js" },
 	{ "source": "api\/schema.js" },

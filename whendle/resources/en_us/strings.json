@@ -5,6 +5,7 @@
 	, "clocklist_find_location": "Find a location..."
 	, "finder_input_hint": "Find a location..."
 	, "finder_more_results": "#{count} more..."
+	, "finder_search_status": "Searching for #{text}..."
 	, "location_place_area_country": "#{area}, #{country}"
 	, "location_place_area": "#{area}"
 	, "location_place_country": "#{country}"

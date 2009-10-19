@@ -6,7 +6,7 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	},
 	
 	setup: function() {
-		this.model = { 
+		this.model = {
 			'text': '',
 			'items': []
 		};
@@ -34,16 +34,14 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	},
 	
 	attach_events: function() {
-		Mojo.Log.info('Finder setup_events...');
-		
 		this.text.change_handler = this.on_input_changed.bind(this);
-		this.controller.listen(this.text.id, Mojo.Event.filter, this.text.change_handler);
+		this.controller.listen(this.text, Mojo.Event.filter, this.text.change_handler);
 		
-		this.status.tap_handler = this.on_append.bind(this);
-		this.controller.listen(this.status.id, Mojo.Event.tap, this.status.tap_handler);
+		this.status.tap_handler = this.on_status_tap.bind(this);
+		this.controller.listen(this.status, Mojo.Event.tap, this.status.tap_handler);
 		
-		this.list_tap_handler = this.controller.listen('list',
-			Mojo.Event.listTap, this.on_list_tap.bind(this));
+		this.list.tap_handler = this.on_list_tap.bind(this);
+		this.controller.listen(this.list, Mojo.Event.listTap, this.list.tap_handler);
 	},
 
 	on_input_changed: function(event) {
@@ -58,9 +56,15 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	},
 	
 	on_list_tap: function(event) {
+		var index = event.index;
+		Mojo.Log.info('(Finder)', 'list tapped at', index);
+		if (index < this.count()) {
+			var location = this.model.items[index];
+			this.fire(Whendle.Events.select, { 'location': location });
+		}
 	},
 	
-	on_append: function(event) {
+	on_status_tap: function(event) {
 		var index = this.count();
 		var text = this.model.text;
 		this.search(text, index);
@@ -82,7 +86,8 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		Mojo.Log.info('fetching locations for: #{text} (index=#{index})'
 			.interpolate({ 'text': text, 'index': index }));
 		
-		this.status.mojo.spin('Searching...');
+		this.status.mojo.spin($L('finder_search_status')
+			.interpolate({ 'text': text }));
 		this.fire(Whendle.Events.search, { 'start': index, 'query': text });
 	},
 
@@ -90,7 +95,6 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		if (index == 0) {
 			this.model.items = places;
 			this.controller.modelChanged(this.model, this);
-			this.status.mojo.reset();
 		}
 		else {
 			this.model.items = this.model.items.concat(places);
@@ -101,21 +105,24 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	},
 	
 	update_status: function(count, total) {
-		var amount_remaining = total - count;
-		var message = (amount_remaining <= 0)
+		var remaining = total - count;
+		var message = (remaining <= 0)
 			? ''
-			: $L('finder_more_results').interpolate({ 'count': amount_remaining });
+			: $L('finder_more_results').interpolate({ 'count': remaining });
 		this.status.mojo.stop(message);
 	},
 	
 	selected: function(clock, error) {
+		Mojo.Log.info('(View) selected ... ');
 	},
-
+	
 	cleanup: function(event) {
 		this.detach_events();
 	},
 	
 	detach_events: function() {
-		this.controller.stopListening(this.text.id, Mojo.Event.filter, this.text.change_handler);
+		this.controller.stopListening(this.text, Mojo.Event.filter, this.text.change_handler);
+		this.controller.stopListening(this.list, Mojo.Event.listTap, this.list.tap_handler);
+		this.controller.stopListening(this.status, Mojo.Event.tap, this.status.tap_handler);
 	}
 });
