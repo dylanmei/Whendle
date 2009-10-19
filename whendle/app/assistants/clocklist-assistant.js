@@ -48,11 +48,15 @@ ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
 	
 	on_find_tapped: function() {
 		this.stageController.pushScene({ name: 'finder' });
-//		Whendle.Finder.push_scene(this);
-//		Mojo.Log.info('find tapped...');
 	},
 	
 	activate: function(event) {
+		var clock = event && event.location ? event : null;
+		if (clock) {
+			this.model.items.push(clock);
+			this.controller.modelChanged(this.model, this);
+		}
+			
 		Mojo.Log.info('activating clocks scene...');
 	},
 	

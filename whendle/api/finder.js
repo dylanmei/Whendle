@@ -1,3 +1,29 @@
+// This file belongs to Whendle, a clock application for the Palm Pre
+// http://github.com/dylanmei/Whendle
+
+//
+// Copyright (C) 2009 Dylan Meissner (dylanmei@gmail.com)
+//
+// Permission is hereby granted, free of charge, to any person otaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
 Whendle.Finder = {
 };
 
@@ -15,7 +41,7 @@ Whendle.Finder.View = Class.create(Whendle.View, {
 
 Whendle.Finder.Presenter = Class.create({
 	URL_SEARCH_BY_NAME: 'http://ws.geonames.org/searchJSON',
-//	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
+	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
 	initialize: function(view, ajax, database) {
 		this._ajax = ajax || new Whendle.AjaxService();
@@ -36,7 +62,7 @@ Whendle.Finder.Presenter = Class.create({
 		
 		if (this._is_sensible_query(query)) {
 			this._ajax.load(
-				this._make_request_url(start, query, rows),
+				this._make_search_url(start, query, rows),
 				this._on_search_results.bind(this, view, start),
 				this._on_search_error.bind(this, view));
 		}
@@ -46,13 +72,13 @@ Whendle.Finder.Presenter = Class.create({
 		return (query.length > 3);
 	},
 	
-	_make_request_url: function(index, text, rows) {
+	_make_search_url: function(index, text, rows) {
 		var s = this.URL_SEARCH_BY_NAME + '?';
 		return s + Object.toQueryString({
-			startRow: index,
-			name: text + '*',
-			maxRows: rows,
-			featureClass: ['A', 'P']
+			'startRow': index,
+			'name': text + '*',
+			'maxRows': rows,
+			'featureClass': ['A', 'P']
 		});	
 	},
 	
@@ -83,6 +109,56 @@ Whendle.Finder.Presenter = Class.create({
 	},
 	
 	_on_select: function(view, event) {
-		view.selected(null, null);
+		if (!event) return;
+		var location = event.location;
+
+		this._ajax.load(
+			this._make_timezone_url(location.latitude, location.longitude),
+			this._on_timezone_result.bind(this, view, location),
+			this._on_select_error.bind(this, view)
+		);
+	},
+	
+	_make_timezone_url: function(latitude, longitude) {
+		var s = this.URL_TIMEZONE_BY_LOCATION + '?';
+		return s + Object.toQueryString({
+			'lat': latitude,
+			'lng': longitude
+		});
+	},
+	
+	_on_timezone_result: function(view, location, results) {
+		var clock = this._new_clock(location, results);
+		
+		this._database.scalar(
+			'insert into clocks (place,area,country,latitude,longitude,timezone,offset) values (?,?,?,?,?,?,?)',
+			[
+				clock.location.name,
+				clock.location.area,
+				clock.location.country,
+				clock.location.latitude,
+				clock.location.longitude,
+				clock.timezone,
+				clock.offset
+			],
+			this._on_clock_saved.bind(this, view, clock),
+			this._on_select_error.bind(this, view)
+		);
+	},
+	
+	_new_clock: function(location, timeinfo) {
+		return new Whendle.Clock(
+			location,
+			timeinfo.timezoneId,
+			timeinfo.rawOffset
+		);
+	},
+	
+	_on_clock_saved: function(view, clock) {
+		view.selected(clock);
+	},
+	
+	_on_select_error: function(view, error) {
+		view.selected(null, error);
 	}
 });

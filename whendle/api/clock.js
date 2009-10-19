@@ -24,42 +24,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle = {
-	version: '0.1.0',
-	schema_version: '0.1',
-	stage_name: 'whendle-card-stage',
-
-	show_splash: false,
-	reset_schema: false,
-	reset_settings: false,
-	
-	Events: {
-		load_ready: ':loadready',
-		search: ':search',
-		select: ':select'
-	},
-	
-	Strings: function(v) {
-		return (typeof($L) == 'undefined') ? v : $L(v);
-	},
-	
-	services: function(name, instance) {
-		if (!Whendle._services)
-			Whendle._services = {};
-		return instance
-			? Whendle._services[name] = instance
-			: Whendle._services[name];
-	},
-	
-	settings: function() {
-		return Whendle.services('Whendle.settings');
-	},
-	
-	database: function() {
-		return Whendle.services('Whendle.database');
-	},
-	
-	schema: function() {
-		return Whendle.services('Whendle.schema');
+Whendle.Clock = Class.create({
+	initialize: function(location, timezone, offset) {
+		this.location = location;
+		this.offset = offset || 0;
+		this.timezone = (timezone || '').replace('_', ' ');
+		this.name = location.name;
 	}
-};
+});

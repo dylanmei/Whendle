@@ -14,6 +14,7 @@ $L = function(key) { return key; }
 	<script src="../whendle/api/ajax.js" type="text/javascript"></script>
 	<script src="../whendle/api/finder.js" type="text/javascript"></script>
 	<script src="../whendle/api/location.js" type="text/javascript"></script>
+	<script src="../whendle/api/clock.js" type="text/javascript"></script>
 	<script>
 
 //URL_SEARCH_BY_NAME = 'http://ws.geonames.org/searchJSON';
@@ -49,18 +50,16 @@ List = Class.create(Whendle.View, {
 		this.fire(':append', { 'index': this.count() });
 	},
 	
-	_on_select: function(event) {
-		trace('List._on_select');
-		this.fire(':select', event);
+	_on_select: function(location) {
+		this.fire(':select', { 'location': location });
 	},
 	
-	add: function(place) {
+	add: function(location) {
 		var row = new Element('div', { 'class': 'finder-row' })
-			.insert(this._new_label('finder-row-name', place.name))
-			.insert(this._new_label('finder-row-info', '#{area}, #{country}'.interpolate(place)))
+			.insert(this._new_label('finder-row-name', location.name))
+			.insert(this._new_label('finder-row-info', '#{area}, #{country}'.interpolate(location)))
 			.insert(this._new_label('finder-row-time', ''));
-		row.observe('click', this._on_select.bind(this,
-			{ 'name': place.name, 'longitude': place.longitude, 'latitude': place.latitude }));
+		row.observe('click', this._on_select.bind(this, location));
 		this._insert_row(row);
 	},
 	
@@ -107,7 +106,8 @@ View = Class.create(Whendle.Finder.View, {
 		$super();
 		new Whendle.Finder.Presenter(this, 
 			new Whendle.AjaxService(),
-			new Object());
+			{ 'scalar': function(statement, parameters, on_result, on_error) { on_result(); }}
+		);
 			
 		this.setup();
 	},
@@ -121,14 +121,20 @@ View = Class.create(Whendle.Finder.View, {
 		var list = new List($('list'));
 		var self = this;
 		
-		list.observe(':select', function(ev) {
-			//fetch_timezone(ev.memo.latitude, ev.memo.longitude);
-			self.fire(Whendle.Events.select, { 'location': {}});
+		list.observe(':select', function(event) {
+			self.fetch_timzone(event.location);
 		});
-		list.observe(':append', function(ev) {
-			self.fetch_locations($F('input').strip(), ev.memo.index);
+		list.observe(':append', function(event) {
+			self.fetch_locations($F('input').strip(), event.index);
 		});
 		return list;
+	},
+	
+	fetch_timzone: function(location) {
+		trace('fetching timezone for: #{latitude} x #{longitude}'
+			.interpolate(location));
+		
+		this.fire(Whendle.Events.select, { 'location': location });
 	},
 	
 	fetch_locations: function(text, index) {
@@ -181,7 +187,7 @@ View = Class.create(Whendle.Finder.View, {
 		
 		var list = this._list;
 		if (index == 0) {
-			trace('places fetched: ' + places.length + ' of ' + total);
+			//trace('places fetched: ' + places.length + ' of ' + total);
 			list.clear();
 		}
 
@@ -191,8 +197,8 @@ View = Class.create(Whendle.Finder.View, {
 		}
 	},
 	
-	selected: function() {
-		trace('--> Location selected');
+	selected: function(clock) {
+		trace('--> #{name}: #{timezone}'.interpolate(clock));
 	}
 });
 
