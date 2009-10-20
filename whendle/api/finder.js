@@ -33,15 +33,11 @@ Whendle.Finder.View = Class.create(Whendle.View, {
 	},
 	
 	loaded: function(places, index, total, error) {
-	},
-	
-	selected: function(clock, error) {
 	}
 });
 
 Whendle.Finder.Presenter = Class.create({
 	URL_SEARCH_BY_NAME: 'http://ws.geonames.org/searchJSON',
-	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
 	initialize: function(view, ajax, database) {
 		this._ajax = ajax || new Whendle.AjaxService();
@@ -49,8 +45,6 @@ Whendle.Finder.Presenter = Class.create({
 
 		view.observe(Whendle.Events.search,
 			this._on_search.bind(this, view));
-		view.observe(Whendle.Events.select,
-			this._on_select.bind(this, view));
 	},
 	
 	_on_search: function(view, event) {
@@ -106,63 +100,5 @@ Whendle.Finder.Presenter = Class.create({
 	
 	_on_search_error: function(view, error) {
 		view.loaded(null, 0, 0, error);
-	},
-	
-	_on_select: function(view, event) {
-		if (!event) return;
-		var location = event.location;
-
-		this._ajax.load(
-			this._make_timezone_url(location.latitude, location.longitude),
-			this._on_timezone_result.bind(this, view, location),
-			this._on_select_error.bind(this, view)
-		);
-	},
-	
-	_make_timezone_url: function(latitude, longitude) {
-		var s = this.URL_TIMEZONE_BY_LOCATION + '?';
-		return s + Object.toQueryString({
-			'lat': latitude,
-			'lng': longitude
-		});
-	},
-	
-	_on_timezone_result: function(view, location, results) {
-		var clock = this._new_clock(location, results);
-		
-		this._database.scalar(
-			'insert into clocks (location,district,country,latitude,longitude,timezone,offset) values (?,?,?,?,?,?,?)',
-			[
-				location.name,
-				location.district,
-				location.country,
-				location.latitude,
-				location.longitude,
-				clock.timezone,
-				clock.offset
-			],
-			this._on_clock_saved.bind(this, view, clock),
-			this._on_select_error.bind(this, view)
-		);
-	},
-	
-	_new_clock: function(location, timeinfo) {
-		return new Whendle.Clock(
-			location,
-			this._format_timezone(timeinfo.timezoneId),
-			timeinfo.rawOffset
-		);
-	},
-	
-	_format_timezone: function(timezone) {
-		return timezone.replace('_', ' ');
-	},
-	
-	_on_clock_saved: function(view, clock) {
-		view.selected(clock);
-	},
-	
-	_on_select_error: function(view, error) {
-		view.selected(null, error);
 	}
 });

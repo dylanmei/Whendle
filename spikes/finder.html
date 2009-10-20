@@ -132,10 +132,10 @@ View = Class.create(Whendle.Finder.View, {
 	},
 	
 	fetch_timzone: function(location) {
-		trace('fetching timezone for: #{latitude} x #{longitude}'
-			.interpolate(location));
+		//trace('fetching timezone for: #{latitude} x #{longitude}'
+		//	.interpolate(location));
 		
-		this.fire(Whendle.Events.select, { 'location': location });
+		//this.fire(Whendle.Events.select, { 'location': location });
 	},
 	
 	fetch_locations: function(text, index) {
@@ -196,13 +196,10 @@ View = Class.create(Whendle.Finder.View, {
 		for (var i = 0; i < places.length; i++) {
 			list.add(places[i]);
 		}
-	},
-	
-	selected: function(clock) {
-		trace('--> #{name}: #{timezone}'.interpolate(clock));
 	}
 });
 
+/*
 function fetch_timezone(lat, lng) {
 	trace('fetching time for: ' + lat + ',' + lng);
 	
@@ -225,6 +222,7 @@ function encode_time_query(lat, lng) {
 function on_timezone_fetched(response) {
 	trace(Object.toJSON(response));
 }
+*/
 
 function trace(s) {
 	window.counter = window.counter + 1 || 1;

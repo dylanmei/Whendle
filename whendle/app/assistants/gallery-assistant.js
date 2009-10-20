@@ -26,7 +26,8 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 				reorderable: false
 			},
 			this.model
-		);			
+		);
+		this.controller.setupWidget("spinner", { property: "saving" });
 	},
 	
 	setup_events: function() {
@@ -50,14 +51,32 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.stageController.pushScene({ name: 'finder' });
 	},
 	
-	activate: function(event) {
-		var clock = event && event.location ? event : null;
-		if (clock) {
-			this.model.items.push(clock);
-			this.controller.modelChanged(this.model, this);
+	activate: function(location) {
+		if (location && location.name) {
+			this.new_clock(location);
 		}
 			
 		Mojo.Log.info('activating clocks scene...');
+	},
+	
+	new_clock: function(location) {
+		var clock = new Whendle.Clock(location);
+		clock.saving = true;
+		this.model.items.push(clock);
+		this.controller.modelChanged(this.model, this);
+		
+		this.fire(Whendle.Events.add, { 'location': location });
+	},
+	
+	added: function(clock, error) {
+		var current = this.model.items.pop();
+		if (this.report_error(error)) {
+			clock = current;
+			clock.saving = false;
+		}
+		
+		this.model.items.push(clock);
+		this.controller.modelChanged(this.model, this);
 	},
 	
 	deactivate: function(event) {

@@ -63,7 +63,7 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		Mojo.Log.info('(Finder)', 'list tapped at', index);
 		if (index < this.count()) {
 			var location = this.model.items[index];
-			this.fire(Whendle.Events.select, { 'location': location });
+			this.stageController.popScene(location, {});
 		}
 	},
 	
@@ -113,14 +113,6 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 			? ''
 			: $L('finder_more_results').interpolate({ 'count': remaining });
 		this.status.mojo.stop(message);
-	},
-	
-	selected: function(clock, error) {
-		if (error) {
-			Mojo.Log.info('error selecting location...');
-			return;
-		}
-		this.stageController.popScene(clock, {});
 	},
 	
 	cleanup: function(event) {

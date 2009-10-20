@@ -36,7 +36,7 @@ Whendle = {
 	Events: {
 		load_ready: ':loadready',
 		search: ':search',
-		select: ':select'
+		add: ':add'
 	},
 	
 	Strings: function(key, def) {
