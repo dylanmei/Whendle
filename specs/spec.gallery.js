@@ -1,7 +1,7 @@
 
-describe('Clocklist', function() {
+describe('Gallery', function() {
 	database = new Object();
-	view = new (Class.create(Whendle.Clocklist.View, {
+	view = new (Class.create(Whendle.Gallery.View, {
 		initialize: function($super) { $super(); },
 		loaded: function(a, b) { clocks = a; error = b; }
 	}))();
@@ -9,7 +9,7 @@ describe('Clocklist', function() {
 	before(function() {
 		clocks = undefined;
 		error = undefined;
-		presenter = new Whendle.Clocklist.Presenter(view, database);
+		presenter = new Whendle.Gallery.Presenter(view, database);
 	});
 	
 	describe('When loading an empty view', function() {

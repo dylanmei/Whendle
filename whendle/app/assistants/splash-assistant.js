@@ -86,7 +86,7 @@ SplashAssistant.prototype.wait_for_dependencies = function(on_ready) {
 };
 
 SplashAssistant.prototype.start_application = function() {
-	this.stageController.swapScene('clocklist');
+	this.stageController.swapScene('gallery');
 };
 
 SplashAssistant.prototype.setup_widgets = function(is_initializing, is_updating) {

@@ -1,11 +1,11 @@
 
-ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
+GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	initialize: function($super) {
 		$super();
 		this.appController = Mojo.Controller.getAppController();
 		this.stageController = this.appController.getStageController(Whendle.stage_name);
 		
-		this._presenter = new Whendle.Clocklist.Presenter(this);
+		this._presenter = new Whendle.Gallery.Presenter(this);
 	},
 	
 	setup: function() {
@@ -18,9 +18,9 @@ ClocklistAssistant = Class.create(Whendle.Clocklist.View, {
 	
 	setup_widgets: function() {
 		this.controller.setupWidget('list', {
-				itemTemplate: 'clocklist/list-item',
-				listTemplate: 'clocklist/list',
-				addItemLabel: $L('clocklist_find_location'), 
+				itemTemplate: 'gallery/list-item',
+				listTemplate: 'gallery/list',
+				addItemLabel: $L('gallery_find_location'), 
 				swipeToDelete: true,
 				renderLimit: 40,
 				reorderable: false

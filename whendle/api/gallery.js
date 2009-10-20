@@ -1,8 +1,8 @@
 
-Whendle.Clocklist = {
+Whendle.Gallery = {
 };
 
-Whendle.Clocklist.View = Class.create(Whendle.View, {
+Whendle.Gallery.View = Class.create(Whendle.View, {
 	initialize: function($super, element) {
 		$super(element);
 	},
@@ -11,7 +11,7 @@ Whendle.Clocklist.View = Class.create(Whendle.View, {
 	}
 });
 
-Whendle.Clocklist.Presenter = Class.create({
+Whendle.Gallery.Presenter = Class.create({
 	initialize: function(view, database) {
 		this._database = database || Whendle.database();
 

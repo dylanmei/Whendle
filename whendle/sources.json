@@ -6,7 +6,7 @@
 	{ "source": "api\/schema.js" },
 	{ "source": "api\/migrators.js" },
 	{ "source": "api\/ajax.js" },
-	{ "source": "api\/clocklist.js" },
+	{ "source": "api\/gallery.js" },
 	{ "source": "api\/finder.js" },
 	{ "source": "api\/location.js" },
 	{ "source": "api\/clock.js" },
@@ -29,7 +29,7 @@
 		"source": "app\/assistants\/finder-assistant.js"
 	},
 	{
-		"scenes": "clocklist",
-		"source": "app\/assistants\/clocklist-assistant.js"
+		"scenes": "gallery",
+		"source": "app\/assistants\/gallery-assistant.js"
 	}
 ]
