@@ -27,7 +27,7 @@
 Whendle.Clock = Class.create({
 	initialize: function(location, timezone, offset) {
 		this._location = location;
-		this.timezone = (timezone || '').replace('_', ' '); // fixme: move me to source of problem, the geonames response
+		this.timezone = timezone || '';
 		this.offset = offset || 0;
 	}
 });
