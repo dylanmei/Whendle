@@ -21,7 +21,7 @@ describe('Finder (Search)', function() {
 				places = 'oops';
 			});
 
-			view.fire(Whendle.Events.search, { query: '123' });
+			view.fire(Whendle.Events.searching, { query: '123' });
 		});
 		
 		it('should not make a search request', function() {
@@ -39,7 +39,7 @@ describe('Finder (Search)', function() {
 				on_success({ 'totalResultsCount': 0, 'geonames': [] });
 			});
 			
-			view.fire(Whendle.Events.search, { query: '1234' });
+			view.fire(Whendle.Events.searching, { query: '1234' });
 		});
 	
 		it('should not provide any places', function() {
@@ -66,7 +66,7 @@ describe('Finder (Search)', function() {
 				on_success({ 'totalResultsCount': 1234, 'geonames': [ {}, {}, {} ] });
 			});
 			
-			view.fire(Whendle.Events.search, { start: 987, query: '1234' });
+			view.fire(Whendle.Events.searching, { start: 987, query: '1234' });
 		});
 	
 		it('should provide places', function() {
@@ -93,7 +93,7 @@ describe('Finder (Search)', function() {
 				on_error({ message: 'oh pooh' });
 			});
 			
-			view.fire(Whendle.Events.search, { query: '1234' });
+			view.fire(Whendle.Events.searching, { query: '1234' });
 		});
 	
 		it('should not provide any places', function() {

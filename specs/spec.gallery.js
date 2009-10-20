@@ -20,7 +20,7 @@ describe('Gallery (Load)', function() {
 				on_result([]);
 			});
 			
-			view.fire(Whendle.Events.load_ready, {});
+			view.fire(Whendle.Events.loading, {});
 		});
 		
 		it('should not provide any clocks', function() {
@@ -39,7 +39,7 @@ describe('Gallery (Load)', function() {
 				on_result([ new Object(), new Object() ]);
 			});
 			
-			view.fire(Whendle.Events.load_ready, {});
+			view.fire(Whendle.Events.loading, {});
 		});
 	
 		it('should provide clocks', function() {
@@ -58,7 +58,7 @@ describe('Gallery (Load)', function() {
 				on_error({ code: 0, message: 'oh pooh' });
 			});
 
-			view.fire(Whendle.Events.load_ready, {});
+			view.fire(Whendle.Events.loading, {});
 		});
 
 		it('should not provide any clocks', function() {
@@ -94,7 +94,7 @@ describe('Gallery (Add)', function() {
 				on_result(saved = true);
 			});
 			
-			view.fire(Whendle.Events.add,
+			view.fire(Whendle.Events.adding,
 				{ 'location': new Whendle.Location('A', 'B', 'C', 1, 23) });
 		});
 		
@@ -126,7 +126,7 @@ describe('Gallery (Add)', function() {
 				on_error({ message: 'oh pooh' });
 			});
 
-			view.fire(Whendle.Events.add, { 'location': new Whendle.Location() });
+			view.fire(Whendle.Events.adding, { 'location': new Whendle.Location() });
 		});
 
 		it('should not provide a clock', function() {
@@ -148,7 +148,7 @@ describe('Gallery (Add)', function() {
 				on_error({ code: 0, message: 'oh pooh' })
 			});
 
-			view.fire(Whendle.Events.add, { 'location': new Whendle.Location() });
+			view.fire(Whendle.Events.adding, { 'location': new Whendle.Location() });
 		});
 
 		it('should not provide a clock', function() {

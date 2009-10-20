@@ -46,9 +46,9 @@ Whendle.Gallery.Presenter = Class.create({
 		this._ajax = ajax || new Whendle.AjaxService();
 		this._database = database || Whendle.database();
 
-		view.observe(Whendle.Events.load_ready,
+		view.observe(Whendle.Events.loading,
 			this._on_load_ready.bind(this, view));
-		view.observe(Whendle.Events.add,
+		view.observe(Whendle.Events.adding,
 			this._on_add_clock.bind(this, view));
 	},
 	

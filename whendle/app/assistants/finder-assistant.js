@@ -91,7 +91,7 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		
 		this.status.mojo.spin($L('finder_search_status')
 			.interpolate({ 'text': text }));
-		this.fire(Whendle.Events.search, { 'start': index, 'query': text });
+		this.fire(Whendle.Events.searching, { 'start': index, 'query': text });
 	},
 
 	loaded: function(places, index, total, error) {

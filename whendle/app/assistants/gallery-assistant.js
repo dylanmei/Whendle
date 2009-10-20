@@ -13,7 +13,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.setup_widgets();
 		this.setup_events();
 	
-		this.fire(Whendle.Events.load_ready, {});
+		this.fire(Whendle.Events.loading, {});
 	},
 	
 	setup_widgets: function() {
@@ -65,7 +65,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.model.items.push(clock);
 		this.controller.modelChanged(this.model, this);
 		
-		this.fire(Whendle.Events.add, { 'location': location });
+		this.fire(Whendle.Events.adding, { 'location': location });
 	},
 	
 	added: function(clock, error) {

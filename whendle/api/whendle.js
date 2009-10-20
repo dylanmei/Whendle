@@ -34,9 +34,9 @@ Whendle = {
 	reset_settings: false,
 	
 	Events: {
-		load_ready: ':loadready',
-		search: ':search',
-		add: ':add'
+		loading: ':loading',
+		searching: ':searching',
+		adding: ':adding'
 	},
 	
 	Strings: function(key, def) {
