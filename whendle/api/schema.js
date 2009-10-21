@@ -56,8 +56,16 @@ Whendle.SchemaService = Class.create({
 	
 	destroy: function() {
 		this._version = '0.0';
-		this._database.scalar('drop table if exists \'whendle\'', []);
-		this._database.scalar('drop table if exists \'clocks\'', []);
+		this._database.execute(
+			[
+				  new Whendle.DatabaseStatement('drop table \'whendle\'', [])
+//					.complete(function() { $.trace('whendle dropped') })
+//					.exception(function(e) { $.trace('could not drop whendle:', e.message) }),
+				, new Whendle.DatabaseStatement('drop table \'clocks\'', [])
+//					.complete(function() { $.trace('clocks dropped') })
+//					.exception(function(e) { $.trace('could not drop clocks:', e.message) }),
+			]
+		);
 	},
 
 	migrator: function(version) {
@@ -75,7 +83,7 @@ Whendle.SchemaService = Class.create({
 			return;
 		}
 		
-		this._database.scalar('select version from whendle order by id desc limit 1', [],
+		this._database.scalar('select version from \'whendle\' order by id desc limit 1', [],
 			this._on_select_version.bind(this, on_complete),
 			on_error
 		);

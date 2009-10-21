@@ -24,6 +24,53 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+Whendle.DatabaseStatement = Class.create({
+	initialize: function(statement, parameters) {
+		this._statement = statement;
+		this._parameters = parameters;
+	},
+	
+	statement: function(value) {
+		if (!arguments.length) {
+			return this._statement || '';
+		}
+		else {
+			this._statement = value;
+			return this;
+		}
+	},
+	
+	parameters: function(array) {
+		if (!arguments.length) {
+			return this._parameters || [];
+		}
+		else {
+			this._parameters = array;
+			return this;
+		}
+	},
+	
+	complete: function(callback) {
+		if (!arguments.length) {
+			return this._on_success || Prototype.emptyFunction;
+		}
+		else {
+			this._on_success = callback;
+			return this;
+		}
+	},
+	
+	exception: function(callback) {
+		if (!arguments.length) {
+			return this._on_error || Prototype.emptyFunction;
+		}
+		else {
+			this._on_error = callback;
+			return this;
+		}
+	}
+});
+
 Whendle.DatabaseService = Class.create({
 	initialize: function(database) {
 		this._datasource = database || openDatabase('Whendle', 1, 'Whendle Database', 65536);
@@ -47,6 +94,23 @@ Whendle.DatabaseService = Class.create({
 		on_error = this._on_error.bind(this, on_error || Prototype.emptyFunction);
 		this._datasource.transaction(function(trx) {
 			trx.executeSql(statement, parameters || [], on_result, on_error);
+		});
+	},
+	
+	execute: function(statements) {
+		if (!Object.isArray(statements)) {
+			statements = [statements];
+		}
+		
+		this._datasource.transaction(function(trx) {
+			for (var i = 0; i < statements.length; i++) {
+				trx.executeSql(
+					statements[i].statement(),
+					statements[i].parameters(),
+					statements[i].complete(),
+					statements[i].exception()
+				);
+			}
 		});
 	},
 	
