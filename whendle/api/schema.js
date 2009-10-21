@@ -55,7 +55,6 @@ Whendle.SchemaService = Class.create({
 	},
 	
 	destroy: function() {
-		Mojo.Log.info('destroy called...');
 		this._version = '0.0';
 		this._database.scalar('drop table if exists \'whendle\'', []);
 		this._database.scalar('drop table if exists \'clocks\'', []);

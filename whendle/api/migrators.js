@@ -56,7 +56,7 @@ Whendle.Migrator = Class.create({
 	},
 	
 	_on_job_done: function(on_complete, note) {
-		if (note) Mojo.Log.info(note);
+		if (note) $.trace(note);
 
 		if (this.jobs.length != 0) {
 			this.jobs.pop();

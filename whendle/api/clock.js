@@ -25,12 +25,18 @@
 //
 
 Whendle.Clock = Class.create({
-	initialize: function(location, timezone, offset) {
-		this._location = location;
+	initialize: function(id, timezone, offset, location) {
+		this.id = id || 0;
 		this.timezone = timezone || '';
 		this.offset = offset || 0;
+		this._location = location || new Whendle.Location();
 	}
 });
+
+
+Whendle.Clock.from_location = function(location) {
+	return new Whendle.Clock(0, '', 0, location);
+}
 
 with (Whendle.Clock.prototype) {
 	__defineGetter__('location', function() { return this._location.name; });

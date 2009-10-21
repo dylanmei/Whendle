@@ -36,11 +36,8 @@ Whendle = {
 	Events: {
 		loading: ':loading',
 		searching: ':searching',
-		adding: ':adding'
-	},
-	
-	Strings: function(key, def) {
-		return (typeof($L) == 'undefined') ? (def || key) : $L(key);
+		adding: ':adding',
+		removing: ':removing'
 	},
 	
 	services: function(name, instance) {
@@ -63,3 +60,11 @@ Whendle = {
 		return Whendle.services('Whendle.schema');
 	}
 };
+
+if (typeof(Mojo) != 'undefined') {
+	$.trace = Mojo.Log.info;
+}
+
+$.string = function(key, def) {
+	return (typeof($L) == 'undefined') ? (def || key) : $L(key);
+}

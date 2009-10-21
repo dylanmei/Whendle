@@ -28,7 +28,20 @@ Whendle.DatabaseService = Class.create({
 	initialize: function(database) {
 		this._datasource = database || openDatabase('Whendle', 1, 'Whendle Database', 65536);
 	},
-
+	
+	insert: function(statement, parameters, on_insert, on_error) {
+		on_insert = this._on_scalar.bind(this, on_insert || Prototype.emptyFunction);
+		on_error = this._on_error.bind(this, on_error || Prototype.emptyFunction);
+		this._datasource.transaction(function(trx) {
+			trx.executeSql(statement, parameters || [], Prototype.emptyFunction, on_error);
+			trx.executeSql('select last_insert_rowid()', [], on_insert, on_error);
+		});
+	},
+	
+	remove: function(statement, parameters, on_complete, on_error) {
+		this.scalar(statement, parameters, on_complete, on_error);
+	},
+	
 	scalar: function(statement, parameters, on_result, on_error) {
 		on_result = this._on_scalar.bind(this, on_result || Prototype.emptyFunction);
 		on_error = this._on_error.bind(this, on_error || Prototype.emptyFunction);

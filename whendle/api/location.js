@@ -38,13 +38,13 @@ Whendle.Location = Class.create({
 		var has_district = this.district.length > 0;
 		var has_country = this.country.length > 0;
 		if (has_district && has_country) {
-			format = Whendle.Strings('location_area_district_country', '#{district}, #{country}')
+			format = $.string('location_area_district_country', '#{district}, #{country}')
 		}
 		else if (has_district) {
-			format = Whendle.Strings('location_area_district', '#{district}');
+			format = $.string('location_area_district', '#{district}');
 		}
 		else if (has_country) {
-			format = Whendle.Strings('location_area_country', '#{country}');
+			format = $.string('location_area_country', '#{country}');
 		}
 		return format.interpolate(this);
 	}

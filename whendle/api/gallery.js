@@ -36,6 +36,9 @@ Whendle.Gallery.View = Class.create(Whendle.View, {
 	},
 	
 	added: function(clock, error) {
+	},
+	
+	removed: function(id, error) {
 	}
 });
 
@@ -50,6 +53,8 @@ Whendle.Gallery.Presenter = Class.create({
 			this._on_load_ready.bind(this, view));
 		view.observe(Whendle.Events.adding,
 			this._on_add_clock.bind(this, view));
+		view.observe(Whendle.Events.removing,
+			this._on_remove_clock.bind(this, view));
 	},
 	
 	_on_load_ready: function(view) {
@@ -63,15 +68,16 @@ Whendle.Gallery.Presenter = Class.create({
 		if (results) {
 			var mapper = function(data) {
 				return new Whendle.Clock(
+					data.id,
+					data.timezone,
+					data.offset,
 					new Whendle.Location(
 						data.location,
 						data.district,
 						data.country,
 						data.latitude,
 						data.longitude
-					),
-					data.timezone,
-					data.offset
+					)
 				);
 			}
 			results = results.collect(mapper.bind(this));
@@ -105,12 +111,13 @@ Whendle.Gallery.Presenter = Class.create({
 	
 	_on_timezone_result: function(view, location, response) {
 		var clock = new Whendle.Clock(
-			location,
+			0,
 			this._format_timezone(response.timezoneId),
-			response.rawOffset
+			response.rawOffset,
+			location
 		);
 		
-		this._database.scalar(
+		this._database.insert(
 			'insert into clocks (location,district,country,latitude,longitude,timezone,offset) values (?,?,?,?,?,?,?)',
 			[
 				location.name,
@@ -130,11 +137,33 @@ Whendle.Gallery.Presenter = Class.create({
 		return timezone.replace('_', ' ');
 	},
 	
-	_on_clock_added: function(view, clock) {
+	_on_clock_added: function(view, clock, identity) {
+		clock.id = identity;
 		view.added(clock);
 	},
 	
 	_on_add_error: function(view, error) {
 		view.added(null, error);
-	}	
+	},
+	
+	_on_remove_clock: function(view, event) {
+		if (!event) return;
+		var id = event.id || ((event.clock) ? event.clock.id : 0);
+		if (id) {
+			this._database.remove(
+				'delete from clocks where id=?',
+				[id],
+				this._on_clock_removed.bind(this, view, id),
+				this._on_remove_error.bind(this, view)
+			);
+		}
+	},
+	
+	_on_clock_removed: function(view, id) {
+		view.removed(id);
+	},
+	
+	_on_remove_error: function(view, error) {
+		view.removed(0, error);
+	}
 });

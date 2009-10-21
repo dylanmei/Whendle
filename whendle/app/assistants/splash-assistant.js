@@ -96,14 +96,14 @@ SplashAssistant.prototype.setup_widgets = function(is_initializing, is_updating)
 	);
 	
 	if (is_initializing) {
-		this.controller.get('message').innerHTML = $L('splash_message_first_time');
+		this.controller.get('message').innerHTML = $.string('splash_message_first_time');
 	}
 	else if (is_updating) {
-		this.controller.get('message').innerHTML = $L('splash_message_updating');
+		this.controller.get('message').innerHTML = $.string('splash_message_updating');
 	}
 	else {
 		this.controller.get('spinner').remove();
-		this.controller.get('message').innerHTML = $L('splash_message_continue');
+		this.controller.get('message').innerHTML = $.string('splash_message_continue');
 
 		this.tap_handler = this.on_tap.bind(this);
 		Mojo.Event.listen(this.controller.document,

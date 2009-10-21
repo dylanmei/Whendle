@@ -80,8 +80,8 @@ describe('Gallery (Add)', function() {
 	}))();
 
 	before(function() {
-		saved = false;
 		error = undefined;
+		clock = undefined;
 		presenter = new Whendle.Gallery.Presenter(view, ajax, database);
 	});
 	
@@ -90,16 +90,20 @@ describe('Gallery (Add)', function() {
 			stub(ajax, 'load').and_return(function(r, on_success) {
 				on_success({ 'rawOffset': 1, 'timezoneId': 'Yes' });
 			});
-			stub(database, 'scalar').and_return(function(s, p, on_result) {
-				on_result(saved = true);
+			stub(database, 'insert').and_return(function(s, p, on_result) {
+				on_result(987);
 			});
 			
 			view.fire(Whendle.Events.adding,
 				{ 'location': new Whendle.Location('A', 'B', 'C', 1, 23) });
 		});
 		
-		it('should provide a clock with the location information', function() {
+		it('should provide a clock with an id', function() {
 			expect(clock).not_to(be_undefined);
+			expect(clock.id).to(equal, 987);
+		});
+		
+		it('should provide a clock with the location information', function() {
 			expect(clock.location).to(equal, 'A');
 			expect(clock.area).to(equal, 'B, C');
 			expect(clock.latitude).to(equal, 1);
@@ -111,15 +115,11 @@ describe('Gallery (Add)', function() {
 			expect(clock.timezone).to(equal, 'Yes');
 		});
 		
-		it('should save a clock', function() {
-			expect(saved).to(be_true);
-		});
-		
 		it('should not provide an error', function() {
 			expect(error).to(be_undefined);
 		});	
 	});
-	
+
 	describe('When adding a clock causes an ajax error', function() {
 		before(function() {
 			stub(ajax, 'load').and_return(function(r, s, on_error) {
@@ -144,7 +144,7 @@ describe('Gallery (Add)', function() {
 				on_success({ 'rawOffset': 1, 'timezoneId': 'Yes' });
 			});
 			
-			stub(database, 'scalar').and_return(function(s, p, r, on_error) {
+			stub(database, 'insert').and_return(function(s, p, r, on_error) {
 				on_error({ code: 0, message: 'oh pooh' })
 			});
 
@@ -159,4 +159,62 @@ describe('Gallery (Add)', function() {
 			expect(error).to(have_property, 'message', 'oh pooh');
 		});
 	});
+});
+
+describe('Gallery (Remove)', function() {
+	ajax = new Object();
+	database = new Object();
+	view = new (Class.create(Whendle.Finder.View, {
+		initialize: function($super) { $super(); },
+		removed: function(a, b) { id = a; error = b; }
+	}))();
+
+	before(function() {
+		deleted = false;
+		error = undefined;
+		id = 0;
+		presenter = new Whendle.Gallery.Presenter(view, ajax, database);
+	});
+
+	describe('When removing a clock', function() {
+		before(function() {
+			stub(database, 'remove').and_return(function(s, p, on_result) {
+				on_result(deleted = true);
+			});
+			
+			view.fire(Whendle.Events.removing, {
+				'clock': new Whendle.Clock(987, 'XYZ', 456, new Whendle.Location('A', 'B', 'C', 1, 23))
+			});
+		});
+		
+		it('should return the old id', function() {
+			expect(id).to(equal, 987);
+		});
+
+		it('should delete the clock from the database', function() {
+			expect(deleted).to(be_true);
+		});
+		
+		it('should not provide an error', function() {
+			expect(error).to(be_undefined);
+		});	
+	});
+	
+	describe('When removing a clock causes a database error', function() {
+		before(function() {
+			stub(database, 'remove').and_return(function(s, p, r, on_error) {
+				on_error({ code: 0, message: 'oh pooh' })
+			});
+
+			view.fire(Whendle.Events.removing, { 'clock': new Whendle.Clock(987) });
+		});
+
+		it('should not return a clock', function() {
+			expect(id).to(equal, 0);
+		});
+
+		it('should provide an error', function() {
+			expect(error).to(have_property, 'message', 'oh pooh');
+		});
+	});	
 });
