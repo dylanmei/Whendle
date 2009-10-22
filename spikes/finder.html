@@ -120,7 +120,8 @@ View = Class.create(Whendle.Finder.View, {
 		var self = this;
 		
 		list.observe(':select', function(event) {
-			self.fetch_timzone(event.location);
+			$.trace(Object.toJSON(event.location));
+			//self.fetch_timzone(event.location);
 		});
 		list.observe(':append', function(event) {
 			self.fetch_locations($F('input').strip(), event.index);
@@ -129,7 +130,7 @@ View = Class.create(Whendle.Finder.View, {
 	},
 	
 	fetch_timzone: function(location) {
-		//trace('fetching timezone for: #{latitude} x #{longitude}'
+		//$.trace('fetching timezone for: #{latitude} x #{longitude}'
 		//	.interpolate(location));
 		
 		//this.fire(Whendle.Events.adding, { 'location': location });
@@ -137,7 +138,7 @@ View = Class.create(Whendle.Finder.View, {
 	
 	fetch_locations: function(text, index) {
 		index = index || 0;
-		trace('fetching locations for: #{text} (index=#{index})'
+		$.trace('fetching locations for: #{text} (index=#{index})'
 			.interpolate({ 'text': text, 'index': index }));
 		
 		this.fire(Whendle.Events.searching, { 'start': index, 'query': text });
@@ -165,7 +166,7 @@ View = Class.create(Whendle.Finder.View, {
 		var value = $F('input').strip();
 		if (value.length < 4) return;
 		
-		trace('input changed');
+		$.trace('input changed');
 		
 		if ($('input').timer !== undefined) {
 			window.clearTimeout($('input').timer);
@@ -181,11 +182,11 @@ View = Class.create(Whendle.Finder.View, {
 	},
 	
 	loaded: function(places, index, total, error) {
-		if (error) trace('error:', Object.toJSON(error));
+		if (error) $.trace('error:', Object.toJSON(error));
 		
 		var list = this._list;
 		if (index == 0) {
-			//trace('places fetched: ' + places.length + ' of ' + total);
+			//$.trace('places fetched: ' + places.length + ' of ' + total);
 			list.clear();
 		}
 
@@ -198,7 +199,7 @@ View = Class.create(Whendle.Finder.View, {
 
 /*
 function fetch_timezone(lat, lng) {
-	trace('fetching time for: ' + lat + ',' + lng);
+	$.trace('fetching time for: ' + lat + ',' + lng);
 	
 	var url = URL_TIMEZONE_BY_LOCATION + '?' +
 		Object.toQueryString({'lat': lat, 'lng': lng});
@@ -217,11 +218,13 @@ function encode_time_query(lat, lng) {
 }
 
 function on_timezone_fetched(response) {
-	trace(Object.toJSON(response));
+	$.trace(Object.toJSON(response));
 }
 */
 
-function trace(s) {
+$.trace = function() {
+	var args = $A(arguments);
+	var s = args.join(' ');
 	window.counter = window.counter + 1 || 1;
 	var counter = window.counter.toPaddedString(3);
 	$('trace').innerHTML += counter + '-> ' + s + '<br />';

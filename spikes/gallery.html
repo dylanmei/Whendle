@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>Whendle - gallery</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
+	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
+	<script src="../whendle/api/location.js" type="text/javascript"></script>
+	<script src="../whendle/api/clock.js" type="text/javascript"></script>
+	<script>
+Clocks = {
+	  Seattle: new Whendle.Clock(1, 'America/Los Angeles', -8, new Whendle.Location('Seattle', 'Washington', 'United States', 47.6062095, -122.3320708))
+	, Reykjavik: new Whendle.Clock(2, 'Atlantic/Reykjavik', 0, new Whendle.Location('Reykjavik', 'Capital Region', 'Iceland', 64.146027916677, -21.9422721862793))
+	, Shanghai: new Whendle.Clock(3, 'Asia/Shanghai', 8, new Whendle.Location('Shanghai', 'Shanghai', 'China', 31.2222222, 121.4580556))
+	, Sydney: new Whendle.Clock(4, 'Australia/Sydney', 10, new Whendle.Location('Sydney', 'New South Wales', 'Australia', -33.8678499639382, 151.207323074341))
+	, Sao_Paulo: new Whendle.Clock(5, 'America/Sao Paulo', -3, new Whendle.Location('Sao Paulo', 'Saso Paulo', 'Brazil', -23.5475, -46.63611111))
+	, London: new Whendle.Clock(6, 'Europe/London', 0, new Whendle.Location('London', 'England', 'United Kingdom', 51.5084152563931, -0.125532746315002))
+	, Berlin: new Whendle.Clock(7, 'Europe/Berlin', 1, new Whendle.Location('Berlin', 'Berlin', 'Germany', 52.5166667, 13.4))
+}
+
+function new_row(clock) {
+	return new_div('-row hbox')
+		.insert(new_info(clock))
+		.insert(new_spacer())
+		.insert(new_time(clock));
+}
+
+function new_info(clock) {
+	return new_div('vbox')
+		.insert(new_div('-row-name', clock.location))
+		.insert(new_div('-row-area', clock.area));
+}
+
+function new_time(clock) {
+	return new_div('vbox')
+		.insert(new_div('-row-time', '12:23'))
+		.insert(new_div('-row-day', 'Today'));
+}
+
+function new_spacer() {
+	return new_div(['spacer']);
+}
+
+function new_div(classes, content) {
+	if (!classes) classes = '';
+	if (Object.isArray(classes))
+		classes = classes.join(' ');
+		
+	var element = new Element('div', { 'class': classes });
+	if (content)
+		element.innerHTML = content;
+	return element;
+}
+
+document.observe('dom:loaded', function() {
+
+	var list = $('list');
+	for (var c in Clocks) {
+		list.insert(new_row(Clocks[c]));
+	}
+
+});
+
+$.trace = function() {
+	var args = $A(arguments);
+	var s = args.join(' ');
+	window.counter = window.counter + 1 || 1;
+	var counter = window.counter.toPaddedString(3);
+	$('trace').innerHTML += counter + '-> ' + s + '<br />';
+}
+	</script>
+	
+	<link href="../whendle/lib/whendle.css" media="screen" rel="stylesheet" type="text/css" />
+	<style>
+.app {
+	width: 400px;
+	min-height: 400px;
+	margin: 40px auto;
+	border: 1px solid black;
+	-webkit-border-radius: 6px;
+	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
+}
+.-row, .-appender {
+	padding: 10px;
+	border-bottom: 1px solid #ccc;
+	cursor: pointer;
+}
+.-row-name {
+	display: block;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+.-row-area {
+	display: block;
+	font-size: 0.9em;
+}
+.-row-link {
+	color: blue;
+}
+.-row-time {
+	font-size: 0.9;
+}
+
+.hbox {
+	display: -webkit-box;
+	-webkit-box-orient: horizontal;
+	-webkit-box-align: stretch;
+}
+ 
+.hbox > * {
+	-webkit-box-flex: 0;
+}
+ 
+.vbox {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-box-align: stretch;
+}
+ 
+.vbox > * {
+	-webkit-box-flex: 0;
+}
+ 
+.spacer {
+	-webkit-box-flex: 1;
+}
+
+.start {
+	-webkit-box-pack: start;
+}
+ 
+.end {
+	-webkit-box-pack: end;
+}
+ 
+.center {
+	-webkit-box-pack: center;
+}
+	</style>
+</head>
+<body>
+<div class="app">
+<div id="list">
+<!--
+	<div class="-row hbox">
+		<div class="vbox">
+			<div class="-row-name">Seattle</div>
+			<div class="-row-area">Washington, United States</div>
+		</div>
+		<div class="spacer"></div>
+		<div class="-row-time vbox center">12:23</div>
+	</div>
+	<div class="-row hbox">
+		<div class="vbox">
+			<div class="-row-name">Ejing'ao</div>
+			<div class="-row-area">Hunan Province, China</div>
+		</div>
+		<div class="spacer"></div>
+		<div class="-row-time vbox center">12:23</div>
+	</div>
+	<div class="-row hbox">
+		<div class="vbox">
+			<div class="-row-name">Sydney</div>
+			<div class="-row-area">New South Wales, Australia</div>
+		</div>
+		<div class="spacer"></div>
+		<div class="-row-time vbox center">12:23</div>
+	</div>
+	<div class="-row hbox">
+		<div class="vbox">
+			<div class="-row-name">Cardiff</div>
+			<div class="-row-area">Wales, United Kingdom</div>
+		</div>
+		<div class="spacer"></div>
+		<div class="-row-time vbox center">12:23</div>
+	</div>
+	<div class="-row hbox">
+		<div class="vbox">
+			<div class="-row-name">Reykjavik</div>
+			<div class="-row-area">Capital Region, Iceland</div>
+		</div>
+		<div class="spacer"></div>
+		<div class="-row-time vbox center">12:23</div>
+	</div>
+	<div class="-row hbox">
+		<div class="vbox">
+			<div class="-row-name">Chicago</div>
+			<div class="-row-area">Illinois, United States</div>
+		</div>
+		<div class="spacer"></div>
+		<div class="-row-time vbox center">12:23</div>
+	</div>
+-->
+</div>
+</div>
+<tt id="trace">
+</tt>
+</body>
+</html>
