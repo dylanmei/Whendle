@@ -8,8 +8,9 @@
 	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
 	<script src="../whendle/api/location.js" type="text/javascript"></script>
 	<script src="../whendle/api/clock.js" type="text/javascript"></script>
+	<script src="../whendle/lib/date.js" type="text/javascript"></script>
 	<script>
-Clocks = {
+Clocks = new Hash({
 	  Seattle: new Whendle.Clock(1, 'America/Los Angeles', -8, new Whendle.Location('Seattle', 'Washington', 'United States', 47.6062095, -122.3320708))
 	, Reykjavik: new Whendle.Clock(2, 'Atlantic/Reykjavik', 0, new Whendle.Location('Reykjavik', 'Capital Region', 'Iceland', 64.146027916677, -21.9422721862793))
 	, Shanghai: new Whendle.Clock(3, 'Asia/Shanghai', 8, new Whendle.Location('Shanghai', 'Shanghai', 'China', 31.2222222, 121.4580556))
@@ -17,10 +18,11 @@ Clocks = {
 	, Sao_Paulo: new Whendle.Clock(5, 'America/Sao Paulo', -3, new Whendle.Location('Sao Paulo', 'Saso Paulo', 'Brazil', -23.5475, -46.63611111))
 	, London: new Whendle.Clock(6, 'Europe/London', 0, new Whendle.Location('London', 'England', 'United Kingdom', 51.5084152563931, -0.125532746315002))
 	, Berlin: new Whendle.Clock(7, 'Europe/Berlin', 1, new Whendle.Location('Berlin', 'Berlin', 'Germany', 52.5166667, 13.4))
-}
+});
 
 function new_row(clock) {
 	return new_div('-row hbox')
+		.writeAttribute('clock_id', clock.id)
 		.insert(new_info(clock))
 		.insert(new_spacer())
 		.insert(new_time(clock));
@@ -53,13 +55,50 @@ function new_div(classes, content) {
 	return element;
 }
 
+function update_clocks() {
+	var now = new Date();
+	var list = $('list');
+	var rows = list.select('.-row');
+	
+	rows.each(function(r) {
+		var id = r.readAttribute('clock_id');
+		var hash = Clocks.find(function(c) {
+			return c.value.id == id;
+		});
+		
+		if (hash) {
+			var clock = hash.value;
+			
+			var time = new Date()
+				.addMinutes(now.getTimezoneOffset())
+				.addMinutes(clock.offset * 60);
+			var day = time.clone().clearTime();
+			
+			r.down('div.-row-time').innerHTML = time.toString('h:mm tt');
+			r.down('div.-row-day').innerHTML =
+				day < Date.today() ? 'Yesterday'
+					: day > Date.today() ? 'Tomorrow' : 'Today';
+		}
+	});
+}
+
+
+
 document.observe('dom:loaded', function() {
 
 	var list = $('list');
-	for (var c in Clocks) {
-		list.insert(new_row(Clocks[c]));
-	}
+	Clocks.each(function(p) {
+		list.insert(new_row(p.value));
+	});
 
+	update_clocks();
+	var now = new Date();
+	window.setTimeout(function() {
+			update_clocks();
+			new PeriodicalExecuter(update_clocks, 60);
+		},
+		(60 - now.getSeconds()) * 1000
+	);
 });
 
 $.trace = function() {
@@ -98,8 +137,9 @@ $.trace = function() {
 .-row-link {
 	color: blue;
 }
-.-row-time {
+.-row-time, .-row-day {
 	font-size: 0.9;
+	text-align: right;
 }
 
 .hbox {
