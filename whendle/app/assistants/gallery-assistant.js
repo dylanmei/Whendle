@@ -55,6 +55,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		
 		this.model.items = clocks;
 		this.controller.modelChanged(this.model, this);
+		this.start_clocks();
 	},
 
 	added: function(clock, error) {
@@ -94,6 +95,10 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 			// after the user has found a location...
 			this.new_clock(location);
 		}
+		
+		if (this.timer == -1) {
+			this.start_clocks();
+		}
 	},
 	
 	new_clock: function(location) {
@@ -105,7 +110,55 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.fire(Whendle.Events.adding, { 'location': location });
 	},
 
+	start_clocks: function() {
+		this.update_clocks();
+
+		var now = new Date();
+		this.start_timer.bind(this)
+			.delay(60 - now.getSeconds());
+	},
+	
+	start_timer: function() {
+		this.update_clocks();
+		this.timer = new PeriodicalExecuter(
+			this.update_clocks.bind(this), 60, this.controller.window);
+	},
+	
+	update_clocks: function() {
+		var now = new Date();
+		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		
+		var length = this.list.mojo.getLength();
+		for (var i = 0; i < length; i++) {
+			var row = this.list.mojo.getNodeByIndex(i);
+			var clock = this.list.mojo.getItemByNode(row);
+
+			var gmt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+			gmt.setMinutes(gmt.getMinutes() + now.getTimezoneOffset());
+			var time = new Date(gmt.getFullYear(), gmt.getMonth(), gmt.getDate(), gmt.getHours(), gmt.getMinutes());
+			time.setMinutes(time.getMinutes() + (clock.offset + 1) * 60); // cheating dst
+			var day = new Date(time.getFullYear(), time.getMonth(), time.getDate());
+
+			var hours = time.getHours().toString();
+			var minutes = time.getMinutes().toPaddedString(2);
+			var ampm = time.getHours() < 12 ? 'am' : 'pm'; 
+			
+			row.down('div.gallery-row-time').innerHTML = hours + ':' + minutes + ' ' + ampm;
+			row.down('div.gallery-row-day').innerHTML =
+				day < today ? 'Yesterday'
+					: day > today ? 'Tomorrow' : 'Today';
+		}
+	},
+	
 	deactivate: function(event) {
+		this.stop_clocks();
+	},
+	
+	stop_clocks: function() {
+		if (this.timer) {
+			this.timer.stop();
+			this.timer = -1;
+		}
 	},
 	
 	cleanup: function(event) {

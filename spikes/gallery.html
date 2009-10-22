@@ -8,7 +8,6 @@
 	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
 	<script src="../whendle/api/location.js" type="text/javascript"></script>
 	<script src="../whendle/api/clock.js" type="text/javascript"></script>
-	<script src="../whendle/lib/date.js" type="text/javascript"></script>
 	<script>
 Clocks = new Hash({
 	  Seattle: new Whendle.Clock(1, 'America/Los Angeles', -8, new Whendle.Location('Seattle', 'Washington', 'United States', 47.6062095, -122.3320708))
@@ -57,6 +56,8 @@ function new_div(classes, content) {
 
 function update_clocks() {
 	var now = new Date();
+	var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	
 	var list = $('list');
 	var rows = list.select('.-row');
 	
@@ -69,15 +70,20 @@ function update_clocks() {
 		if (hash) {
 			var clock = hash.value;
 			
-			var time = new Date()
-				.addMinutes(now.getTimezoneOffset())
-				.addMinutes(clock.offset * 60);
-			var day = time.clone().clearTime();
-			
-			r.down('div.-row-time').innerHTML = time.toString('h:mm tt');
+			var gmt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+			gmt.setMinutes(gmt.getMinutes() + now.getTimezoneOffset());
+			var time = new Date(gmt.getFullYear(), gmt.getMonth(), gmt.getDate(), gmt.getHours(), gmt.getMinutes());
+			time.setMinutes(time.getMinutes() + (clock.offset + 1) * 60); // cheating dst
+			var day = new Date(time.getFullYear(), time.getMonth(), time.getDate());
+
+			var hours = time.getHours().toString();
+			var minutes = time.getMinutes().toPaddedString(2);
+			var ampm = time.getHours() < 12 ? 'am' : 'pm'; 
+		
+			r.down('div.-row-time').innerHTML = hours + ':' + minutes + ' ' + ampm;
 			r.down('div.-row-day').innerHTML =
-				day < Date.today() ? 'Yesterday'
-					: day > Date.today() ? 'Tomorrow' : 'Today';
+				day < today ? 'Yesterday'
+					: day > today ? 'Tomorrow' : 'Today';
 		}
 	});
 }
