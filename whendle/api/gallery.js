@@ -112,7 +112,7 @@ Whendle.Gallery.Presenter = Class.create({
 	_on_timezone_result: function(view, location, response) {
 		var clock = new Whendle.Clock(
 			0,
-			this._format_timezone(response.timezoneId),
+			response.timezoneId,
 			response.rawOffset,
 			location
 		);
@@ -131,10 +131,6 @@ Whendle.Gallery.Presenter = Class.create({
 			this._on_clock_added.bind(this, view, clock),
 			this._on_add_error.bind(this, view)
 		);
-	},
-	
-	_format_timezone: function(timezone) {
-		return timezone.replace('_', ' ');
 	},
 	
 	_on_clock_added: function(view, clock, identity) {
