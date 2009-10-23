@@ -8,6 +8,7 @@ function runSuites() {
 		.interpolate({ w: Whendle.version, p: Prototype.Version }));
 
 	JSpec
+		.exec('spec.tzreader.js')
 		.exec('spec.view.js')
 		.exec('spec.database.js')
 		.exec('spec.schema.js')
@@ -21,6 +22,7 @@ function runSuites() {
 
 <!-- systems under test -->
 		<script src="../whendle/api/whendle.js"></script>
+		<script src="../whendle/api/time.js"></script>
 		<script src="../whendle/api/view.js"></script>
 		<script src="../whendle/api/database.js"></script>
 		<script src="../whendle/api/schema.js"></script>
