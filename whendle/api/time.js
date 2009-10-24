@@ -1,4 +1,54 @@
 
+Whendle.TzZone = Class.create({
+	initialize: function(tz_data) {
+		this._data = tz_data;
+		this._values = null;
+	},
+	
+	_parse: function() {
+		if (this._values == null) {
+			var regex = /(?:Zone)(?:\s(\w+\/[\w-]+))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/g;
+			this._values = regex.exec(this._data);
+		}
+	}
+});
+
+with (Whendle.TzZone.prototype) {
+	toString = function() { return this._data; }
+	__defineGetter__('NAME', function() { this._parse(); return this._values[1]; });
+	__defineGetter__('OFFSET', function() { this._parse(); return this._values[2]; });
+	__defineGetter__('RULE', function() { this._parse(); return this._values[3]; });
+	__defineGetter__('FORMAT', function() { this._parse(); return this._values[4]; });
+	__defineGetter__('UNTIL', function() { this._parse(); return this._values[5]; });
+}
+
+Whendle.TzRule = Class.create({
+	initialize: function(tz_data) {
+		this._data = tz_data;
+		this._values = null;
+	},
+	
+	_parse: function() {
+		if (this._values == null) {
+			var regex = /Rule(?:\s+([^\t]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?/g;
+			this._values = regex.exec(this._data);
+		}
+	}
+});
+
+with (Whendle.TzRule.prototype) {
+	toString = function() { return this._data; }
+	__defineGetter__('NAME', function() { this._parse(); return this._values[1]; });
+	__defineGetter__('FROM', function() { this._parse(); return this._values[2]; });
+	__defineGetter__('TO', function() { this._parse(); return this._values[3]; });
+	__defineGetter__('TYPE', function() { this._parse(); return this._values[4]; });
+	__defineGetter__('IN', function() { this._parse(); return this._values[5]; });
+	__defineGetter__('ON', function() { this._parse(); return this._values[6]; });
+	__defineGetter__('AT', function() { this._parse(); return this._values[7]; });
+	__defineGetter__('SAVE', function() { this._parse(); return this._values[8]; });
+	__defineGetter__('LETTERS', function() { this._parse(); return this._values[9]; });
+}
+
 Whendle.TzReader = Class.create({
 	initialize: function(tz_data) {
 		this._data = tz_data || '';
@@ -24,7 +74,11 @@ Whendle.TzReader = Class.create({
 			}
 		}
 		
-		return rule;
+		return rule ? this._new_rule(rule) : null;
+	},
+	
+	_new_rule: function(tz_data) {
+		return new Whendle.TzRule(tz_data);
 	},
 	
 	next_zone: function() {
@@ -42,7 +96,11 @@ Whendle.TzReader = Class.create({
 			}
 		}
 		
-		return zone;
+		return zone ? this._new_zone(zone) : null;
+	},
+	
+	_new_zone: function(tz_data) {
+		return new Whendle.TzZone(tz_data);
 	},
 	
 	_read_zone_name: function(s) {

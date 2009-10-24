@@ -8,6 +8,8 @@ function runSuites() {
 		.interpolate({ w: Whendle.version, p: Prototype.Version }));
 
 	JSpec
+		.exec('spec.tzrule.js')
+		.exec('spec.tzzone.js')
 		.exec('spec.tzreader.js')
 		.exec('spec.view.js')
 		.exec('spec.database.js')

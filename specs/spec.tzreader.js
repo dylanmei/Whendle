@@ -31,22 +31,22 @@ describe('TzReader', function() {
 	describe('When reading rules', function() {
 		it('ignores other lines', function() {
 			var reader = new Whendle.TzReader('a\nRule X\nb');
-			expect(reader.next_rule()).to(equal, 'Rule X');
+			expect(reader.next_rule().NAME).to(equal, 'X');
 			expect(reader.next_rule()).to(be_null);
 		});
 	});
 	
 	describe('When reading zones', function() {
 		it('ignores other lines', function() {
-			var reader = new Whendle.TzReader('a\nZone X\nb');
-			expect(reader.next_zone()).to(equal, 'Zone X');
+			var reader = new Whendle.TzReader('a\nZone X/Y 0:00\nb');
+			expect(reader.next_zone().NAME).to(equal, 'X/Y');
 			expect(reader.next_zone()).to(be_null);
 		});
 		
 		it('delineates multiple zone lines', function() {
-			var reader = new Whendle.TzReader('Zone\tX\t1\n\t\t\t2');
-			expect(reader.next_zone()).to(equal, 'Zone\tX\t1');
-			expect(reader.next_zone()).to(equal, 'Zone\tX\t2');
+			var reader = new Whendle.TzReader('Zone\tX/Y\t1:00\n\t\t\t2:00');
+			expect(reader.next_zone().NAME).to(equal, 'X/Y');
+			expect(reader.next_zone().NAME).to(equal, 'X/Y');
 		});
 	});
 });
