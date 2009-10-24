@@ -1,5 +1,6 @@
 [
 	{ "source": "api\/whendle.js" },
+	{ "source": "api\/time.js" },
 	{ "source": "api\/view.js" },
 	{ "source": "api\/settings.js" },
 	{ "source": "api\/database.js" },

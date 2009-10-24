@@ -1,4 +1,20 @@
 
+Date.today = function() {
+	var now = new Date();
+	now.setMilliseconds(0);
+	now.setSeconds(0);
+	now.setMinutes(0);
+	now.setHours(0);
+	return now;
+}
+
+Date.prototype.copy = function() {
+	return new Date(this.getTime());
+}
+Date.prototype.addMinutes = function(n) {
+	this.setMinutes(this.getMinutes() + n);
+}
+
 Whendle.TzZone = Class.create({
 	initialize: function(tz_data) {
 		this._data = tz_data;

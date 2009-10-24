@@ -126,28 +126,36 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	update_clocks: function() {
 		var now = new Date();
-		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 		
 		var length = this.list.mojo.getLength();
 		for (var i = 0; i < length; i++) {
 			var row = this.list.mojo.getNodeByIndex(i);
 			var clock = this.list.mojo.getItemByNode(row);
-
-			var gmt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
-			gmt.setMinutes(gmt.getMinutes() + now.getTimezoneOffset());
-			var time = new Date(gmt.getFullYear(), gmt.getMonth(), gmt.getDate(), gmt.getHours(), gmt.getMinutes());
-			time.setMinutes(time.getMinutes() + (clock.offset + 1) * 60); // cheating dst
-			var day = new Date(time.getFullYear(), time.getMonth(), time.getDate());
-
-			var hours = time.getHours().toString();
-			var minutes = time.getMinutes().toPaddedString(2);
-			var ampm = time.getHours() < 12 ? 'am' : 'pm'; 
 			
-			row.down('div.gallery-row-time').innerHTML = hours + ':' + minutes + ' ' + ampm;
-			row.down('div.gallery-row-day').innerHTML =
-				day < today ? 'Yesterday'
-					: day > today ? 'Tomorrow' : 'Today';
+			var when = now.copy();
+			when.addMinutes(when.getTimezoneOffset());
+			when.addMinutes((clock.offset + 1) * 60); // todo: dst
+			
+			row.down('div.gallery-row-time').innerHTML = this.format_time(when);
+			row.down('div.gallery-row-day').innerHTML = this.format_day(when);
 		}
+	},
+	
+	format_time: function(t) {
+		var hours = t.getHours().toString();
+		var minutes = t.getMinutes().toPaddedString(2);
+		var ampm = t.getHours() < 12 ? 'am' : 'pm'; 
+		return hours + ':' + minutes + ' ' + ampm;
+	},
+	
+	format_day: function(d) {
+		var today = Date.today();
+		var day = d.copy();
+		day.setMilliseconds(0);
+		day.setSeconds(0);
+		day.setMinutes(0);
+		day.setHours(0);
+		return day < today ? 'Yesterday' : day > today ? 'Tomorrow' : 'Today';
 	},
 	
 	deactivate: function(event) {
