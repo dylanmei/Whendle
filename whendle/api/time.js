@@ -163,3 +163,90 @@ Whendle.TzReader = Class.create({
 		return line.replace(/(\s+)?#(\s+)?[^\n]+/, '');
 	}
 });
+
+Whendle.TzLoader = Class.create({
+	initialize: function(ajax) {
+		this._ajax = ajax || new Whendle.AjaxService();
+	},
+	
+	load: function(zone, on_complete, on_error) {
+		if (!Object.isString(zone)) return;
+		
+		this._load_file(zone, 0,
+			on_complete || Prototype.emptyFunction,
+			on_error || Prototoype.emptyFunction
+		);
+	},
+	
+	_load_file: function(zone, index, on_complete, on_error) {
+
+		var area = this._parse_area(zone);
+		var files = this._area_to_file[area];
+
+		if (Object.isUndefined(files)) {
+			this._does_not_exist(zone, on_error);
+			return;
+		}
+
+		var file = files[index];
+		this._ajax.load('tzdata/' + file,
+			this._on_file_loaded.bind(this, zone, index, on_complete, on_error),
+			this._on_file_error.bind(this, zone, file, on_error)
+		);
+	},
+	
+	_parse_area: function(zone) {
+		return zone.split('/')[0];
+	},
+	
+	_on_file_loaded: function(zone, file_index, on_complete, on_error, results) {
+		var rex = new RegExp("^Zone\\s" + zone, "m");
+		if (rex.test(results)) {
+			on_complete(results);
+		}
+		else {
+			file_index++;
+			var area = this._parse_area(zone);
+			var files = this._area_to_file[area];
+			if (file_index < files.length) {
+				this._load_file(zone, file_index, on_complete, on_error);
+			}
+			else {
+				this._does_not_exist(zone, on_error);
+			}
+		}
+	},
+	
+	_does_not_exist: function(zone, callback) {
+		callback({ 'message': zone + ' does not exist' });
+	},
+	
+	_on_file_error: function(zone, file, on_error, error) {
+		error.timezone = zone;
+		error.file = file;
+		on_error(error);
+	},
+	
+	_area_to_file: {
+		  'Africa': ['africa', 'europe']
+		, 'Indian': ['africa', 'asia', 'antarctica', 'australasia']
+		, 'Antarctica': ['antarctica']
+		, 'Asia': ['asia', 'europe']
+		, 'Australia': ['australasia']
+		, 'Pacific': ['australasia', 'northamerica', 'southamerica']
+		, 'Atlantic': ['europe', 'africa', 'northamerica', 'southamerica']
+		, 'Europe': ['europe']
+		, 'WET': ['europe']
+		, 'CET': ['europe']
+		, 'MET': ['europe']
+		, 'EET': ['europe']
+		, 'EST': ['northamerica']
+		, 'MST': ['northamerica']
+		, 'HST': ['northamerica']
+		, 'EST5EDT': ['northamerica']
+		, 'CST6CDT': ['northamerica']
+		, 'MST7MDT': ['northamerica']
+		, 'PST8PDT': ['northamerica']
+		, 'America': ['northamerica', 'southamerica', 'europe']
+	}
+});
