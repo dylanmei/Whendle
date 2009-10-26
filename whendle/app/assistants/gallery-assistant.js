@@ -67,6 +67,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		
 		this.model.items.push(clock);
 		this.controller.modelChanged(this.model, this);
+		this.update_clocks();
 	},
 	
 	removed: function(clock_id, error) {
@@ -80,6 +81,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		if (clock) {
 			this.model.items = this.model.items.without(clock);
 			this.controller.modelChanged(this.model, this);
+			this.update_clocks();
 		}
 	},
 	
