@@ -1,10 +1,12 @@
 [
 	{ "source": "api\/whendle.js" },
 	{ "source": "api\/time.js" },
+	{ "source": "api\/tzdata.js" },
 	{ "source": "api\/view.js" },
 	{ "source": "api\/settings.js" },
 	{ "source": "api\/database.js" },
 	{ "source": "api\/schema.js" },
+	{ "source": "api\/timezone-service.js" },
 	{ "source": "api\/migrators.js" },
 	{ "source": "api\/ajax.js" },
 	{ "source": "api\/gallery.js" },

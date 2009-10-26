@@ -16,6 +16,7 @@ function runSuites() {
 		.exec('spec.database.js')
 		.exec('spec.schema.js')
 		.exec('spec.migrators.js')
+		.exec('spec.timezone-service.js')
 		.exec('spec.gallery.js')
 		.exec('spec.finder.js')
 	.run({ failuresOnly: true })
@@ -25,11 +26,13 @@ function runSuites() {
 
 <!-- systems under test -->
 		<script src="../whendle/api/whendle.js"></script>
-		<script src="../whendle/api/time.js"></script>
+		<script src="../whendle/api/date.js"></script>
+		<script src="../whendle/api/tzdata.js"></script>
 		<script src="../whendle/api/view.js"></script>
 		<script src="../whendle/api/database.js"></script>
 		<script src="../whendle/api/schema.js"></script>
 		<script src="../whendle/api/migrators.js"></script>
+		<script src="../whendle/api/timezone-service.js"></script>
 		<script src="../whendle/api/gallery.js"></script>
 		<script src="../whendle/api/finder.js"></script>
 		<script src="../whendle/api/location.js"></script>

@@ -45,8 +45,8 @@ Whendle.Gallery.View = Class.create(Whendle.View, {
 Whendle.Gallery.Presenter = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(view, ajax, database) {
-		this._ajax = ajax || new Whendle.AjaxService();
+	initialize: function(view, timezones, database) {
+		this._timezones = timezones || Whendle.timezones();
 		this._database = database || Whendle.database();
 
 		view.observe(Whendle.Events.loading,
@@ -93,27 +93,18 @@ Whendle.Gallery.Presenter = Class.create({
 	_on_add_clock: function(view, event) {
 		if (!event) return;
 		var location = event.location;
-
-		this._ajax.load(
-			this._make_timezone_url(location.latitude, location.longitude),
+		this._timezones.lookup(
+			location.latitude, location.longitude,
 			this._on_timezone_result.bind(this, view, location),
 			this._on_add_error.bind(this, view)
 		);
 	},
 	
-	_make_timezone_url: function(latitude, longitude) {
-		var s = this.URL_TIMEZONE_BY_LOCATION + '?';
-		return s + Object.toQueryString({
-			'lat': latitude,
-			'lng': longitude
-		});
-	},
-	
-	_on_timezone_result: function(view, location, response) {
+	_on_timezone_result: function(view, location, timezone) {
 		var clock = new Whendle.Clock(
 			0,
-			response.timezoneId,
-			response.rawOffset,
+			timezone.name,
+			timezone.offset,
 			location
 		);
 		

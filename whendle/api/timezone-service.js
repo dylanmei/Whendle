@@ -24,51 +24,41 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle = {
-	version: '0.1.0',
-	schema_version: '0.1',
-	stage_name: 'whendle-card-stage',
+Whendle.TimezoneService = Class.create({
+	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	show_splash: false,
-	reset_schema: false,
-	reset_settings: false,
-	
-	Events: {
-		loading: ':loading',
-		searching: ':searching',
-		adding: ':adding',
-		removing: ':removing'
+	initialize: function(ajax, tzloader) {
+		this._ajax = ajax || new Whendle.AjaxService();
+		this._tzloader = tzloader || new Whendle.TzLoader(this._ajax);
 	},
 	
-	services: function(name, instance) {
-		if (!Whendle._services)
-			Whendle._services = {};
-		return instance
-			? Whendle._services[name] = instance
-			: Whendle._services[name];
+	lookup: function(latitude, longitude, on_complete, on_error) {
+		on_complete = on_complete || Prototype.emptyFunction;
+		on_error = on_error || Prototype.emptyFunction;
+		
+		this._ajax.load(
+			this._make_timezone_url(latitude, longitude),
+			this._on_timezone_result.bind(this, on_complete),
+			this._on_timezone_error.bind(this, on_error)
+		);		
 	},
 	
-	settings: function() {
-		return Whendle.services('Whendle.settings');
+	_make_timezone_url: function(latitude, longitude) {
+		var s = this.URL_TIMEZONE_BY_LOCATION + '?';
+		return s + Object.toQueryString({
+			'lat': latitude,
+			'lng': longitude
+		});
 	},
 	
-	database: function() {
-		return Whendle.services('Whendle.database');
+	_on_timezone_result: function(on_complete, response) {
+		on_complete({
+			name: response.timezoneId,
+			offset: response.rawOffset
+		});
 	},
 	
-	schema: function() {
-		return Whendle.services('Whendle.schema');
-	},
-	
-	timezones: function() {
-		return Whendle.services('Whendle.timezones');
+	_on_timezone_error: function(on_error, error) {
+		on_error(error);
 	}
-};
-
-if (typeof(Mojo) != 'undefined') {
-	$.trace = Mojo.Log.info;
-}
-
-$.string = function(key, def) {
-	return (typeof($L) == 'undefined') ? (def || key) : $L(key);
-}
+});

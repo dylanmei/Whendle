@@ -78,4 +78,5 @@ AppAssistant.prototype.prepare_services = function() {
 	Whendle.services('Whendle.settings', new Whendle.SettingsService());
 	Whendle.services('Whendle.database', new Whendle.DatabaseService());
 	Whendle.services('Whendle.schema', new Whendle.SchemaService(Whendle.database()));
+	Whendle.services('Whendle.timezones', new Whendle.TimezoneService());
 };

@@ -1,6 +1,6 @@
 
 describe('Gallery (Load)', function() {
-	ajax = new Object();
+	timezones = new Object();
 	database = new Object();
 	view = new (Class.create(Whendle.Gallery.View, {
 		initialize: function($super) { $super(); },
@@ -10,7 +10,7 @@ describe('Gallery (Load)', function() {
 	before(function() {
 		clocks = undefined;
 		error = undefined;
-		presenter = new Whendle.Gallery.Presenter(view, ajax, database);
+		presenter = new Whendle.Gallery.Presenter(view, timezones, database);
 	});
 	
 	describe('When loading an empty view', function() {
@@ -72,7 +72,7 @@ describe('Gallery (Load)', function() {
 });
 
 describe('Gallery (Add)', function() {
-	ajax = new Object();
+	timezones = new Object();
 	database = new Object();
 	view = new (Class.create(Whendle.Finder.View, {
 		initialize: function($super) { $super(); },
@@ -82,13 +82,13 @@ describe('Gallery (Add)', function() {
 	before(function() {
 		error = undefined;
 		clock = undefined;
-		presenter = new Whendle.Gallery.Presenter(view, ajax, database);
+		presenter = new Whendle.Gallery.Presenter(view, timezones, database);
 	});
 	
 	describe('When adding a clock', function() {
 		before(function() {
-			stub(ajax, 'load').and_return(function(r, on_success) {
-				on_success({ 'rawOffset': 1, 'timezoneId': 'Yes' });
+			stub(timezones, 'lookup').and_return(function(x, y, on_success) {
+				on_success({ 'offset': 1, 'name': 'Yes' });
 			});
 			stub(database, 'insert').and_return(function(s, p, on_result) {
 				on_result(987);
@@ -120,9 +120,9 @@ describe('Gallery (Add)', function() {
 		});	
 	});
 
-	describe('When adding a clock causes an ajax error', function() {
+	describe('When adding a clock causes a timezone service error', function() {
 		before(function() {
-			stub(ajax, 'load').and_return(function(r, s, on_error) {
+			stub(timezones, 'lookup').and_return(function(x, y, s, on_error) {
 				on_error({ message: 'oh pooh' });
 			});
 
@@ -140,8 +140,8 @@ describe('Gallery (Add)', function() {
 	
 	describe('When adding a clock causes a database error', function() {
 		before(function() {
-			stub(ajax, 'load').and_return(function(r, on_success) {
-				on_success({ 'rawOffset': 1, 'timezoneId': 'Yes' });
+			stub(timezones, 'lookup').and_return(function(x, y, on_success) {
+				on_success({ 'offset': 1, 'name': 'Yes' });
 			});
 			
 			stub(database, 'insert').and_return(function(s, p, r, on_error) {
@@ -162,7 +162,7 @@ describe('Gallery (Add)', function() {
 });
 
 describe('Gallery (Remove)', function() {
-	ajax = new Object();
+	timezones = new Object();
 	database = new Object();
 	view = new (Class.create(Whendle.Finder.View, {
 		initialize: function($super) { $super(); },
@@ -173,7 +173,7 @@ describe('Gallery (Remove)', function() {
 		deleted = false;
 		error = undefined;
 		id = 0;
-		presenter = new Whendle.Gallery.Presenter(view, ajax, database);
+		presenter = new Whendle.Gallery.Presenter(view, timezones, database);
 	});
 
 	describe('When removing a clock', function() {

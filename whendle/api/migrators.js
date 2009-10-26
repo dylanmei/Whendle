@@ -80,7 +80,7 @@ Whendle.Migrator_0_1 = Class.create(Whendle.Migrator, {
 			on_complete, on_error, 'create whendle table');
 		this.queue_job('insert into \'whendle\' (version) values (\'0.1\')', [],
 			on_complete, on_error, 'insert version 0.1');
-		this.queue_job('create table \'clocks\' (id integer primary key autoincrement not null, location text not null, district text, country text, latitude real, longitude real, timezone text, offset intger)', [],
+		this.queue_job('create table \'clocks\' (id integer primary key autoincrement not null, location text not null, district text, country text, latitude real, longitude real, timezone text, offset integer)', [],
 			on_complete, on_error, 'create clocks table');
 		
 		$super(on_complete, on_error);
