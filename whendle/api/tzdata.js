@@ -32,7 +32,7 @@ Whendle.TzZone = Class.create({
 	
 	_parse: function() {
 		if (this._values == null) {
-			var regex = /(?:Zone)(?:\s(\w+\/[\w-]+))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/g;
+			var regex = /Zone(?:\s(\w+\/[\w-]+))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/g;
 			this._values = regex.exec(this._data);
 		}
 	}
@@ -55,7 +55,7 @@ Whendle.TzRule = Class.create({
 	
 	_parse: function() {
 		if (this._values == null) {
-			var regex = /Rule(?:\s+([^\t]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?/g;
+			var regex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?/g;
 			this._values = regex.exec(this._data);
 		}
 	}
@@ -74,6 +74,98 @@ with (Whendle.TzRule.prototype) {
 	__defineGetter__('LETTERS', function() { this._parse(); return this._values[9]; });
 }
 
+Whendle.TzDay = Class.create({
+	initialize: function(month, day, time) {
+		this._m = month || '';
+		this._d = day || '';
+		this._t = time || '';
+	},
+	
+	empty: function() {
+		return this._m.blank();
+	},
+	
+	before: function(date) {
+		return this._compare(date) == -1;
+	},
+	
+	after: function(date) {
+		return this._compare(date) == 1;
+	},
+	
+	equals: function(date) {
+		return this._compare(date) == 0;
+	},
+	
+	_compare: function(d) {
+		var year = d.getUTCFullYear();
+		var month = this._month();
+		var date = this._date(year, month);
+		var time = this._time();
+		var when = new Date(year, month, date, time[0], time[1], time[2]);
+		if (when < d) return -1;
+		if (when > d) return 1;
+		return 0;
+	},
+	
+	_month: function() {
+		return this._m.blank()
+			? 11
+			: this._MONTHS[this._m];
+	},
+	
+	_date: function(year, month) {
+		if (this._d.blank())
+			return 31;
+		
+		var code = this._d;
+		var num = parseInt(code, 10);
+		if (!isNaN(num))
+			return num;
+		
+		if (code.startsWith('last')) {
+			var day = this._DAYS[code.substr(4)];
+			var date = new Date(Date.UTC(year, month + 1, 1));
+			date.setUTCHours(-24);
+			date.setUTCHours(date.getUTCHours() - 24 * ((7 - day + date.getUTCDay()) % 7));
+			return date.getUTCDate();
+		}
+		else if (code.indexOf('>=') != -1) {
+			var day = this._DAYS[code.substr(0, 3)];
+			var num = parseInt(code.substr(5), 10);
+			var date = new Date(Date.UTC(year, month, num));
+			date.setUTCHours(date.getUTCHours() + 24 * ((7 + day - date.getUTCDay()) % 7));
+			return date.getUTCDate();
+		}
+		else if (code.indexOf('<=') != -1) {
+			var day = this._DAYS[code.substr(0, 3)];
+			var num = parseInt(code.substr(5), 10);
+			var date = new Date(Date.UTC(year, month, num));
+			date.setUTCHours(date.getUTCHours() - 24 * ((7 - day + date.getUTCDay()) % 7));
+			return date.getUTCDate();
+		}
+		
+		return null;
+	},
+	
+	_time: function() {
+		if (this._t.blank())
+			return [23, 59, 59];
+
+		var parts = this._t.split(':');
+		var time = [
+			  parseInt(parts[0], 10)
+			, parts.length > 1 ? parseInt(parts[1]) : 0
+			, parts.length > 2 ? parseInt(parts[2]) : 0
+		];
+		return time;	
+	},
+	
+	_MONTHS: { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 },
+	_DAYS: { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 }
+	
+});
+
 Whendle.TzReader = Class.create({
 	initialize: function(tz_data) {
 		this._data = tz_data || '';
@@ -89,11 +181,12 @@ Whendle.TzReader = Class.create({
 		return this._next_line();
 	},
 	
-	next_rule: function() {
+	next_rule: function(name) {
 		var line = null;
 		var rule = null;
 		while ((line = this._next_line()) != null) {
 			if (line.startsWith('Rule')) {
+				if (name && this._read_rule_name(line) != name) continue;
 				rule = line;
 				break;
 			}
@@ -106,21 +199,30 @@ Whendle.TzReader = Class.create({
 		return new Whendle.TzRule(tz_data);
 	},
 	
-	next_zone: function() {
+	_read_rule_name: function(s) {
+		return s.split(/\s+/)[1];
+	},
+	
+	next_zone: function(name) {
 		var line = null;
 		var zone = null;
+		
 		while ((line = this._next_line()) != null) {
 			if (line.startsWith('Zone')) {
+				this._zone = this._read_zone_name(line);
+				
+				if (name && this._zone != name) continue;
 				zone = line;
-				this._zone = this._read_zone_name(zone);
 				break;
 			}
 			else if (line.startsWith('\t\t\t')) {
+				if (name && this._zone != name) continue;
+
 				zone = line.replace('\t\t', 'Zone\t' + this._zone);
 				break;
 			}
 		}
-		
+
 		return zone ? this._new_zone(zone) : null;
 	},
 	
@@ -174,44 +276,62 @@ Whendle.TzReader = Class.create({
 });
 
 Whendle.TzLoader = Class.create({
-	initialize: function(ajax) {
+	initialize: function(ajax, path) {
 		this._ajax = ajax || new Whendle.AjaxService();
+		this._path = path || 'tzdata';
 	},
 	
 	load: function(zone, on_complete, on_error) {
 		if (!Object.isString(zone)) return;
-		
+
 		this._load_file(zone, 0,
 			on_complete || Prototype.emptyFunction,
-			on_error || Prototoype.emptyFunction
+			on_error || Prototype.emptyFunction
 		);
 	},
 	
 	_load_file: function(zone, index, on_complete, on_error) {
-
-		var area = this._parse_area(zone);
-		var files = this._area_to_file[area];
-
-		if (Object.isUndefined(files)) {
-			this._does_not_exist(zone, on_error);
+		var file = this._make_file_path(zone, index);
+		if (file == '') {
+			this._zone_does_not_exist(zone, on_error);
 			return;
 		}
 
-		var file = files[index];
-		this._ajax.load('tzdata/' + file,
+		this._ajax.load(file,
 			this._on_file_loaded.bind(this, zone, index, on_complete, on_error),
 			this._on_file_error.bind(this, zone, file, on_error)
 		);
+	},
+	
+	_make_file_path: function(zone, search_index) {
+		var area = this._parse_area(zone);
+		var files = this._area_to_file[area];
+		
+		if (Object.isUndefined(files)) {
+			return '';
+		}
+		
+		var file = files[search_index];
+		var path = this._path.endsWith('/') ? this._path : this._path + '/';
+		return path + file;
 	},
 	
 	_parse_area: function(zone) {
 		return zone.split('/')[0];
 	},
 	
-	_on_file_loaded: function(zone, file_index, on_complete, on_error, results) {
-		var rex = new RegExp("^Zone\\s" + zone, "m");
-		if (rex.test(results)) {
-			on_complete(results);
+	_on_file_loaded: function(zone, file_index, on_complete, on_error, contents) {
+		if (contents == '') {
+			this._on_file_error(
+				zone,
+				this._make_file_path(zone, file_index),
+				on_error
+			);
+			return;
+		}
+		
+		if (this._zone_in_contents(zone, contents)) {
+			on_complete(contents);
 		}
 		else {
 			file_index++;
@@ -221,16 +341,23 @@ Whendle.TzLoader = Class.create({
 				this._load_file(zone, file_index, on_complete, on_error);
 			}
 			else {
-				this._does_not_exist(zone, on_error);
+				this._zone_does_not_exist(zone, on_error);
 			}
 		}
 	},
 	
-	_does_not_exist: function(zone, callback) {
+	_zone_in_contents: function(zone, text) {
+		if (zone.endsWith('/*')) zone = zone.split('/')[0];
+		var rex = new RegExp("^Zone\\s" + zone, "m");
+		return rex.test(text);
+	},
+	
+	_zone_does_not_exist: function(zone, callback) {
 		callback({ 'message': zone + ' does not exist' });
 	},
 	
 	_on_file_error: function(zone, file, on_error, error) {
+		error = error || { message: 'file does not exist.' }
 		error.timezone = zone;
 		error.file = file;
 		on_error(error);

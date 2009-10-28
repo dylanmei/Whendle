@@ -1,7 +1,7 @@
 
 describe('TzLoader', function() {
 	ajax = new Object();
-	loader = new Whendle.TzLoader(ajax);
+	loader = new Whendle.TzLoader(ajax, 'tzdata/');
 
 	before(function() {
 		tzdata = undefined;
@@ -118,7 +118,7 @@ describe('TzLoader', function() {
 		it('should provide an error', function() {
 			expect(error).to(have_property, 'message', 'oh pooh');
 			expect(error).to(have_property, 'timezone', 'Antarctica/Casey');
-			expect(error).to(have_property, 'file', 'antarctica');
+			expect(error).to(have_property, 'file', 'tzdata/antarctica');
 		});
 	});
 });

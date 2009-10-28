@@ -36,6 +36,31 @@ describe('TzReader', function() {
 		});
 	});
 	
+	describe('When reading rules by name', function() {
+		before(function() {
+			reader = new Whendle.TzReader('Rule X\nRule Y 1\nRule Y 2\nRule Z');
+		});
+	
+		it('finds the first occurence of a rule', function() {
+			var rule = reader.next_rule('Y');
+			expect(rule).not_to(be_null);
+			expect(rule.NAME).to(equal, 'Y');
+			expect(rule.FROM).to(equal, '1');
+		});
+		
+		it('find the next occurence of a rule', function() {
+			var rule = reader.next_rule('Y');
+			expect(rule).not_to(be_null);
+			expect(rule.NAME).to(equal, 'Y');
+			expect(rule.FROM).to(equal, '2');
+		});
+		
+		it('stops at the last occurence of a rule', function() {
+			var rule = reader.next_rule('Y');
+			expect(rule).to(be_null);
+		});
+	});
+
 	describe('When reading zones', function() {
 		it('ignores other lines', function() {
 			var reader = new Whendle.TzReader('a\nZone X/Y 0:00\nb');
@@ -48,5 +73,30 @@ describe('TzReader', function() {
 			expect(reader.next_zone().NAME).to(equal, 'X/Y');
 			expect(reader.next_zone().NAME).to(equal, 'X/Y');
 		});
+	});
+
+	describe('When reading zones by name', function() {
+		before(function() {
+			reader = new Whendle.TzReader('Zone X/Y\nZone Y/Z\t1:00\n\t\t\t-1:00\nZone Z/X');
+		});
+	
+		it('finds the first occurence of a zone', function() {
+			var zone = reader.next_zone('Y/Z');
+			expect(zone).not_to(be_null);
+			expect(zone.NAME).to(equal, 'Y/Z');
+			expect(zone.OFFSET).to(equal, '1:00');
+		});
+		
+		it('find the next occurence of a zone', function() {
+			var zone = reader.next_zone('Y/Z');
+			expect(zone).not_to(be_null);
+			expect(zone.NAME).to(equal, 'Y/Z');
+			expect(zone.OFFSET).to(equal, '-1:00');
+		});
+		
+		it('stops at the last occurence of a zone', function() {
+			var zone = reader.next_zone('Y/Z');
+			expect(zone).to(be_null);
+		});		
 	});
 });
