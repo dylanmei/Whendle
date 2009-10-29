@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>Whendle - time</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
+	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
+	<script src="../whendle/api/time.js"></script>
+	<script src="../whendle/api/timezone.js"></script>
+	<script src="../whendle/api/tzdata.js"></script>
+	<script src="../whendle/api/ajax-service.js"></script>
+	<script src="../whendle/api/timezone-service.js"></script>
+	<script>
+
+document.observe('dom:loaded', function() {
+	$.date = new Date();
+});
+
+function lookup_zone(name) {
+	var ajax = new Whendle.AjaxService();
+	var loader = new Whendle.TzLoader(ajax, '../whendle/tzdata');
+
+	$.timezone = null;
+	$('z').childElements().each(function(el) {
+		if (!el.hasClassName('sticky'))
+			el.remove();
+	});
+
+	new Whendle.TimezoneService(ajax, loader).load(
+		name,
+		function(timezone) {
+			$.timezone = timezone;
+			zones = timezone._zones;
+			zones.each(function(z) {
+				var row = new_zone_row(z);
+
+				if (!not_a_rule(z.RULES)) {
+					row.setStyle({'cursor': 'pointer'})
+						.observe('click', lookup_rules.curry(z, row))
+						.observe('mouseover', function() { this.addClassName('z-hover'); })
+						.observe('mouseout', function() { this.removeClassName('z-hover'); });
+				}
+				
+				$('z').insert(row);
+				$('z').insert(new_div('z-divider'));
+			});
+		},
+		function(e) { $.trace('error', Object.toJSON(e)); }
+	);
+}
+
+function not_a_rule(rule_name) {
+	return !Object.isString(rule_name) || rule_name.match(/[A-Za-z_]/g) == null;
+}
+
+function lookup_rules(zone, row) {
+	var collapse = row.hasClassName('z-active');
+	$('z').childElements().each(function(el) {
+		if (el.hasClassName('r-divider') ||
+			el.hasClassName('r-row') ||
+			el.hasClassName('r-header'))
+		{
+			el.remove();
+		}
+		if (el.hasClassName('z-active')) {
+			el.removeClassName('z-active');
+		}
+	});
+	if (collapse) return;
+	row.addClassName('z-active');
+	
+	var new_row = new_div(['r-divider', 'dotted']);
+	row.insert({ after: new_row });
+	row = new_row;
+	new_row = new_rule_header();
+	row.insert({ after: new_row });
+	
+	var rules = $.timezone._rules;
+	rules.each(function(r) {
+		if (r.NAME == zone.RULES) {
+			row = new_row;
+			new_row = new_div('r-divider');
+			row.insert({ after: new_row });
+
+			row = new_row;
+			new_row = new_rule_row(r);
+			row.insert({ after: new_row });
+		}
+	});
+}
+/*
+function lookup_date(input) {
+	var rex = /^(\d{4})\/?(\d{1,2})?\/?(\d{1,2})?$/;
+	var match = rex.exec(input);
+	if (!match) return;
+	if (!match[1]) return;
+	if (!match[2]) match[2] = 1;
+	if (!match[3]) match[3] = 1;
+	$.date = new Date(match[1], match[2] - 1, match[3]);
+	
+	highlight_date();
+}
+
+function highlight_date() {
+	if (!$.timezone) return;
+
+	var zone = $.timezone.zone($.date);
+	
+	if (zone) {
+		$('zones').select('tr').each(function(tr) {
+			if (tr.down('td', 1).innerText == zone.GMTOFF &&
+				tr.down('td', 2).innerText == zone.RULES &&
+				tr.down('td', 3).innerText == zone.FORMAT &&
+				tr.down('td', 4).innerText == (zone.UNTIL || ''))
+			{
+				tr.setStyle({ 'background-color': '#ccf' });
+			}
+			else {
+				tr.setStyle({ 'background-color': '#fff' });
+			}
+		});
+	}
+	
+	var rule = $.timezone.rule(zone.RULES, $.date);
+
+	if (rule) {
+		$('rules').select('tr').each(function(tr) {
+			if (tr.down('td', 1).innerText == rule.FROM &&
+				tr.down('td', 2).innerText == rule.TO &&
+				tr.down('td', 4).innerText == rule.IN &&
+				tr.down('td', 5).innerText == rule.ON &&
+				tr.down('td', 6).innerText == rule.AT)
+			{
+				tr.setStyle({ 'background-color': '#ccf' });
+			}
+			else {
+				tr.setStyle({ 'background-color': '#fff' });
+			}
+		});
+	}
+}
+*/
+function new_zone_row(zone) {
+	return new_div(['z-row', 'hbox'])
+		.insert(new_div('z-name', zone.NAME))
+		.insert(new_div('z-offset', zone.GMTOFF))
+		.insert(new_div('z-rules', zone.RULES))
+		.insert(new_div('z-format', zone.FORMAT))
+		.insert(new_div('z-until', zone.UNTIL));
+}
+
+function new_rule_header() {
+	return new_div(['r-header', 'hbox'])
+		.insert(new_div('r-name', 'RULE'))
+		.insert(new_div('r-from', 'FROM'))
+		.insert(new_div('r-to', 'TO'))
+		.insert(new_div('r-in', 'IN'))
+		.insert(new_div('r-on', 'ON'))
+		.insert(new_div('r-at', 'AT'))
+		.insert(new_div('r-save', 'SAVE'))
+		.insert(new_div('r-letters', 'LETTERS'));
+}
+
+function new_rule_row(rule) {
+	return new_div(['r-row', 'hbox'])
+		.insert(new_div('r-name', rule.NAME))
+		.insert(new_div('r-from', rule.FROM))
+		.insert(new_div('r-to', rule.TO))
+		.insert(new_div('r-in', rule.IN))
+		.insert(new_div('r-on', rule.ON))
+		.insert(new_div('r-at', rule.AT))
+		.insert(new_div('r-save', rule.SAVE))
+		.insert(new_div('r-letters', rule.LETTERS));
+}
+
+function new_div(classes, content) {
+	if (!classes) classes = '';
+	if (Object.isArray(classes))
+		classes = classes.join(' ');
+		
+	var element = new Element('div', { 'class': classes });
+	if (content)
+		element.innerHTML = content;
+	return element;
+}
+
+$.trace = function() {
+	var args = $A(arguments);
+	var s = args.join(' ');
+	window.counter = window.counter + 1 || 1;
+	var counter = window.counter.toPaddedString(3);
+	$('trace').innerHTML += counter + '-> ' + s + '<br />';
+}
+	</script>
+	<link href="../whendle/lib/whendle.css" media="screen" rel="stylesheet" type="text/css" />
+	<style>
+body {
+	font-family: sans-serif;
+	font-size: 0.9em;
+}
+#z {
+	width: 600px;
+	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.25);	
+}
+
+#z div {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.z-row, .z-header {
+	border-right: 1px solid #999;
+}
+.z-active {
+	background-color: #eef;
+}
+.z-hover {
+	background-color: #ccf;
+}
+.z-divider, .r-divider {
+	border-top: 1px solid #999;
+}
+.r-divider.dotted {
+	border-top: 1px dotted #999;
+}
+.z-name, .z-offset, .z-rules, .z-format, .z-until,
+.r-name, .r-from, .r-to, .r-in, .r-on, .r-at, .r-save, .r-letters {
+	border-left: 1px solid #999;
+	padding: 2px 0 2px 2px;
+}
+.r-name {
+	padding: 2px 0 2px 6px;
+}
+
+.z-name, .z-until {
+	width: 180px;
+}
+.z-offset, .z-rules, .z-format {
+	width: 80px;
+}
+.r-name, .r-from, .r-to, .r-in, .r-on, .r-at, .r-save, .r-letters {
+	width: 70px;
+}
+
+.r-row, .r-header {
+	border-right: 1px solid #999;
+	background-color: #ffe;
+}
+	</style>
+</head>
+<body>
+
+<div style="font-size:80%">
+</div>
+<input type="text" id="text" value="" /><input type="button" value="timezone" onclick="lookup_zone($F('text'))" />
+<!--
+<input type="text" id="date" value="1919" /><input type="button" value="yyyy/mm/dd" onclick="lookup_date($F('date'))" />
+-->
+<p></p>
+
+<div class="hbox">
+	<div>
+		<div id="z">
+			<div class="z-divider sticky"></div>
+			<div class="z-header sticky hbox">
+				<div class="z-name">ZONE NAME</div>
+				<div class="z-offset">GMTOFF</div>
+				<div class="z-rules">RULES</div>
+				<div class="z-format">FORMAT</div>
+				<div class="z-until">UNTIL</div>
+			</div>
+			<div class="z-divider sticky"></div>
+		</div>
+	</div>
+	<div class="spacer"></div>
+	<div>
+		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Asia/Tbilisi</a><br />
+		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Africa/Algiers</a><br />
+		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Australia/Adelaide</a><br />
+		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">America/Los_Angeles</a><br />
+		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">America/Argentina/Buenos_Aires</a><br />
+		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Europe/Warsaw</a><br />
+	</div>
+</div>
+
+
+<tt id="trace">
+</tt>
+</body>
+</html>

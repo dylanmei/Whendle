@@ -59,6 +59,28 @@ describe('TzLoader', function() {
 		});
 	});
 	
+	// ZONE=AREA/LOCATION1/LOCATION2
+	describe('When loading a zone with an extra location deliniation', function() {
+		before(function() {
+			stub(ajax, 'load').and_return(function(file, on_complete) {
+				on_complete('Zone America/Argentina/Buenos_Aires');
+			});
+			
+			loader.load('America/Argentina/Buenos_Aires',
+				function(results) { tzdata = results; },
+				function(e) { error = e; }
+			);
+		});
+		
+		it('should provide the contents of the corresponding file', function() {
+			expect(tzdata).to(equal, 'Zone America/Argentina/Buenos_Aires');
+		});
+		
+		it('should not provide an error', function() {
+			expect(error).to(be_undefined);	
+		});		
+	});
+	
 	// ZONE=AREA/LOCATION
 	describe('When loading a zone with an area that does not exist', function() {
 		before(function() {

@@ -24,41 +24,115 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle.TimezoneService = Class.create({
-	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
-
-	initialize: function(ajax, tzloader) {
-		this._ajax = ajax || new Whendle.AjaxService();
-//		this._tzloader = tzloader || new Whendle.TzLoader(this._ajax);
+Whendle.Timezone = Class.create({
+	initialize: function(tz_zones, tz_rules) {
+		this._zones = tz_zones;
+		this._rules = tz_rules;
 	},
 	
-	lookup: function(latitude, longitude, on_complete, on_error) {
-		on_complete = on_complete || Prototype.emptyFunction;
-		on_error = on_error || Prototype.emptyFunction;
+	zone: function(date) {
+		return this._get_zone(date);
+	},
+	
+	rule: function(name, date) {
+		return this._get_rule(name, date);
+	},
+	
+	offset: function(date) {
+		var zone = this._get_zone(date);
+		var minutes = this._parse_minutes(zone.OFFSET);
+		var rule = this._get_rule(zone.RULE, date);
+		$.trace('rule', rule);
 		
-		this._ajax.load(
-			this._make_timezone_url(latitude, longitude),
-			this._on_timezone_result.bind(this, on_complete),
-			this._on_timezone_error.bind(this, on_error)
-		);		
+//		$.trace('zone:', zone);
+//		$.trace('zone offset', zone.OFFSET, this._parse_minutes(zone.OFFSET));
+//		var rule = this._get_rule(zone, date);
+//		if (!rule) {
+//			return zone.OFFSET;
+//		}
+//		return this._offset_from_rule(rule, date);
 	},
 	
-	_make_timezone_url: function(latitude, longitude) {
-		var s = this.URL_TIMEZONE_BY_LOCATION + '?';
-		return s + Object.toQueryString({
-			'lat': latitude,
-			'lng': longitude
+	_get_zone: function(date) {
+		var zones = this._zones;
+		var self = this;
+		var year = date.getUTCFullYear();
+		var value =  zones.find(function(z) {
+			if (!z.UNTIL) return true;
+
+			var until = self._parse_until(z.UNTIL);
+
+			if (year < until.year) return true;
+			if (year == until.year && until.day.after(date)) return true;
 		});
+
+		return value || null;
 	},
 	
-	_on_timezone_result: function(on_complete, response) {
-		on_complete({
-			name: response.timezoneId,
-			offset: response.rawOffset
+	_get_rule: function(name, date) {
+		if (this._not_a_rule(name)) return null;
+		
+		// collect rules with the specified name
+		var rules = this._rules.select(function(r) {
+			return r.NAME == name;
 		});
+
+		var year = date.getUTCFullYear();
+		rules = rules.reject(function(r) {
+			var from = parseInt(r.FROM, 10);
+			if (from > year) return true;
+			if (r.TO == 'only') return from != year;
+			if (r.TO == 'max') return year < from;
+			return parseInt(r.TO, 10) < year;
+		});
+
+		// todo: try to determine if they are all pairs....?
+		//$.trace('found', name, rules.length);
+
+		var found = null;
+		for (var i = 0; i < rules.length; i++) {
+			var rule = rules[i];
+			var day = new Whendle.TzDay(rule.IN, rule.ON, rule.AT);
+			if (day.before(date)) {
+				found = rule;
+			}
+		}
+		return found;
 	},
 	
-	_on_timezone_error: function(on_error, error) {
-		on_error(error);
-	}
+	_can_use_fall_rules: function(rule, year) {
+		var from = parseInt(rule.FROM, 10);
+		return from < year && rule.SAVE == '0';
+	},
+	
+	_not_a_rule: function(name) {
+		return !name || name.blank() || name == '';
+	},
+
+	_parse_until: function(s) {
+		var rex = /^(\d+)\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*(\w+)?\s*(\d+:\d+:?\d*)?([wsugz])?$/g;
+		var parts = rex.exec(s);
+		return {
+			year: parseInt(parts[1], 10),
+			day: new Whendle.TzDay(parts[2], parts[3], parts[4])
+		};
+	},
+	
+	_parse_minutes: function(s) {
+		var parts = s.split(':');
+		var time = [
+			  parseInt(parts[0], 10)
+			, parts.length > 1 ? parseInt(parts[1]) : 0
+			, parts.length > 2 ? parseInt(parts[2]) : 0
+		];
+		
+		return ((time[0] * 60 + time[1]) * 60 + time[2]) / 60;
+	},
+	
+	_months: { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3,'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 },
+	_days: { 'Sun': 0,'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 }
 });
+
+with (Whendle.Timezone.prototype) {
+	__defineGetter__('name', function() { return this._zones.length ? this._zones[0].NAME : ''; });
+}

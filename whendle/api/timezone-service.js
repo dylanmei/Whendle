@@ -37,13 +37,13 @@ Whendle.TimezoneService = Class.create({
 		on_error = on_error || Prototype.emptyFunction;
 		
 		this._ajax.load(
-			this._make_timezone_url(latitude, longitude),
-			this._on_timezone_result.bind(this, on_complete),
-			this._on_timezone_error.bind(this, on_error)
+			this._make_lookup_url(latitude, longitude),
+			this._on_lookup_result.bind(this, on_complete),
+			this._on_lookup_error.bind(this, on_error)
 		);		
 	},
 	
-	_make_timezone_url: function(latitude, longitude) {
+	_make_lookup_url: function(latitude, longitude) {
 		var s = this.URL_TIMEZONE_BY_LOCATION + '?';
 		return s + Object.toQueryString({
 			'lat': latitude,
@@ -51,14 +51,64 @@ Whendle.TimezoneService = Class.create({
 		});
 	},
 	
-	_on_timezone_result: function(on_complete, response) {
+	_on_lookup_result: function(on_complete, response) {
 		on_complete({
 			name: response.timezoneId,
 			offset: response.rawOffset
 		});
 	},
 	
-	_on_timezone_error: function(on_error, error) {
+	_on_lookup_error: function(on_error, error) {
+		on_error(error);
+	},
+	
+	load: function(name, on_complete, on_error) {
+		on_complete = on_complete || Prototype.emptyFunction;
+		on_error = on_error || Prototype.emptyFunction;
+		
+		this._tzloader.load(
+			name,
+			this._on_load_result.bind(this, name, on_complete, on_error),
+			this._on_load_error.bind(this, name, on_error)
+		);
+	},
+	
+	_on_load_result: function(name, on_complete, on_error, text) {
+		var zone_reader = this._new_reader(text);
+		
+		var rules = [];
+		var zones = [];
+		
+		zone = zone_reader.next_zone(name)
+		while (zone != null) {
+			zones.push(zone);
+			
+			var rule_reader = this._new_reader(text);
+			var rule = rule_reader.next_rule(zone.RULES);
+
+			while (rule != null) {
+				var contains = rules.any(function(r) {
+					return r.toString() == rule.toString();
+				});
+				
+				if (!contains) {
+					rules.push(rule);
+				}
+				
+				rule = rule_reader.next_rule(zone.RULES);
+			}
+			
+			zone = zone_reader.next_zone(name);
+		}
+
+		on_complete(new Whendle.Timezone(zones, rules));
+	},
+	
+	_new_reader: function(text) {
+		return new Whendle.TzReader(text);
+	},
+	
+	_on_load_error: function(name, on_error, error) {
 		on_error(error);
 	}
 });

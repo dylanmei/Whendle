@@ -84,14 +84,14 @@ describe('TzReader', function() {
 			var zone = reader.next_zone('Y/Z');
 			expect(zone).not_to(be_null);
 			expect(zone.NAME).to(equal, 'Y/Z');
-			expect(zone.OFFSET).to(equal, '1:00');
+			expect(zone.GMTOFF).to(equal, '1:00');
 		});
 		
 		it('find the next occurence of a zone', function() {
 			var zone = reader.next_zone('Y/Z');
 			expect(zone).not_to(be_null);
 			expect(zone.NAME).to(equal, 'Y/Z');
-			expect(zone.OFFSET).to(equal, '-1:00');
+			expect(zone.GMTOFF).to(equal, '-1:00');
 		});
 		
 		it('stops at the last occurence of a zone', function() {

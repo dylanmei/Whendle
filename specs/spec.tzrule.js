@@ -32,7 +32,7 @@ describe('TzRule', function() {
 		});
 		
 		it('has an AT value', function() {
-			expect(rule.AT).to(equal, '23:00s');
+			expect(rule.AT).to(equal, '23:00');
 		});
 		
 		it('has a SAVE value', function() {

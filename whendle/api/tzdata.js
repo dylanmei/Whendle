@@ -32,8 +32,8 @@ Whendle.TzZone = Class.create({
 	
 	_parse: function() {
 		if (this._values == null) {
-			var regex = /Zone(?:\s(\w+\/[\w-]+))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/g;
-			this._values = regex.exec(this._data);
+			var rex = /Zone(?:\s(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/g;
+			this._values = rex.exec(this._data);
 		}
 	}
 });
@@ -41,8 +41,8 @@ Whendle.TzZone = Class.create({
 with (Whendle.TzZone.prototype) {
 	toString = function() { return this._data; }
 	__defineGetter__('NAME', function() { this._parse(); return this._values[1]; });
-	__defineGetter__('OFFSET', function() { this._parse(); return this._values[2]; });
-	__defineGetter__('RULE', function() { this._parse(); return this._values[3]; });
+	__defineGetter__('GMTOFF', function() { this._parse(); return this._values[2]; });
+	__defineGetter__('RULES', function() { this._parse(); return this._values[3]; });
 	__defineGetter__('FORMAT', function() { this._parse(); return this._values[4]; });
 	__defineGetter__('UNTIL', function() { this._parse(); return this._values[5]; });
 }
@@ -55,8 +55,8 @@ Whendle.TzRule = Class.create({
 	
 	_parse: function() {
 		if (this._values == null) {
-			var regex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?/g;
-			this._values = regex.exec(this._data);
+			var rex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+(\d+:\d+))?(?:[wsugz])?(?:\s+(\d+:?\d*))?(?:\s+([^\t]+))?/g;
+			this._values = rex.exec(this._data);
 		}
 	}
 });
@@ -116,7 +116,7 @@ Whendle.TzDay = Class.create({
 	
 	_date: function(year, month) {
 		if (this._d.blank())
-			return 31;
+			return 31; // FIXME: last day in month?
 		
 		var code = this._d;
 		var num = parseInt(code, 10);
@@ -155,15 +155,14 @@ Whendle.TzDay = Class.create({
 		var parts = this._t.split(':');
 		var time = [
 			  parseInt(parts[0], 10)
-			, parts.length > 1 ? parseInt(parts[1]) : 0
-			, parts.length > 2 ? parseInt(parts[2]) : 0
+			, parts.length > 1 ? parseInt(parts[1], 10) : 0
+			, parts.length > 2 ? parseInt(parts[2], 10) : 0
 		];
 		return time;	
 	},
 	
 	_MONTHS: { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 },
 	_DAYS: { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 }
-	
 });
 
 Whendle.TzReader = Class.create({
