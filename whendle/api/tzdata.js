@@ -30,21 +30,24 @@ Whendle.TzZone = Class.create({
 		this._values = null;
 	},
 	
+	_value: function(i) {
+		if (this._values == null) this._parse();
+		return this._values[i];
+	},
+	
 	_parse: function() {
-		if (this._values == null) {
-			var rex = /Zone(?:\s(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/g;
-			this._values = rex.exec(this._data);
-		}
+		var rex = /Zone(?:\s(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/;
+		this._values = rex.exec(this._data);
 	}
 });
 
 with (Whendle.TzZone.prototype) {
 	toString = function() { return this._data; }
-	__defineGetter__('NAME', function() { this._parse(); return this._values[1]; });
-	__defineGetter__('GMTOFF', function() { this._parse(); return this._values[2]; });
-	__defineGetter__('RULES', function() { this._parse(); return this._values[3]; });
-	__defineGetter__('FORMAT', function() { this._parse(); return this._values[4]; });
-	__defineGetter__('UNTIL', function() { this._parse(); return this._values[5]; });
+	__defineGetter__('NAME', function() { return this._value(1); });
+	__defineGetter__('GMTOFF', function() { return this._value(2); });
+	__defineGetter__('RULES', function() { return this._value(3); });
+	__defineGetter__('FORMAT', function() { return this._value(4); });
+	__defineGetter__('UNTIL', function() { return this._value(5); });
 }
 
 Whendle.TzRule = Class.create({
@@ -52,26 +55,29 @@ Whendle.TzRule = Class.create({
 		this._data = tz_data;
 		this._values = null;
 	},
+
+	_value: function(i) {
+		if (this._values == null) this._parse();
+		return this._values[i];
+	},
 	
 	_parse: function() {
-		if (this._values == null) {
-			var rex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+(\d+:\d+))?(?:[wsugz])?(?:\s+(\d+:?\d*))?(?:\s+([^\t]+))?/g;
-			this._values = rex.exec(this._data);
-		}
+		var rex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+(\d+:\d+))?(?:[wsugz])?(?:\s+(\d+:?\d*))?(?:\s+([^\t]+))?/;
+		this._values = rex.exec(this._data);
 	}
 });
 
 with (Whendle.TzRule.prototype) {
 	toString = function() { return this._data; }
-	__defineGetter__('NAME', function() { this._parse(); return this._values[1]; });
-	__defineGetter__('FROM', function() { this._parse(); return this._values[2]; });
-	__defineGetter__('TO', function() { this._parse(); return this._values[3]; });
-	__defineGetter__('TYPE', function() { this._parse(); return this._values[4]; });
-	__defineGetter__('IN', function() { this._parse(); return this._values[5]; });
-	__defineGetter__('ON', function() { this._parse(); return this._values[6]; });
-	__defineGetter__('AT', function() { this._parse(); return this._values[7]; });
-	__defineGetter__('SAVE', function() { this._parse(); return this._values[8]; });
-	__defineGetter__('LETTERS', function() { this._parse(); return this._values[9]; });
+	__defineGetter__('NAME', function() { return this._value(1); });
+	__defineGetter__('FROM', function() { return this._value(2); });
+	__defineGetter__('TO', function() { return this._value(3); });
+	__defineGetter__('TYPE', function() { return this._value(4); });
+	__defineGetter__('IN', function() { return this._value(5); });
+	__defineGetter__('ON', function() { return this._value(6); });
+	__defineGetter__('AT', function() { return this._value(7); });
+	__defineGetter__('SAVE', function() { return this._value(8); });
+	__defineGetter__('LETTERS', function() { return this._value(9); });
 }
 
 Whendle.TzDay = Class.create({

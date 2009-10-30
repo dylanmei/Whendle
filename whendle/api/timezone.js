@@ -110,7 +110,7 @@ Whendle.Timezone = Class.create({
 	},
 
 	_parse_until: function(s) {
-		var rex = /^(\d+)\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*(\w+)?\s*(\d+:\d+:?\d*)?([wsugz])?$/g;
+		var rex = /^(\d+)\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*(\w+)?\s*(\d+:\d+:?\d*)?([wsugz])?$/;
 		var parts = rex.exec(s);
 		return {
 			year: parseInt(parts[1], 10),

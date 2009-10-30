@@ -12,12 +12,13 @@
 	<script src="../whendle/api/ajax-service.js"></script>
 	<script src="../whendle/api/timezone-service.js"></script>
 	<script>
-
+document.tzpath = '../whendle/tzdata'; // copy to ./tzdata for mozilla
 document.observe('dom:loaded', function() {
+	
 	apply_date(new Date());
 	
 	$$('.links li').each(function(li) {
-		li.observe('click', function() { load_zone(this.innerText); });
+		li.observe('click', function() { load_zone(li.innerHTML); });
 	});
 });
 
@@ -67,7 +68,7 @@ function apply_date(date) {
 
 function load_zone(name) {
 	var ajax = new Whendle.AjaxService();
-	var loader = new Whendle.TzLoader(ajax, '../whendle/tzdata');
+	var loader = new Whendle.TzLoader(ajax, document.tzpath);
 
 	$.timezone = null;
 	$('z-marker').hide();
@@ -76,7 +77,7 @@ function load_zone(name) {
 		if (!el.hasClassName('sticky'))
 			el.remove();
 	});
-
+	
 	new Whendle.TimezoneService(ajax, loader).load(
 		name,
 		function(timezone) {
@@ -141,20 +142,6 @@ function load_rule(zone, row) {
 	});
 	apply_date.defer();
 }
-/*
-function lookup_date(input) {
-	var rex = /^(\d{4})\/?(\d{1,2})?\/?(\d{1,2})?$/;
-	var match = rex.exec(input);
-	if (!match) return;
-	if (!match[1]) return;
-	if (!match[2]) match[2] = 1;
-	if (!match[3]) match[3] = 1;
-	$.date = new Date(match[1], match[2] - 1, match[3]);
-	
-	highlight_date();
-}
-
-*/
 
 function new_zone_row(zone) {
 	return new_div(['z-row', 'hbox'])
@@ -208,15 +195,17 @@ $.trace = function() {
 	$('trace').innerHTML += counter + '-> ' + s + '<br />';
 }
 	</script>
-	<link href="../whendle/lib/whendle.css" media="screen" rel="stylesheet" type="text/css" />
+	<link href="flex-box.css" media="screen" rel="stylesheet" type="text/css" />
 	<style>
 body {
 	font-family: sans-serif;
 	font-size: 0.9em;
 }
+
 #z {
 	width: 600px;
 	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.25);	
+	-moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.25);	
 }
 
 #z div {
@@ -273,6 +262,8 @@ body {
 	background-color: #eed;
 }
 .links {
+	margin-top: 0;
+	padding-top: 0;
 	margin-left: 0;
 	padding-left: 0;
 }
@@ -315,7 +306,7 @@ body {
 	active time: <span id="now"></span>
 </p>
 
-<div class="hbox">
+<div class="hbox" style="width:100%;">
 	<div>
 		<div id="z">
 			<div class="z-divider sticky"></div>
