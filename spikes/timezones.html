@@ -14,14 +14,64 @@
 	<script>
 
 document.observe('dom:loaded', function() {
-	$.date = new Date();
+	apply_date(new Date());
+	
+	$$('.links li').each(function(li) {
+		li.observe('click', function() { load_zone(this.innerText); });
+	});
 });
 
-function lookup_zone(name) {
+function apply_date(date) {
+	if (!date) {
+		date = $.date;
+	}
+	else {
+		$.date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes());
+		$('now').update($.date.Local);
+	}
+	
+	if (!$.timezone) return;
+	var zone = $.timezone.zone(date);
+	$$('.z-row').each(function(row) {
+		if (row.down('div', 1).innerText == zone.GMTOFF &&
+			row.down('div', 2).innerText == zone.RULES &&
+			row.down('div', 3).innerText == zone.FORMAT &&
+			row.down('div', 4).innerText == (zone.UNTIL || ''))
+		{
+			$('z-marker').setStyle({
+				display: 'block',
+				height: row.getHeight() + 'px',
+				top: row.viewportOffset().top + 'px'
+			});
+		}
+	});
+
+	var rule = $.timezone.rule(zone.RULES, $.date);
+	if (rule) {
+		$$('.r-row').each(function(row) {
+			if (row.down('div', 1).innerText == rule.FROM &&
+				row.down('div', 2).innerText == rule.TO &&
+				row.down('div', 4).innerText == rule.IN &&
+				row.down('div', 5).innerText == rule.ON &&
+				row.down('div', 6).innerText == rule.AT)
+			{
+				$('r-marker').setStyle({
+					display: 'block',
+					height: row.getHeight() + 'px',
+					top: row.viewportOffset().top + 'px'
+				});		
+			}
+		});
+	}
+}
+
+function load_zone(name) {
 	var ajax = new Whendle.AjaxService();
 	var loader = new Whendle.TzLoader(ajax, '../whendle/tzdata');
 
 	$.timezone = null;
+	$('z-marker').hide();
+	$('r-marker').hide();
 	$('z').childElements().each(function(el) {
 		if (!el.hasClassName('sticky'))
 			el.remove();
@@ -37,7 +87,7 @@ function lookup_zone(name) {
 
 				if (!not_a_rule(z.RULES)) {
 					row.setStyle({'cursor': 'pointer'})
-						.observe('click', lookup_rules.curry(z, row))
+						.observe('click', load_rule.curry(z, row))
 						.observe('mouseover', function() { this.addClassName('z-hover'); })
 						.observe('mouseout', function() { this.removeClassName('z-hover'); });
 				}
@@ -45,6 +95,7 @@ function lookup_zone(name) {
 				$('z').insert(row);
 				$('z').insert(new_div('z-divider'));
 			});
+			apply_date.defer();
 		},
 		function(e) { $.trace('error', Object.toJSON(e)); }
 	);
@@ -54,7 +105,7 @@ function not_a_rule(rule_name) {
 	return !Object.isString(rule_name) || rule_name.match(/[A-Za-z_]/g) == null;
 }
 
-function lookup_rules(zone, row) {
+function load_rule(zone, row) {
 	var collapse = row.hasClassName('z-active');
 	$('z').childElements().each(function(el) {
 		if (el.hasClassName('r-divider') ||
@@ -88,6 +139,7 @@ function lookup_rules(zone, row) {
 			row.insert({ after: new_row });
 		}
 	});
+	apply_date.defer();
 }
 /*
 function lookup_date(input) {
@@ -102,45 +154,8 @@ function lookup_date(input) {
 	highlight_date();
 }
 
-function highlight_date() {
-	if (!$.timezone) return;
-
-	var zone = $.timezone.zone($.date);
-	
-	if (zone) {
-		$('zones').select('tr').each(function(tr) {
-			if (tr.down('td', 1).innerText == zone.GMTOFF &&
-				tr.down('td', 2).innerText == zone.RULES &&
-				tr.down('td', 3).innerText == zone.FORMAT &&
-				tr.down('td', 4).innerText == (zone.UNTIL || ''))
-			{
-				tr.setStyle({ 'background-color': '#ccf' });
-			}
-			else {
-				tr.setStyle({ 'background-color': '#fff' });
-			}
-		});
-	}
-	
-	var rule = $.timezone.rule(zone.RULES, $.date);
-
-	if (rule) {
-		$('rules').select('tr').each(function(tr) {
-			if (tr.down('td', 1).innerText == rule.FROM &&
-				tr.down('td', 2).innerText == rule.TO &&
-				tr.down('td', 4).innerText == rule.IN &&
-				tr.down('td', 5).innerText == rule.ON &&
-				tr.down('td', 6).innerText == rule.AT)
-			{
-				tr.setStyle({ 'background-color': '#ccf' });
-			}
-			else {
-				tr.setStyle({ 'background-color': '#fff' });
-			}
-		});
-	}
-}
 */
+
 function new_zone_row(zone) {
 	return new_div(['z-row', 'hbox'])
 		.insert(new_div('z-name', zone.NAME))
@@ -209,8 +224,11 @@ body {
 	text-overflow: ellipsis;
 }
 
-.z-row, .z-header {
+.z-row, .z-header, .z-empty {
 	border-right: 1px solid #999;
+}
+.z-header {
+	background-color: #eee;
 }
 .z-active {
 	background-color: #eef;
@@ -224,7 +242,7 @@ body {
 .r-divider.dotted {
 	border-top: 1px dotted #999;
 }
-.z-name, .z-offset, .z-rules, .z-format, .z-until,
+.z-name, .z-offset, .z-rules, .z-format, .z-until, .z-empty,
 .r-name, .r-from, .r-to, .r-in, .r-on, .r-at, .r-save, .r-letters {
 	border-left: 1px solid #999;
 	padding: 2px 0 2px 2px;
@@ -239,6 +257,10 @@ body {
 .z-offset, .z-rules, .z-format {
 	width: 80px;
 }
+.z-empty {
+	font-style: italic;
+}
+
 .r-name, .r-from, .r-to, .r-in, .r-on, .r-at, .r-save, .r-letters {
 	width: 70px;
 }
@@ -247,43 +269,91 @@ body {
 	border-right: 1px solid #999;
 	background-color: #ffe;
 }
+.r-header {
+	background-color: #eed;
+}
+.links {
+	margin-left: 0;
+	padding-left: 0;
+}
+.links li {
+	color: #393;
+	font-size: 80%;
+	font-weight: bold;
+	text-decoration: underline;
+	line-height: 140%;
+	cursor: pointer;
+	list-style: none;
+}
+.time {
+	font-style: italic;
+	margin-left: -8px;
+	padding-left: 2px;
+	border-left: 8px solid red;
+}
+#now {
+	font-style: normal;
+	font-weight: bold;
+	
+}
+#z-marker, #r-marker {
+	display: none;
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	left: 0;
+	height: 8px;
+	width: 8px;
+	background-color: red;
+}
+
 	</style>
 </head>
 <body>
 
-<div style="font-size:80%">
-</div>
-<input type="text" id="text" value="" /><input type="button" value="timezone" onclick="lookup_zone($F('text'))" />
-<!--
-<input type="text" id="date" value="1919" /><input type="button" value="yyyy/mm/dd" onclick="lookup_date($F('date'))" />
--->
-<p></p>
+<p class="time">
+	active time: <span id="now"></span>
+</p>
 
 <div class="hbox">
 	<div>
 		<div id="z">
 			<div class="z-divider sticky"></div>
 			<div class="z-header sticky hbox">
-				<div class="z-name">ZONE NAME</div>
+				<div class="z-name">ZONE</div>
 				<div class="z-offset">GMTOFF</div>
 				<div class="z-rules">RULES</div>
 				<div class="z-format">FORMAT</div>
 				<div class="z-until">UNTIL</div>
 			</div>
 			<div class="z-divider sticky"></div>
+			<div class="z-empty">choose a timezone...</div>
+			<div class="z-divider"></div>
 		</div>
 	</div>
 	<div class="spacer"></div>
 	<div>
-		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Asia/Tbilisi</a><br />
-		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Africa/Algiers</a><br />
-		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Australia/Adelaide</a><br />
-		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">America/Los_Angeles</a><br />
-		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">America/Argentina/Buenos_Aires</a><br />
-		<a href="javascript:void(0);" onclick="lookup_zone(this.innerHTML)">Europe/Warsaw</a><br />
+		<ul class="links">
+			<li>Africa/Algiers</li>
+			<li>America/Argentina/Buenos_Aires</li>
+			<li>America/Goose_Bay</li>
+			<li>America/Los_Angeles</li>
+			<li>America/Sao_Paulo</li>
+			<li>Antarctica/Palmer</li>
+			<li>Asia/Gaza</li>
+			<li>Asia/Shanghai</li>
+			<li>Asia/Tbilisi</li>
+			<li>Australia/Adelaide</li>
+			<li>Europe/Istanbul</li>
+			<li>Europe/Brussels</li>
+			<li>Europe/Warsaw</li>
+		</ul>
+		<input type="text" id="text" value="" /><input type="button" value="timezone" onclick="load_zone($F('text'))" />
 	</div>
 </div>
 
+<div id="z-marker">&nbsp;</div>
+<div id="r-marker">&nbsp;</div>
 
 <tt id="trace">
 </tt>

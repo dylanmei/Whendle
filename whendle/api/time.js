@@ -41,10 +41,19 @@ Date.prototype.addMinutes = function(n) {
 }
 
 Date.prototype.__defineGetter__('ISO', function() {
- return this.getUTCFullYear() + '-'
-      + (this.getUTCMonth() + 1).toPaddedString(2) + '-'
-      + (this.getUTCDate()).toPaddedString(2) + 'T'
-      + (this.getUTCHours()).toPaddedString(2) + ':'
-      + (this.getUTCMinutes()).toPaddedString(2) + ':'
-      + (this.getUTCSeconds()).toPaddedString(2) + 'Z';
+	return this.getUTCFullYear() + '-'
+		+ (this.getUTCMonth() + 1).toPaddedString(2) + '-'
+		+ (this.getUTCDate()).toPaddedString(2) + 'T'
+		+ (this.getUTCHours()).toPaddedString(2) + ':'
+		+ (this.getUTCMinutes()).toPaddedString(2) + ':'
+		+ (this.getUTCSeconds()).toPaddedString(2) + 'Z';
+});
+
+Date.prototype.__defineGetter__('Local', function() {
+	return this.getFullYear() + '-'
+		+ (this.getMonth() + 1).toPaddedString(2) + '-'
+		+ (this.getDate()).toPaddedString(2) + ' '
+		+ (this.getHours()).toPaddedString(2) + ':'
+		+ (this.getMinutes()).toPaddedString(2) + ':'
+		+ (this.getSeconds()).toPaddedString(2);	
 });
