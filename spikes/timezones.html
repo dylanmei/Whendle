@@ -90,16 +90,15 @@ function prepare_date() {
 function apply_date(date) {
 	$$('.selection').each(function(el) { el.hide() });
 	if (!date) {
-		date = $.date;
+		date = $.date.copy();
 	}
 	else {
-		$.date = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes());
-		var now = /(\d+)-(\d+)-(\d+)\s(\S+)/.exec($.date.Local);
-		$('now').down('.year').update(now[1]);
-		$('now').down('.month').update(now[2]);
-		$('now').down('.day').update(now[3]);
-		$('now').down('.time').update(now[4]);
+		$.date = date.copy();
+		display_date($('now'), date);
 	}
+
+	date.addMinutes(date.getTimezoneOffset());
+	display_date($('utc'), date);
 	
 	if (!$.timezone) return;
 	var zone = $.timezone.zone(date);
@@ -118,7 +117,7 @@ function apply_date(date) {
 		}
 	});
 
-	var rule = $.timezone.rule(zone.RULES, $.date);
+	var rule = $.timezone.rule(zone.RULES, date);
 	if (rule) {
 		$$('.r-row').each(function(row) {
 			if (row.down('div', 1).innerText == rule.FROM &&
@@ -135,6 +134,17 @@ function apply_date(date) {
 			}
 		});
 	}
+	
+	date.addMinutes($.timezone.offset(date));
+	display_date($('local'), date);
+}
+
+function display_date(element, date) {
+	var now = /(\d+)-(\d+)-(\d+)\s(\S+)/.exec(date.Local);
+	element.down('.year').update(now[1]);
+	element.down('.month').update(now[2]);
+	element.down('.day').update(now[3]);
+	element.down('.time').update(now[4]);
 }
 
 function load_zone(name) {
@@ -354,7 +364,7 @@ body {
 	padding-left: 2px;
 	border-left: 8px solid red;
 }
-#now {
+#now, #utc, #local {
 	font-style: normal;
 	font-weight: bold;
 }
@@ -404,6 +414,14 @@ ul.selection li.emph {
 <p class="when">
 	active time:
 	<span id="now">
+		<span class="year"></span>-<span class="month"></span>-<span class="day"></span> <span class="time"></span>
+	</span>
+	utc:
+	<span id="utc">
+		<span class="year"></span>-<span class="month"></span>-<span class="day"></span> <span class="time"></span>
+	</span>
+	local:
+	<span id="local">
 		<span class="year"></span>-<span class="month"></span>-<span class="day"></span> <span class="time"></span>
 	</span>
 </p>

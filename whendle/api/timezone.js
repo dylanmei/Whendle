@@ -29,12 +29,57 @@ Whendle.Timezone = Class.create({
 		this._zones = tz_zones;
 		this._rules = tz_rules;
 	},
-	
-	rule: function(name, date) {
-		return this._get_rule(name, date);
+
+	offset: function(date) {
+		var minutes = 0;
+		var zone = this.zone(date);
+		if (zone) {
+			var minutes = this._parse_minutes(zone.GMTOFF);
+			var rule = this.rule(zone.RULES, date);
+			if (rule != null) {
+				minutes += this._parse_minutes(rule.SAVE);
+			}
+		}
+		
+		return minutes;
+	},
+
+	_parse_minutes: function(s) {
+		var parts = s.split(':');
+		var time = [
+			  parseInt(parts[0], 10)
+			, parts.length > 1 ? parseInt(parts[1]) : 0
+			, parts.length > 2 ? parseInt(parts[2]) : 0
+		];
+		
+		return ((time[0] * 60 + time[1]) * 60 + time[2]) / 60;
 	},
 	
-	_get_rule: function(name, date) {
+	zone: function(date) {
+		var zones = this._zones;
+		var self = this;
+		var year = date.getUTCFullYear();
+		var value =  zones.find(function(z) {
+			if (!z.UNTIL) return true;
+			var until = self._parse_until(z.UNTIL);	
+
+			if (year < until.year) return true;
+			if (year == until.year && until.day.after(date)) return true;
+		});
+
+		return value || null;
+	},
+
+	_parse_until: function(s) {
+		var rex = /^(\d+)\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*(\w+)?\s*(\d+:\d+:?\d*)?([wsugz])?$/;
+		var parts = rex.exec(s);
+		return {
+			year: parseInt(parts[1], 10),
+			day: new Whendle.TzDay(parts[2], parts[3], parts[4])
+		};
+	},
+	
+	rule: function(name, date) {
 		var rules = this._rules;
 		rules = this._find_rules_by_name(rules, name);
 		rules.sort(this._sort_rules_by_date.bind(this));
@@ -92,61 +137,6 @@ Whendle.Timezone = Class.create({
 				found_rule = rule;
 		}
 		return found_rule;
-	},
-	
-	offset: function(date) {
-//		var zone = this._get_zone(date);
-//		var minutes = this._parse_minutes(zone.OFFSET);
-//		var rule = this._get_rule(zone.RULE, date);
-//		$.trace('rule', rule);
-		
-//		$.trace('zone:', zone);
-//		$.trace('zone offset', zone.OFFSET, this._parse_minutes(zone.OFFSET));
-//		var rule = this._get_rule(zone, date);
-//		if (!rule) {
-//			return zone.OFFSET;
-//		}
-//		return this._offset_from_rule(rule, date);
-	},
-
-	zone: function(date) {
-		return this._get_zone(date);
-	},
-	
-	_get_zone: function(date) {
-		var zones = this._zones;
-		var self = this;
-		var year = date.getUTCFullYear();
-		var value =  zones.find(function(z) {
-			if (!z.UNTIL) return true;
-
-			var until = self._parse_until(z.UNTIL);	
-
-			if (year < until.year) return true;
-			if (year == until.year && until.day.after(date)) return true;
-		});
-
-		return value || null;
-	},
-
-	_parse_until: function(s) {
-		var rex = /^(\d+)\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*(\w+)?\s*(\d+:\d+:?\d*)?([wsugz])?$/;
-		var parts = rex.exec(s);
-		return {
-			year: parseInt(parts[1], 10),
-			day: new Whendle.TzDay(parts[2], parts[3], parts[4])
-		};
-	},
-	
-	_parse_minutes: function(s) {
-		var parts = s.split(':');
-		var time = [
-			  parseInt(parts[0], 10)
-			, parts.length > 1 ? parseInt(parts[1]) : 0
-			, parts.length > 2 ? parseInt(parts[2]) : 0
-		];
-		
-		return ((time[0] * 60 + time[1]) * 60 + time[2]) / 60;
 	}
 });
 
