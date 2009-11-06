@@ -30,19 +30,75 @@ Whendle.Timezone = Class.create({
 		this._rules = tz_rules;
 	},
 	
-	zone: function(date) {
-		return this._get_zone(date);
-	},
-	
 	rule: function(name, date) {
 		return this._get_rule(name, date);
 	},
 	
+	_get_rule: function(name, date) {
+		var rules = this._rules;
+		rules = this._find_rules_by_name(rules, name);
+		rules.sort(this._sort_rules_by_date.bind(this));
+		
+		var year = date.getUTCFullYear();
+
+		// get rules for year before
+		var prv_rules = this._find_rules_by_year(rules, year - 1);
+		var prv_rule = this._get_nearest_rule(prv_rules, year - 1, date);
+		
+		// get rules for this year
+		var now_rules = this._find_rules_by_year(rules, year);
+		var now_rule = this._get_nearest_rule(now_rules, year, date);
+		
+		var rule = prv_rule;
+		if (now_rule != null)
+			rule = now_rule;
+
+		return rule;
+	},
+	
+	_find_rules_by_name: function(rules, name) {
+		var rules = this._is_not_a_rule_name(name) ? [] : this._rules;
+		return rules.select(function(r) { return r.NAME == name; });
+	},
+
+	_is_not_a_rule_name: function(name) {
+		return !name || name.blank() || name == '';
+	},
+	
+	_find_rules_by_year: function(rules, year) {
+		return rules.reject(function(r) {
+			if (r.from() > year) return true;
+			if (r.to() < year) return true;
+		});
+	},
+	
+	_sort_rules_by_date: function(a, b) {
+		return a.FROM != b.FROM
+			? a.from() - b.from()
+			: Whendle.TzDay.MONTHS[a.IN] - Whendle.TzDay.MONTHS[b.IN];
+	},
+	
+	_get_nearest_rule: function(rules, year, date) {
+		var found_rule = null;
+		for (var i = 0; i < rules.length; i++) {
+			var rule = rules[i];
+			if (rule.from() > year) continue;
+
+			var day = rule.day();
+			var before = day.before(date, year);
+			if (found_rule != null && !before)
+				break;
+			if (before)
+				found_rule = rule;
+		}
+		return found_rule;
+	},
+	
 	offset: function(date) {
-		var zone = this._get_zone(date);
-		var minutes = this._parse_minutes(zone.OFFSET);
-		var rule = this._get_rule(zone.RULE, date);
-		$.trace('rule', rule);
+//		var zone = this._get_zone(date);
+//		var minutes = this._parse_minutes(zone.OFFSET);
+//		var rule = this._get_rule(zone.RULE, date);
+//		$.trace('rule', rule);
 		
 //		$.trace('zone:', zone);
 //		$.trace('zone offset', zone.OFFSET, this._parse_minutes(zone.OFFSET));
@@ -52,6 +108,10 @@ Whendle.Timezone = Class.create({
 //		}
 //		return this._offset_from_rule(rule, date);
 	},
+
+	zone: function(date) {
+		return this._get_zone(date);
+	},
 	
 	_get_zone: function(date) {
 		var zones = this._zones;
@@ -60,53 +120,13 @@ Whendle.Timezone = Class.create({
 		var value =  zones.find(function(z) {
 			if (!z.UNTIL) return true;
 
-			var until = self._parse_until(z.UNTIL);
+			var until = self._parse_until(z.UNTIL);	
 
 			if (year < until.year) return true;
 			if (year == until.year && until.day.after(date)) return true;
 		});
 
 		return value || null;
-	},
-	
-	_get_rule: function(name, date) {
-		if (this._not_a_rule(name)) return null;
-		
-		// collect rules with the specified name
-		var rules = this._rules.select(function(r) {
-			return r.NAME == name;
-		});
-
-		var year = date.getUTCFullYear();
-		rules = rules.reject(function(r) {
-			var from = parseInt(r.FROM, 10);
-			if (from > year) return true;
-			if (r.TO == 'only') return from != year;
-			if (r.TO == 'max') return year < from;
-			return parseInt(r.TO, 10) < year;
-		});
-
-		// todo: try to determine if they are all pairs....?
-		//$.trace('found', name, rules.length);
-
-		var found = null;
-		for (var i = 0; i < rules.length; i++) {
-			var rule = rules[i];
-			var day = new Whendle.TzDay(rule.IN, rule.ON, rule.AT);
-			if (day.before(date)) {
-				found = rule;
-			}
-		}
-		return found;
-	},
-	
-	_can_use_fall_rules: function(rule, year) {
-		var from = parseInt(rule.FROM, 10);
-		return from < year && rule.SAVE == '0';
-	},
-	
-	_not_a_rule: function(name) {
-		return !name || name.blank() || name == '';
 	},
 
 	_parse_until: function(s) {
@@ -127,10 +147,7 @@ Whendle.Timezone = Class.create({
 		];
 		
 		return ((time[0] * 60 + time[1]) * 60 + time[2]) / 60;
-	},
-	
-	_months: { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3,'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 },
-	_days: { 'Sun': 0,'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 }
+	}
 });
 
 with (Whendle.Timezone.prototype) {

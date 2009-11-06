@@ -12,6 +12,7 @@
 	<script src="../whendle/api/ajax-service.js"></script>
 	<script src="../whendle/api/timezone-service.js"></script>
 	<script>
+
 document.tzpath = '../whendle/tzdata'; // copy to ./tzdata for mozilla
 document.observe('dom:loaded', function() {
 
@@ -72,7 +73,7 @@ function prepare_date() {
 	$('months').observe('click', function(e) {
 		if (e.srcElement == this) return;
 		var date = $.date.copy();
-		date.setMonth({ 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 }[e.srcElement.innerHTML]);
+		date.setMonth(Whendle.TzDay.MONTHS[e.srcElement.innerHTML]);
 		apply_date(date);
 	});
 
@@ -103,6 +104,7 @@ function apply_date(date) {
 	if (!$.timezone) return;
 	var zone = $.timezone.zone(date);
 	$$('.z-row').each(function(row) {
+		
 		if (row.down('div', 1).innerText == zone.GMTOFF &&
 			row.down('div', 2).innerText == zone.RULES &&
 			row.down('div', 3).innerText == zone.FORMAT &&
@@ -121,9 +123,9 @@ function apply_date(date) {
 		$$('.r-row').each(function(row) {
 			if (row.down('div', 1).innerText == rule.FROM &&
 				row.down('div', 2).innerText == rule.TO &&
-				row.down('div', 4).innerText == rule.IN &&
-				row.down('div', 5).innerText == rule.ON &&
-				row.down('div', 6).innerText == rule.AT)
+				row.down('div', 3).innerText == rule.IN &&
+				row.down('div', 4).innerText == rule.ON &&
+				row.down('div', 5).innerText == rule.AT)
 			{
 				$('r-marker').setStyle({
 					display: 'block',
@@ -345,6 +347,7 @@ body {
 	cursor: pointer;
 	list-style: none;
 }
+
 .when {
 	font-style: italic;
 	margin-left: -8px;
@@ -390,6 +393,9 @@ ul.selection li {
 	display: inline;
 	line-height: 125%;
 	cursor: pointer;
+}
+ul.selection li.emph {
+	color: #55C;
 }
 	</style>
 </head>
@@ -442,10 +448,16 @@ ul.selection li {
 <div id="z-marker">&nbsp;</div>
 <div id="r-marker">&nbsp;</div>
 <ul id="years" class="selection" style="width:290px;">
+	<li>2019</li>
+	<li>2018</li>
+	<li>2017</li>
+	<li>2016</li>
+	<li>2015</li>
+	<li>2014</li>
 	<li>2013</li>
 	<li>2012</li>
 	<li>2011</li>
-	<li>2010</li>
+	<li class="emph">2010</li>
 	<li>2009</li>
 	<li>2008</li>
 	<li>2007</li>
@@ -455,7 +467,7 @@ ul.selection li {
 	<li>2003</li>
 	<li>2002</li>
 	<li>2001</li>
-	<li>2000</li>
+	<li class="emph">2000</li>
 	<li>1999</li>
 	<li>1998</li>
 	<li>1997</li>
@@ -465,7 +477,7 @@ ul.selection li {
 	<li>1993</li>
 	<li>1992</li>
 	<li>1991</li>
-	<li>1990</li>
+	<li class="emph">1990</li>
 	<li>1989</li>
 	<li>1988</li>
 	<li>1987</li>
@@ -475,7 +487,7 @@ ul.selection li {
 	<li>1983</li>
 	<li>1982</li>
 	<li>1981</li>
-	<li>1980</li>
+	<li class="emph">1980</li>
 	<li>1979</li>
 	<li>1978</li>
 	<li>1977</li>
@@ -485,7 +497,7 @@ ul.selection li {
 	<li>1973</li>
 	<li>1972</li>
 	<li>1971</li>
-	<li>1970</li>
+	<li class="emph">1970</li>
 	<li>1969</li>
 	<li>1968</li>
 	<li>1967</li>
@@ -495,7 +507,7 @@ ul.selection li {
 	<li>1963</li>
 	<li>1962</li>
 	<li>1961</li>
-	<li>1960</li>
+	<li class="emph">1960</li>
 	<li>1959</li>
 	<li>1958</li>
 	<li>1957</li>
@@ -505,7 +517,7 @@ ul.selection li {
 	<li>1953</li>
 	<li>1952</li>
 	<li>1951</li>
-	<li>1950</li>
+	<li class="emph">1950</li>
 	<li>1949</li>
 	<li>1948</li>
 	<li>1947</li>
@@ -515,7 +527,7 @@ ul.selection li {
 	<li>1943</li>
 	<li>1942</li>
 	<li>1941</li>
-	<li>1940</li>
+	<li class="emph">1940</li>
 	<li>1939</li>
 	<li>1938</li>
 	<li>1937</li>
@@ -525,7 +537,7 @@ ul.selection li {
 	<li>1933</li>
 	<li>1932</li>
 	<li>1931</li>
-	<li>1930</li>
+	<li class="emph">1930</li>
 	<li>1929</li>
 	<li>1928</li>
 	<li>1927</li>
@@ -535,7 +547,7 @@ ul.selection li {
 	<li>1923</li>
 	<li>1922</li>
 	<li>1921</li>
-	<li>1920</li>
+	<li class="emph">1920</li>
 	<li>1919</li>
 	<li>1918</li>
 	<li>1917</li>
@@ -545,7 +557,7 @@ ul.selection li {
 	<li>1913</li>
 	<li>1912</li>
 	<li>1911</li>
-	<li>1910</li>
+	<li class="emph">1910</li>
 	<li>1909</li>
 	<li>1908</li>
 	<li>1907</li>
@@ -555,9 +567,9 @@ ul.selection li {
 	<li>1903</li>
 	<li>1902</li>
 	<li>1901</li>
-	<li>1900</li>
+	<li class="emph">1900</li>
 </ul>
-<ul id="months" class="selection" style="width:160px;">
+<ul id="months" class="selection" style="width:130px;">
 	<li>Jan</li>
 	<li>Feb</li>
 	<li>Mar</li>
@@ -571,16 +583,16 @@ ul.selection li {
 	<li>Nov</li>
 	<li>Dec</li>
 </ul>
-<ul id="days" class="selection" style="width:290px;">
-	<li>&nbsp;1</li>
-	<li>&nbsp;2</li>
-	<li>&nbsp;3</li>
-	<li>&nbsp;4</li>
-	<li>&nbsp;5</li>
-	<li>&nbsp;6</li>
-	<li>&nbsp;7</li>
-	<li>&nbsp;8</li>
-	<li>&nbsp;9</li>
+<ul id="days" class="selection" style="width:200px;">
+	<li>01</li>
+	<li>02</li>
+	<li>03</li>
+	<li>04</li>
+	<li>05</li>
+	<li>06</li>
+	<li>07</li>
+	<li>08</li>
+	<li>09</li>
 	<li>10</li>
 	<li>11</li>
 	<li>12</li>

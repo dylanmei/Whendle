@@ -36,7 +36,7 @@ Whendle.TzZone = Class.create({
 	},
 	
 	_parse: function() {
-		var rex = /Zone(?:\s(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:\d+:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/;
+		var rex = /Zone(?:\s(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:?\d*:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/;
 		this._values = rex.exec(this._data);
 	}
 });
@@ -55,10 +55,24 @@ Whendle.TzRule = Class.create({
 		this._data = tz_data;
 		this._values = null;
 	},
-
+	
 	_value: function(i) {
 		if (this._values == null) this._parse();
 		return this._values[i];
+	},
+	
+	from: function() {
+		return parseInt(this.FROM, 10);
+	},
+	
+	to: function() {
+		return this.TO == 'only' ?
+			this.from() : this.TO == 'max' ?
+				3333 : parseInt(this.TO, 10);
+	},
+	
+	day: function() {
+		return new Whendle.TzDay(this.IN, this.ON, this.AT);
 	},
 	
 	_parse: function() {
@@ -87,26 +101,33 @@ Whendle.TzDay = Class.create({
 		this._t = time || '';
 	},
 	
+	date: function(year) {
+		var month = this._month();
+		var day = this._day_of_month();
+		var time = this._time();
+		return new Date(year, month, date, time[0], time[1], time[2]);
+	},
+	
 	empty: function() {
 		return this._m.blank();
 	},
 	
-	before: function(date) {
-		return this._compare(date) == -1;
+	before: function(date, year) {
+		return this._compare(date, year || date.getUTCFullYear()) == -1;
 	},
 	
-	after: function(date) {
-		return this._compare(date) == 1;
+	after: function(date, year) {
+		return this._compare(date, year || date.getUTCFullYear()) == 1;
 	},
 	
 	equals: function(date) {
-		return this._compare(date) == 0;
+		return this._compare(date, date.getUTCFullYear()) == 0;
 	},
 	
-	_compare: function(d) {
-		var year = d.getUTCFullYear();
+	_compare: function(d, y) {
+		var year = y;
 		var month = this._month();
-		var date = this._date(year, month);
+		var date = this._day_of_month(year, month);
 		var time = this._time();
 		var when = new Date(year, month, date, time[0], time[1], time[2]);
 		if (when < d) return -1;
@@ -117,10 +138,10 @@ Whendle.TzDay = Class.create({
 	_month: function() {
 		return this._m.blank()
 			? 11
-			: this._MONTHS[this._m];
+			: Whendle.TzDay.MONTHS[this._m];
 	},
 	
-	_date: function(year, month) {
+	_day_of_month: function(year, month) {
 		if (this._d.blank())
 			return 31; // FIXME: last day in month?
 		
@@ -130,21 +151,21 @@ Whendle.TzDay = Class.create({
 			return num;
 		
 		if (code.startsWith('last')) {
-			var day = this._DAYS[code.substr(4)];
+			var day = Whendle.TzDay.DAYS[code.substr(4)];
 			var date = new Date(Date.UTC(year, month + 1, 1));
 			date.setUTCHours(-24);
 			date.setUTCHours(date.getUTCHours() - 24 * ((7 - day + date.getUTCDay()) % 7));
 			return date.getUTCDate();
 		}
 		else if (code.indexOf('>=') != -1) {
-			var day = this._DAYS[code.substr(0, 3)];
+			var day = Whendle.TzDay.DAYS[code.substr(0, 3)];
 			var num = parseInt(code.substr(5), 10);
 			var date = new Date(Date.UTC(year, month, num));
 			date.setUTCHours(date.getUTCHours() + 24 * ((7 + day - date.getUTCDay()) % 7));
 			return date.getUTCDate();
 		}
 		else if (code.indexOf('<=') != -1) {
-			var day = this._DAYS[code.substr(0, 3)];
+			var day = Whendle.TzDay.DAYS[code.substr(0, 3)];
 			var num = parseInt(code.substr(5), 10);
 			var date = new Date(Date.UTC(year, month, num));
 			date.setUTCHours(date.getUTCHours() - 24 * ((7 - day + date.getUTCDay()) % 7));
@@ -165,11 +186,11 @@ Whendle.TzDay = Class.create({
 			, parts.length > 2 ? parseInt(parts[2], 10) : 0
 		];
 		return time;	
-	},
-	
-	_MONTHS: { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 },
-	_DAYS: { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 }
+	}
 });
+
+Whendle.TzDay.DAYS = { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 };
+Whendle.TzDay.MONTHS = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 };
 
 Whendle.TzReader = Class.create({
 	initialize: function(tz_data) {
