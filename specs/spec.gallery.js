@@ -1,10 +1,11 @@
 
 describe('Gallery (Load)', function() {
-	timezones = new Object();
+	timezones = { load: Prototype.emptyFunction }
 	database = new Object();
 	view = new (Class.create(Whendle.Gallery.View, {
 		initialize: function($super) { $super(); },
-		loaded: function(a, b) { clocks = a; error = b; }
+		loaded: function(a, b) { clocks = a; error = b; },
+		updated: Prototype.emptyFunction
 	}))();
 	
 	before(function() {
@@ -51,7 +52,7 @@ describe('Gallery (Load)', function() {
 			expect(error).to(be_undefined);
 		});
 	});
-	
+
 	describe('When loading a view causes an error', function() {
 		before(function() {
 			stub(database, 'rowset').and_return(function(s, f, r, on_error) {
@@ -89,6 +90,9 @@ describe('Gallery (Add)', function() {
 		before(function() {
 			stub(timezones, 'lookup').and_return(function(x, y, on_success) {
 				on_success({ 'offset': 1, 'name': 'Yes' });
+			});
+			stub(timezones, 'load').and_return(function(tz, callback) {
+				callback({ offset: function() { return 1; }});
 			});
 			stub(database, 'insert').and_return(function(s, p, on_result) {
 				on_result(987);

@@ -85,6 +85,10 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		}
 	},
 	
+	updated: function(clock, error) {
+		this.update_clocks();
+	},
+	
 	report_error: function(error) {
 		if (!error) return false;
 		$.trace('error ' + error.message);
@@ -115,7 +119,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	start_clocks: function() {
 		this.update_clocks();
 
-		var now = new Date();
+		var now = Date.current();
 		this.start_timer.bind(this)
 			.delay(60 - now.getSeconds());
 	},
@@ -127,7 +131,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	update_clocks: function() {
-		var now = new Date();
+		var now = Date.current();
 		
 		var length = this.list.mojo.getLength();
 		for (var i = 0; i < length; i++) {
@@ -136,7 +140,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 			
 			var when = now.copy();
 			when.addMinutes(when.getTimezoneOffset());
-			when.addMinutes((clock.offset + 1) * 60); // todo: dst
+			when.addMinutes(clock.offset);
 			
 			row.down('div.gallery-row-time').innerHTML = this.format_time(when);
 			row.down('div.gallery-row-day').innerHTML = this.format_day(when);
@@ -165,7 +169,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	stop_clocks: function() {
-		if (this.timer) {
+		if (this.timer && this.timer != -1) {
 			this.timer.stop();
 			this.timer = -1;
 		}

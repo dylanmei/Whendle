@@ -2,6 +2,7 @@
 	{ "source": "api\/whendle.js" },
 	{ "source": "api\/time.js" },
 	{ "source": "api\/tzdata.js" },
+	{ "source": "api\/timezone.js" },
 	{ "source": "api\/view.js" },
 	{ "source": "api\/settings-service.js" },
 	{ "source": "api\/database-service.js" },

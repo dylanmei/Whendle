@@ -25,7 +25,7 @@
 //
 
 Date.today = function() {
-	var now = new Date();
+	var now = Date.current();
 	now.setMilliseconds(0);
 	now.setSeconds(0);
 	now.setMinutes(0);
@@ -33,11 +33,29 @@ Date.today = function() {
 	return now;
 }
 
+Date.current = function() {
+	var now = new Date();
+//	now.addMonths(-1);
+	return now;
+}
+
 Date.prototype.copy = function() {
 	return new Date(this.getTime());
 }
+Date.prototype.addYears = function(n) {
+	 this.setFullYear(this.getFullYear() + n);
+}
+Date.prototype.addMonths = function(n) {
+	this.setMonth(this.getMonth() + n, this.getDate());
+}
+Date.prototype.addDays = function(n) {
+	this.setDate(this.getDate() + n);
+}
+Date.prototype.addHours = function(n) {
+	this.setHours(this.getHours() + n);
+}
 Date.prototype.addMinutes = function(n) {
-	this.setMinutes(this.getMinutes() + n);
+	this.setMinutes(this.getMinutes() + n, this.getSeconds(), this.getMilliseconds());
 }
 
 Date.prototype.__defineGetter__('ISO', function() {

@@ -25,7 +25,7 @@ describe('Timezone Service', function() {
 		});
 		
 		it('should provide the offset of the timezone', function() {
-			expect(timezone.offset).to(equal, 123);
+			expect(timezone.offset).to(equal, 123 * 60);
 		});
 		
 		it('should not provide an error', function() {

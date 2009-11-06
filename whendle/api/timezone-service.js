@@ -54,7 +54,7 @@ Whendle.TimezoneService = Class.create({
 	_on_lookup_result: function(on_complete, response) {
 		on_complete({
 			name: response.timezoneId,
-			offset: response.rawOffset
+			offset: parseInt(response.rawOffset, 10) * 60
 		});
 	},
 	

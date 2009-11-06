@@ -39,6 +39,9 @@ Whendle.Gallery.View = Class.create(Whendle.View, {
 	},
 	
 	removed: function(id, error) {
+	},
+	
+	updated: function(clock, error) {
 	}
 });
 
@@ -65,25 +68,48 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	_on_clocks_loaded: function(view, results) {
-		if (results) {
-			var mapper = function(data) {
-				return new Whendle.Clock(
-					data.id,
-					data.timezone,
-					data.offset,
-					new Whendle.Location(
-						data.location,
-						data.district,
-						data.country,
-						data.latitude,
-						data.longitude
-					)
-				);
-			}
-			results = results.collect(mapper.bind(this));
-		}
-		
+		if (!results)
+			results = [];
+
+		results = results.collect(this._map_record_to_clock.bind(this));
 		view.loaded(results);
+		
+		this._sync_timezone_offsets(results,
+			function(clock) { view.updated(clock); });
+	},
+	
+	_map_record_to_clock: function(data) {
+		return new Whendle.Clock(
+			data.id,
+			data.timezone,
+			data.offset,
+			new Whendle.Location(
+				data.location,
+				data.district,
+				data.country,
+				data.latitude,
+				data.longitude
+			)
+		);
+	},
+	
+	_sync_timezone_offsets: function(clocks, notify_change) {
+		var now = Date.current();
+		var service = this._timezones;
+		clocks.each(function(clock) {
+			service.load(
+				clock.timezone,
+				function(tz) {
+					var offset = tz.offset(now);
+					if (offset != clock.offset) {
+						clock.offset = offset;
+						if (notify_change)
+							notify_change(clock);
+					}
+				},
+				function(e) { $.trace(e.message); }
+			);
+		});	
 	},
 	
 	_on_load_error: function(view, error) {
@@ -126,7 +152,13 @@ Whendle.Gallery.Presenter = Class.create({
 	
 	_on_clock_added: function(view, clock, identity) {
 		clock.id = identity;
-		view.added(clock);
+		this._timezones.load(
+			clock.timezone,
+			function(tz) {
+				clock.offset = tz.offset(Date.current());
+				view.added(clock);
+			}
+		);
 	},
 	
 	_on_add_error: function(view, error) {
