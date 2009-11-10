@@ -9,7 +9,7 @@
 	{ "source": "api\/schema-service.js" },
 	{ "source": "api\/timezone-service.js" },
 	{ "source": "api\/migrators.js" },
-	{ "source": "api\/ajax.js" },
+	{ "source": "api\/ajax-service.js" },
 	{ "source": "api\/gallery.js" },
 	{ "source": "api\/finder.js" },
 	{ "source": "api\/location.js" },
