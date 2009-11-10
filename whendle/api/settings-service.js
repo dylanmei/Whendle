@@ -28,6 +28,7 @@ Whendle.SettingsService = Class.create({
 	initialize: function(cookie) {
 		this._cookie = cookie || new Mojo.Model.Cookie('whendle-settings');
 		this._data = this._cookie.get() || {};
+		this._temp = {};
 	},
 	
 	is_empty: function() {
@@ -52,5 +53,13 @@ Whendle.SettingsService = Class.create({
 			this._data.version = v;
 		}
 		return this._data.version;
+	},
+	
+	time_format: function(v) {
+		if (arguemnts.length) {
+			this._temp.time_format = v;
+		}
+
+		return this._temp.time_format || 'HH24';
 	}
 });

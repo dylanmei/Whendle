@@ -17,7 +17,6 @@ AppAssistant.prototype.handleLaunch = function (launch_params) {
 	}
 	else {
 		if (!this.try_focus_stage()) {
-			this.prepare_services();
 			this.wait_for_dependencies(
 				this.launch.bind(this));
         }
@@ -36,9 +35,31 @@ AppAssistant.prototype.try_focus_stage = function() {
 };
 
 AppAssistant.prototype.wait_for_dependencies = function(on_complete) {
+	this.prepare_services();
+	this.prepare_settings();
 	Whendle.schema().read(on_complete,
 		this.on_schema_error.bind(this)
 	);	
+};
+
+
+AppAssistant.prototype.prepare_services = function() {
+	Whendle.services('Whendle.settings', new Whendle.SettingsService());
+	Whendle.services('Whendle.database', new Whendle.DatabaseService());
+	Whendle.services('Whendle.schema', new Whendle.SchemaService(Whendle.database()));
+	
+	var ajax = new Whendle.AjaxService();
+	var tzloader = new Whendle.TzLoader(ajax, Whendle.tzpath);
+	Whendle.services('Whendle.timezones', new Whendle.TimezoneService(ajax, tzloader));
+};
+
+AppAssistant.prototype.prepare_settings = function() {
+	var settings = Whendle.settings();
+	new Mojo.Service.Request('palm://com.palm.systemservice', {
+		method: 'getPreferences',
+		parameters: { 'keys': ['timeFormat'] },
+		onSuccess: function(v) { settings.time_format = v.timeFormat; }
+	});
 };
 
 AppAssistant.prototype.on_schema_error = function(error) {
@@ -72,14 +93,4 @@ AppAssistant.prototype.is_database_stale = function() {
 
 AppAssistant.prototype.get_scene_loader = function(name) {
 	return (function(stageController) { stageController.pushScene(name); });
-};
-
-AppAssistant.prototype.prepare_services = function() {
-	Whendle.services('Whendle.settings', new Whendle.SettingsService());
-	Whendle.services('Whendle.database', new Whendle.DatabaseService());
-	Whendle.services('Whendle.schema', new Whendle.SchemaService(Whendle.database()));
-	
-	var ajax = new Whendle.AjaxService();
-	var tzloader = new Whendle.TzLoader(ajax, Whendle.tzpath);
-	Whendle.services('Whendle.timezones', new Whendle.TimezoneService(ajax, tzloader));
 };
