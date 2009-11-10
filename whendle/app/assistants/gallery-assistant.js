@@ -148,19 +148,17 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	format_time: function(t) {
+	
 		var settings = Whendle.settings();
 		var hours = t.getHours().toString();
 		var minutes = t.getMinutes().toPaddedString(2);
-		var value = '';
+		
 		if (settings.time_format == 'HH12') {
-			var ampm = t.getHours() < 12 ? 'am' : 'pm'; 
-			value = (hours % 12 || 12) + ':' + minutes + ' ' + ampm;
-		}
-		else {
-			value = hours + ':' + minutes;
+			var template = t.getHours() < 12 ? $.string('time_HH12am') : $.string('time_HH12pm');
+			return template.interpolate({ 'hours': (hours % 12 || 12), 'minutes': minutes });
 		}
 		
-		return value;
+		return $.string('time_HH24').interpolate({ 'hours': hours, 'minutes': minutes });
 	},
 	
 	format_day: function(d) {

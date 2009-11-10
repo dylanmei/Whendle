@@ -9,4 +9,7 @@
 	, "location_area_district_country": "#{district}, #{country}"
 	, "location_area_district": "#{district}"
 	, "location_area_country": "#{country}"
+	, "time_HH24": "#{hours}:#{minutes}"
+	, "time_HH12am": "#{hours}:#{minutes} am"
+	, "time_HH12pm": "#{hours}:#{minutes} pm"
 }
