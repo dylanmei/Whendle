@@ -24,60 +24,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle = {
-	version: '0.1.0',
-	schema_version: '0.1',
-	stage_name: 'whendle-card-stage',
-	tzpath: 'tzdata/',
-
-	show_splash: false,
-	reset_schema: false,
-	reset_settings: false,
-	
-	Events: {
-		loading: ':loading',
-		searching: ':searching',
-		adding: ':adding',
-		removing: ':removing'
+Whendle.TimekeeperService = Class.create({
+	initialize: function(system) {
+		this._system = system || new Whendle.PalmService();
+		this._time_format = 'HH24';
 	},
 	
-	services: function(name, instance) {
-		if (!Whendle._services)
-			Whendle._services = {};
-		return instance
-			? Whendle._services[name] = instance
-			: Whendle._services[name];
+	setup: function(on_complete, on_error) {
+		// get time format
+		this._system.request('palm://com.palm.systemservice', {
+			method: 'getPreferences',
+			parameters: { 'keys': ['timeFormat'] },
+			onSuccess: this._on_preferences.bind(this, on_complete)
+		});
 	},
 	
-	system: function() {
-		return Whendle.services('Whendle.system');
+	_on_preferences: function(on_complete, p) {
+		this._time_format = p.timeFormat;
+		on_complete();
 	},
 	
-	settings: function() {
-		return Whendle.services('Whendle.settings');
-	},
-	
-	database: function() {
-		return Whendle.services('Whendle.database');
-	},
-	
-	schema: function() {
-		return Whendle.services('Whendle.schema');
-	},
-	
-	timezones: function() {
-		return Whendle.services('Whendle.timezones');
-	},
-	
-	timekeeper: function() {
-		return Whendle.services('Whendle.timekeeper');
+	time_format: function() {
+		return this._time_format;
 	}
-};
-
-if (typeof(Mojo) != 'undefined') {
-	$.trace = Mojo.Log.info;
-}
-
-$.string = function(key, def) {
-	return (typeof($L) == 'undefined') ? (def || key) : $L(key);
-}
+});

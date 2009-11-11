@@ -24,60 +24,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle = {
-	version: '0.1.0',
-	schema_version: '0.1',
-	stage_name: 'whendle-card-stage',
-	tzpath: 'tzdata/',
-
-	show_splash: false,
-	reset_schema: false,
-	reset_settings: false,
-	
-	Events: {
-		loading: ':loading',
-		searching: ':searching',
-		adding: ':adding',
-		removing: ':removing'
+Whendle.PalmService = Class.create({
+	initialize: function() {
 	},
 	
-	services: function(name, instance) {
-		if (!Whendle._services)
-			Whendle._services = {};
-		return instance
-			? Whendle._services[name] = instance
-			: Whendle._services[name];
-	},
-	
-	system: function() {
-		return Whendle.services('Whendle.system');
-	},
-	
-	settings: function() {
-		return Whendle.services('Whendle.settings');
-	},
-	
-	database: function() {
-		return Whendle.services('Whendle.database');
-	},
-	
-	schema: function() {
-		return Whendle.services('Whendle.schema');
-	},
-	
-	timezones: function() {
-		return Whendle.services('Whendle.timezones');
-	},
-	
-	timekeeper: function() {
-		return Whendle.services('Whendle.timekeeper');
+	request: function(uri, options) {
+		return new Mojo.Service.Request(uri, options);
 	}
-};
-
-if (typeof(Mojo) != 'undefined') {
-	$.trace = Mojo.Log.info;
-}
-
-$.string = function(key, def) {
-	return (typeof($L) == 'undefined') ? (def || key) : $L(key);
-}
+});

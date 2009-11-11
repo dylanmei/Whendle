@@ -24,60 +24,41 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle = {
-	version: '0.1.0',
-	schema_version: '0.1',
-	stage_name: 'whendle-card-stage',
-	tzpath: 'tzdata/',
+Whendle.Wait = Class.create({
+	initialize: function(callback) {
+		this._activities = [];
+		this._callback = callback;
+	},
+	
+	on: function(activity) {
+		this._ready = false;
+		this._activities.push(activity);
+		return this._on_activity.bind(this, activity);
+	},
+	
+	complete: function() {
+		return this._activities.length == 0;
+	},
+	
+	ready: function() {
+		this._ready = true;
+		this._try_callback();
+	},
+	
+	_try_callback: function() {
+		if (this.complete() && this._ready) {
+			if (this._callback) this._callback();
+		}
+	},
 
-	show_splash: false,
-	reset_schema: false,
-	reset_settings: false,
-	
-	Events: {
-		loading: ':loading',
-		searching: ':searching',
-		adding: ':adding',
-		removing: ':removing'
-	},
-	
-	services: function(name, instance) {
-		if (!Whendle._services)
-			Whendle._services = {};
-		return instance
-			? Whendle._services[name] = instance
-			: Whendle._services[name];
-	},
-	
-	system: function() {
-		return Whendle.services('Whendle.system');
-	},
-	
-	settings: function() {
-		return Whendle.services('Whendle.settings');
-	},
-	
-	database: function() {
-		return Whendle.services('Whendle.database');
-	},
-	
-	schema: function() {
-		return Whendle.services('Whendle.schema');
-	},
-	
-	timezones: function() {
-		return Whendle.services('Whendle.timezones');
-	},
-	
-	timekeeper: function() {
-		return Whendle.services('Whendle.timekeeper');
+	_on_activity: function(activity) {
+		var args = $A(arguments);
+		args.shift();
+		activity.apply(0, args);
+
+		this._activities = this._activities
+			.reject(function(a) { return a == activity; });
+		
+		this._try_callback();
 	}
-};
-
-if (typeof(Mojo) != 'undefined') {
-	$.trace = Mojo.Log.info;
-}
-
-$.string = function(key, def) {
-	return (typeof($L) == 'undefined') ? (def || key) : $L(key);
-}
+});
