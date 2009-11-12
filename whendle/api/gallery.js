@@ -32,23 +32,32 @@ Whendle.Gallery.View = Class.create(Whendle.View, {
 		$super();
 	},
 	
-	loaded: function(clocks, error) {
+	// e = { clocks: [{}], format: '' }
+	loaded: function(event, error) {
 	},
 	
-	added: function(clock, error) {
+	// e = { clock: {}, format: '' }
+	added: function(event, error) {
 	},
 	
-	removed: function(id, error) {
+	// e = { id: # }
+	removed: function(event, error) {
 	},
 	
-	updated: function(clock, error) {
+	// e = { clock: {}, format: '' }
+	updated: function(event, error) {
+	},
+	
+	// e = { reason: '' }
+	refresh: function(event) {
 	}
 });
 
 Whendle.Gallery.Presenter = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(view, timezones, database) {
+	initialize: function(view, timekeeper, timezones, database) {
+		this._timekeeper = timekeeper || Whendle.timekeeper();
 		this._timezones = timezones || Whendle.timezones();
 		this._database = database || Whendle.database();
 
@@ -58,6 +67,9 @@ Whendle.Gallery.Presenter = Class.create({
 			this._on_add_clock.bind(this, view));
 		view.observe(Whendle.Events.removing,
 			this._on_remove_clock.bind(this, view));
+			
+		this._timekeeper.observe(Whendle.Events.system,
+			this._on_timekeeping_change.bind(this, view));
 	},
 	
 	_on_load_ready: function(view) {
@@ -72,10 +84,13 @@ Whendle.Gallery.Presenter = Class.create({
 			results = [];
 
 		results = results.collect(this._map_record_to_clock.bind(this));
-		view.loaded(results);
+		var format = this._timekeeper.time_format();
+		view.loaded({ 'clocks': results, 'format': format });
 		
 		this._sync_timezone_offsets(results,
-			function(clock) { view.updated(clock); });
+			function(clock) {
+				view.updated({ 'clock': clock, 'format': format })
+			});
 	},
 	
 	_map_record_to_clock: function(data) {
@@ -113,7 +128,7 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	_on_load_error: function(view, error) {
-		view.loaded(null, error);
+		view.loaded({}, error);
 	},
 	
 	_on_add_clock: function(view, event) {
@@ -152,17 +167,18 @@ Whendle.Gallery.Presenter = Class.create({
 	
 	_on_clock_added: function(view, clock, identity) {
 		clock.id = identity;
+		var format = this._timekeeper.time_format();
 		this._timezones.load(
 			clock.timezone,
 			function(tz) {
 				clock.offset = tz.offset(Date.current());
-				view.added(clock);
+				view.added({ 'clock': clock, 'format': format });
 			}
 		);
 	},
 	
 	_on_add_error: function(view, error) {
-		view.added(null, error);
+		view.added({}, error);
 	},
 	
 	_on_remove_clock: function(view, event) {
@@ -179,10 +195,17 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	_on_clock_removed: function(view, id) {
-		view.removed(id);
+		view.removed({ 'id': id });
 	},
 	
 	_on_remove_error: function(view, error) {
-		view.removed(0, error);
+		view.removed({}, error);
+	},
+	
+	_on_timekeeping_change: function(view, reason) {
+		view.refresh({
+			'reason': reason,
+			'format': this._timekeeper.time_format()
+		});
 	}
 });

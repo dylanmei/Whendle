@@ -9,7 +9,10 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	setup: function() {
-		this.model = { 'items': [] };
+		this.model = {
+			'items': [],
+			'format': 'HH24'
+		};
 		this.setup_widgets();
 		this.attach_events();
 	
@@ -50,32 +53,38 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.fire(Whendle.Events.removing, { 'clock': clock });
 	},
 	
-	loaded: function(clocks, error) {
+	loaded: function(event, error) {
 		if (this.report_error(error)) return;
-		
-		this.model.items = clocks;
+
+		this.model.items = event.clocks;
+		this.model.format = event.format;
 		this.controller.modelChanged(this.model, this);
 		this.start_clocks();
 	},
 
-	added: function(clock, error) {
+	added: function(event, error) {
 		var current = this.model.items.pop();
+		var clock = event.clock;
+		var format = event.format;
+		
 		if (this.report_error(error)) {
 			clock = current;
 			clock.adding = false;
+			format = this.model.format;
 		}
 		
 		this.model.items.push(clock);
+		this.model.format = format;
 		this.controller.modelChanged(this.model, this);
 		this.update_clocks();
 	},
 	
-	removed: function(clock_id, error) {
+	removed: function(event, error) {
 		if (this.report_error(error)) return;
 		
 		// todo: need to clean the model?
 		clock = this.model.items.find(function(c) {
-			return c.id == clock_id;
+			return c.id == event.id;
 		});
 		
 		if (clock) {
@@ -85,8 +94,13 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		}
 	},
 	
-	updated: function(clock, error) {
+	updated: function(event, error) {
 		this.update_clocks();
+	},
+	
+	refresh: function(event) {
+		this.stop_clocks();
+		this.fire(Whendle.Events.loading, {});
 	},
 	
 	report_error: function(error) {
@@ -149,11 +163,10 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	format_time: function(t) {
 	
-		var settings = Whendle.settings();
 		var hours = t.getHours().toString();
 		var minutes = t.getMinutes().toPaddedString(2);
 		
-		if (settings.time_format == 'HH12') {
+		if (this.model.format == 'HH12') {
 			var template = t.getHours() < 12 ? $.string('time_HH12am') : $.string('time_HH12pm');
 			return template.interpolate({ 'hours': (hours % 12 || 12), 'minutes': minutes });
 		}

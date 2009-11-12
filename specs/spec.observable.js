@@ -1,7 +1,7 @@
 
-describe('View', function() {
+describe('Observable', function() {
 	before_each(function() {
-		observable = new Whendle.View();
+		observable = new Whendle.Observable();
 	});
 	
 	describe('When observing an event', function() {

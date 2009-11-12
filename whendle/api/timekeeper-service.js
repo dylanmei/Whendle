@@ -24,27 +24,77 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle.TimekeeperService = Class.create({
-	initialize: function(system) {
+Whendle.TimekeeperService = Class.create(Whendle.Observable, {
+	initialize: function($super, system) {
+		$super();
 		this._system = system || new Whendle.PalmService();
-		this._time_format = 'HH24';
+		this._format = null;
+		this._timezone = null;
+		this._listener = null;
 	},
 	
 	setup: function(on_complete, on_error) {
-		// get time format
+		var wait = new Whendle.Wait(on_complete);
+		var on_preferences = wait.on(this._on_preferences.bind(this, 'setup'));
+		var on_system_time = wait.on(this._on_system_time.bind(this, 'setup'));
+		
+		this._make_preferences_request(on_preferences);
+		this._make_system_time_request(on_system_time);
+		
+		wait.ready();
+	},
+	
+	_on_preferences: function(call_state, p) {
+		if (call_state == 'setup') {
+			this._format = p.timeFormat;
+			// first time, so subscribe
+			this._make_preferences_request.bind(this).defer(
+				this._on_preferences.bind(this, 'update'), true);
+		}
+		else {
+			if (p.timeFormat != this._format) {
+				this._format = p.timeFormat;
+				this.fire(Whendle.Events.system, 'time format changed');
+			}
+		}
+	},
+	
+	_on_system_time: function(call_state, t) {
+		if (call_state == 'setup') {
+			this._timezone = t.timezone;
+			// first time, so subscribe
+			this._make_system_time_request.bind(this).defer(
+				this._on_system_time.bind(this, 'update'), true);
+		}
+		else {
+			if (t.timezone != this._timezone) {
+				this._timezone = t.timezone;
+				this.fire(Whendle.Events.system, 'timezone changed');
+			}
+		}
+	},
+	
+	_make_preferences_request: function(callback, subscribe) {
 		this._system.request('palm://com.palm.systemservice', {
 			method: 'getPreferences',
-			parameters: { 'keys': ['timeFormat'] },
-			onSuccess: this._on_preferences.bind(this, on_complete)
+			parameters: { 'subscribe': subscribe || false, 'keys': [ 'timeFormat' ] },
+			onSuccess: callback
 		});
 	},
 	
-	_on_preferences: function(on_complete, p) {
-		this._time_format = p.timeFormat;
-		on_complete();
+	_make_system_time_request: function(callback, subscribe) {
+		this._system.request('palm://com.palm.systemservice/time', {
+			method: 'getSystemTime',
+			parameters: { 'subscribe': subscribe || false },
+			onSuccess: callback
+		});
+	},
+	
+	timezone: function() {
+		return this._timezone;
 	},
 	
 	time_format: function() {
-		return this._time_format;
+		return this._format;
 	}
 });

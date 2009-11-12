@@ -1,19 +1,22 @@
 
 describe('Gallery (Load)', function() {
-	timezones = { load: Prototype.emptyFunction }
 	database = new Object();
+	timezones = { load: Prototype.emptyFunction }
+	timekeeper = new (Class.create(Whendle.Observable, {
+		initialize: function($super) { $super(); },
+		time_format: function() { return ''; }
+	}))();
 	view = new (Class.create(Whendle.Gallery.View, {
 		initialize: function($super) { $super(); },
-		loaded: function(a, b) { clocks = a; error = b; },
-		updated: Prototype.emptyFunction
+		loaded: function(a, b) { clocks = a.clocks; error = b; }
 	}))();
 	
 	before(function() {
 		clocks = undefined;
 		error = undefined;
-		presenter = new Whendle.Gallery.Presenter(view, timezones, database);
+		presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database);
 	});
-	
+
 	describe('When loading an empty view', function() {
 		
 		before(function() {
@@ -33,7 +36,7 @@ describe('Gallery (Load)', function() {
 			expect(error).to(be_undefined);
 		});
 	});
-	
+
 	describe('When loading a view', function() {
 		before(function() {
 			stub(database, 'rowset').and_return(function(s, f, on_result) {
@@ -73,17 +76,21 @@ describe('Gallery (Load)', function() {
 });
 
 describe('Gallery (Add)', function() {
-	timezones = new Object();
 	database = new Object();
+	timezones = new Object();
+	timekeeper = new (Class.create(Whendle.Observable, {
+		initialize: function($super) { $super(); },
+		time_format: function() { return ''; }
+	}))();
 	view = new (Class.create(Whendle.Finder.View, {
 		initialize: function($super) { $super(); },
-		added: function(a, b) { clock = a; error = b; }
+		added: function(a, b) { clock = a.clock; error = b; }
 	}))();
 
 	before(function() {
 		error = undefined;
 		clock = undefined;
-		presenter = new Whendle.Gallery.Presenter(view, timezones, database);
+		presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database);
 	});
 	
 	describe('When adding a clock', function() {
@@ -101,7 +108,7 @@ describe('Gallery (Add)', function() {
 			view.fire(Whendle.Events.adding,
 				{ 'location': new Whendle.Location('A', 'B', 'C', 1, 23) });
 		});
-		
+
 		it('should provide a clock with an id', function() {
 			expect(clock).not_to(be_undefined);
 			expect(clock.id).to(equal, 987);
@@ -122,6 +129,7 @@ describe('Gallery (Add)', function() {
 		it('should not provide an error', function() {
 			expect(error).to(be_undefined);
 		});	
+
 	});
 
 	describe('When adding a clock causes a timezone service error', function() {
@@ -166,18 +174,19 @@ describe('Gallery (Add)', function() {
 });
 
 describe('Gallery (Remove)', function() {
-	timezones = new Object();
 	database = new Object();
+	timezones = new Object();
+	timekeeper = new Whendle.Observable();
 	view = new (Class.create(Whendle.Finder.View, {
 		initialize: function($super) { $super(); },
-		removed: function(a, b) { id = a; error = b; }
+		removed: function(a, b) { id = a.id; error = b; }
 	}))();
 
 	before(function() {
 		deleted = false;
 		error = undefined;
 		id = 0;
-		presenter = new Whendle.Gallery.Presenter(view, timezones, database);
+		presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database);
 	});
 
 	describe('When removing a clock', function() {
@@ -214,11 +223,39 @@ describe('Gallery (Remove)', function() {
 		});
 
 		it('should not return a clock', function() {
-			expect(id).to(equal, 0);
+			expect(id).to(be_undefined);
 		});
 
 		it('should provide an error', function() {
 			expect(error).to(have_property, 'message', 'oh pooh');
 		});
 	});	
+});
+
+describe('Gallery (Timekeeper event)', function() {
+	database = new Object();
+	timezones = new Object();
+	timekeeper = new (Class.create(Whendle.Observable, {
+		initialize: function($super) { $super(); },
+		time_format: function() { return ''; }
+	}))();
+	view = new (Class.create(Whendle.Finder.View, {
+		initialize: function($super) { $super(); },
+		refresh: function(e) { reason = e.reason; }
+	}))();
+
+	before(function() {
+		reason = undefined;
+		presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database);
+	});
+
+	describe('When the timekeeper notifies a system change', function() {
+		before(function() {
+			timekeeper.fire(Whendle.Events.system, 'test reason');
+		});
+		
+		it('refreshes the view', function() {
+			expect(reason).to(equal, 'test reason');
+		});
+	});
 });

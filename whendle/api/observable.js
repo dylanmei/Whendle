@@ -24,61 +24,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle = {
-	version: '0.1.0',
-	schema_version: '0.1',
-	stage_name: 'whendle-card-stage',
-	tzpath: 'tzdata/',
-
-	show_splash: false,
-	reset_schema: false,
-	reset_settings: false,
-	
-	Events: {
-		system: ':system',
-		loading: ':loading',
-		searching: ':searching',
-		adding: ':adding',
-		removing: ':removing'
+Whendle.Observable = Class.create({
+	initialize: function() {
+		this._hash = new Hash();
 	},
 	
-	services: function(name, instance) {
-		if (!Whendle._services)
-			Whendle._services = {};
-		return instance
-			? Whendle._services[name] = instance
-			: Whendle._services[name];
+	observe: function(name, handler) {
+		var handlers = this.handlers(name);
+		if (handlers) {
+			handlers.push(handler);
+		}
+		else {
+			this._hash.set(name, [handler]);
+		}
 	},
 	
-	system: function() {
-		return Whendle.services('Whendle.system');
+	handlers: function(name) {
+		return this._hash.get(name);
 	},
 	
-	settings: function() {
-		return Whendle.services('Whendle.settings');
-	},
-	
-	database: function() {
-		return Whendle.services('Whendle.database');
-	},
-	
-	schema: function() {
-		return Whendle.services('Whendle.schema');
-	},
-	
-	timezones: function() {
-		return Whendle.services('Whendle.timezones');
-	},
-	
-	timekeeper: function() {
-		return Whendle.services('Whendle.timekeeper');
+	fire: function(name, data) {
+		(this.handlers(name) || [])
+			.each(function(f) { f(data); });
 	}
-};
-
-if (typeof(Mojo) != 'undefined') {
-	$.trace = Mojo.Log.info;
-}
-
-$.string = function(key, def) {
-	return (typeof($L) == 'undefined') ? (def || key) : $L(key);
-}
+});
