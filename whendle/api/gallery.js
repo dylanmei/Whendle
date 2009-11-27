@@ -33,19 +33,19 @@ Whendle.Gallery.View = Class.create(Whendle.View, {
 	},
 	
 	// e = { clocks: [{}], format: '' }
-	loaded: function(event, error) {
+	clocks_loaded: function(event, error) {
 	},
 	
 	// e = { clock: {}, format: '' }
-	added: function(event, error) {
+	clock_added: function(event, error) {
 	},
 	
 	// e = { id: # }
-	removed: function(event, error) {
+	clock_removed: function(event, error) {
 	},
 	
 	// e = { clock: {}, format: '' }
-	updated: function(event, error) {
+	clock_updated: function(event, error) {
 	},
 	
 	// e = { reason: '' }
@@ -85,11 +85,11 @@ Whendle.Gallery.Presenter = Class.create({
 
 		results = results.collect(this._map_record_to_clock.bind(this));
 		var format = this._timekeeper.time_format();
-		view.loaded({ 'clocks': results, 'format': format });
+		view.clocks_loaded({ 'clocks': results, 'format': format });
 		
 		this._sync_timezone_offsets(results,
 			function(clock) {
-				view.updated({ 'clock': clock, 'format': format })
+				view.clock_updated({ 'clock': clock, 'format': format })
 			});
 	},
 	
@@ -128,7 +128,7 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	_on_load_error: function(view, error) {
-		view.loaded({}, error);
+		view.clocks_loaded({}, error);
 	},
 	
 	_on_add_clock: function(view, event) {
@@ -172,13 +172,13 @@ Whendle.Gallery.Presenter = Class.create({
 			clock.timezone,
 			function(tz) {
 				clock.offset = tz.offset(Date.current());
-				view.added({ 'clock': clock, 'format': format });
+				view.clock_added({ 'clock': clock, 'format': format });
 			}
 		);
 	},
 	
 	_on_add_error: function(view, error) {
-		view.added({}, error);
+		view.clock_added({}, error);
 	},
 	
 	_on_remove_clock: function(view, event) {
@@ -195,11 +195,11 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	_on_clock_removed: function(view, id) {
-		view.removed({ 'id': id });
+		view.clock_removed({ 'id': id });
 	},
 	
 	_on_remove_error: function(view, error) {
-		view.removed({}, error);
+		view.clock_removed({}, error);
 	},
 	
 	_on_timekeeping_change: function(view, reason) {

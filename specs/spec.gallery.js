@@ -8,7 +8,7 @@ describe('Gallery (Load)', function() {
 	}))();
 	view = new (Class.create(Whendle.Gallery.View, {
 		initialize: function($super) { $super(); },
-		loaded: function(a, b) { clocks = a.clocks; error = b; }
+		clocks_loaded: function(a, b) { clocks = a.clocks; error = b; }
 	}))();
 	
 	before(function() {
@@ -84,7 +84,7 @@ describe('Gallery (Add)', function() {
 	}))();
 	view = new (Class.create(Whendle.Finder.View, {
 		initialize: function($super) { $super(); },
-		added: function(a, b) { clock = a.clock; error = b; }
+		clock_added: function(a, b) { clock = a.clock; error = b; }
 	}))();
 
 	before(function() {
@@ -179,7 +179,7 @@ describe('Gallery (Remove)', function() {
 	timekeeper = new Whendle.Observable();
 	view = new (Class.create(Whendle.Finder.View, {
 		initialize: function($super) { $super(); },
-		removed: function(a, b) { id = a.id; error = b; }
+		clock_removed: function(a, b) { id = a.id; error = b; }
 	}))();
 
 	before(function() {

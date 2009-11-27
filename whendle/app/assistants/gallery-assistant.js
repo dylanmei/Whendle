@@ -53,7 +53,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.fire(Whendle.Events.removing, { 'clock': clock });
 	},
 	
-	loaded: function(event, error) {
+	clocks_loaded: function(event, error) {
 		if (this.report_error(error)) return;
 
 		this.model.items = event.clocks;
@@ -62,7 +62,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.start_clocks();
 	},
 
-	added: function(event, error) {
+	clock_added: function(event, error) {
 		var current = this.model.items.pop();
 		var clock = event.clock;
 		var format = event.format;
@@ -79,7 +79,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.update_clocks();
 	},
 	
-	removed: function(event, error) {
+	clock_removed: function(event, error) {
 		if (this.report_error(error)) return;
 		
 		// todo: need to clean the model?
@@ -94,7 +94,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		}
 	},
 	
-	updated: function(event, error) {
+	clock_updated: function(event, error) {
 		this.update_clocks();
 	},
 	
