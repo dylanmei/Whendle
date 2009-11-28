@@ -1,75 +1,75 @@
 
-describe('Database Service', function() {
+describe 'Database Service'
 	database = new Object();
 	service = new Whendle.DatabaseService(database);
+	mock_transaction = function(results, error) {
+		return function(callback) {
+			callback({
+				executeSql: function(s, p, on_result, on_error) {
+					if (error) {
+						on_error(null, error);
+					}
+					else {
+						on_result(null, mock_results(results));
+					}
+				}
+			});
+		}
+	}
 	mock_results = function(array) {
 		return { rows: { length: array.length, item: function(i) { return array[i]; } } };
 	}
-	mock_error = function(message) {
-		return { code: 0, message: message };
-	}
-	
-	describe('When returning a scalar', function() {
-		before(function() {
-			stub(database, 'transaction').and_return(function(f) {
-				var trx = {
-					executeSql: function(s, p, on_result) {
-						on_result(null, mock_results([{ v: 'result' }]));
-					}
-				};
-				f(trx);
-			});
-		});
+
+	describe 'selecting a scalar'
+		before
+			a = null
+			e = null
+			database.transaction = mock_transaction([{ v: 'result' }]);
+			service.scalar('', [], function(v) { a = v; }, function(error) { e = error; })
+		end
 		
-		it('should call the success function with a value', function() {
-			service.scalar('', [],
-				function(v) { expect(v).to(equal, 'result'); },
-				function(e) { fail('callback unexpected'); }
-			);
-		});
-	});
-	
-	describe('When returning a rowset', function() {
-		before(function() {
-			stub(database, 'transaction').and_return(function(f) {
-				var trx = {
-					executeSql: function(s, p, on_result) {
-						on_result(null, mock_results([{ v: 1 }, { v: 2}]));
-					}
-				};
-				f(trx);
-			});
-		});
+		it 'should return the value'
+			a.should.be 'result'
+		end
 		
-		it('should call the success function with an array', function() {
-			service.rowset('', [],
-				function(v) {
-					expect(v).to(have_property, 'length', 2);
-					expect(v).to(include, { v: 1 });
-					expect(v).to(include, { v: 2 });
-				}, 
-				function(e) { fail('callback unexpected'); }
-			);
-		});
-	});
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
 	
-	describe('When fetching a result causes an error ', function() {
-		before(function() {
-			stub(database, 'transaction').and_return(function(f) {
-				var trx = {
-					executeSql: function(s, p, r, on_error) {
-						on_error(null, mock_error('oh pooh'));
-					}
-				};
-				f(trx);
-			});
-		});
+	describe 'selecting a rowset'
+		before
+			a = null;
+			e = null;
+			database.transaction = mock_transaction([{ v: 1 }, { v: 2 }]);
+			service.rowset('', [], function(v) { a = v; }, function(error) { e = error; })			
+		end
 		
-		it('should call the failure function with an error', function() {
-			service.rowset('', [],
-				function(v) { fail('callback unexpected') },
-				function(e) { expect(e).to(have_property, 'message', 'oh pooh'); }
-			);
-		});	
-	});
-});
+		it 'should return the records'
+			a.should.have_property 'length', 2
+			a.should.include { v: 1 }
+			a.should.include { v: 2 }
+		end
+		
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
+	
+	describe 'recieving a database error'
+		before
+			a = null
+			e = null
+			database.transaction = mock_transaction(null, {});
+			service.scalar('', [], function(v) { a = v }, function(error) { e = error; });
+		end
+		
+		it 'should not return a value'
+			expect(a).to(be_null);
+		end
+		
+		it 'should return an error'
+			e.should_not.be_null
+		end
+	end
+end

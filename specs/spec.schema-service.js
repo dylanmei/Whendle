@@ -1,100 +1,106 @@
 
-describe('Schema Service', function() {
-	default_version = '0.0';
-	database = new Whendle.DatabaseService(new Object());
-	before_each(function() {
+describe 'Schema Service'
+	before
+		database = new Whendle.DatabaseService(new Object());
 		service = new Whendle.SchemaService(database);
-	});
-
-	describe('When reading the schema', function() {
-		before(function() {
-			// first call is to find out if the version table exists
-			stub(database, 'scalar').and_return(function(s, p, on_result) {
+	end
+	
+	describe 'reading the schema'
+		before
+			a = null
+			e = null
+			database.scalar = function(s, p, on_result) {
 				// second call fetches the version
-				stub(database, 'scalar').and_return(function(s, p, on_result) {
-					on_result('ABC');
-				});
-
+				database.scalar = function(s, p, on_result) {
+					on_result('ABC')
+				}
 				on_result(true);
-			});
-		});
+			}
+			service.read(function(v) { a = v; }, function(error) { e = error; });
+		end
+	
+		it 'should provide the version'
+			a.should.be 'ABC'
+			service.version().should.be 'ABC'
+		end
 		
-		it('should call the success function with a version', function() {
-			service.read(function(v) { 
-					expect(v).to(equal, 'ABC');
-					expect(service.version()).to(equal, v); 
-				}, 
-				function() { fail('callback unexpected') }
-			);
-		});
-	});
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
 	
-	describe('When reading the schema for the first time', function() {
-		before(function() {
-			stub(database, 'scalar').and_return(function(s, p, on_result) {
-				on_result(false);
-			});
-		});
+	describe 'reading the schema for the first time'
+		before
+			a = null
+			e = null
+			database.scalar = function(s, p, on_result) {
+				on_result(false)
+			}
+			service.read(function(v) { a = v; }, function(error) { e = error; });
+		end
 		
-		it('should call the success function with the default version', function() {
-			service.read(function(v) {
-					expect(v).to(equal, default_version);
-					expect(service.version()).to(equal, v);
-				},
-				function() { fail('callback unexpected') }
-			);
-		});
-	});
-
-	describe('When reading the schema causes an error ', function() {
-		before(function() {
-			stub(database, 'scalar').and_return(function(s, p, r, on_error) {
-				on_error({ code: 0, message: 'oh pooh' });
-			});
-		});
+		it 'should provide the default version'
+			a.should.be '0.0'
+			service.version().should.be '0.0'
+		end
 		
-		it('should call the failure function with an error', function() {
-			service.read(
-				function() { fail('callback unexpected') },
-				function(e) {
-					expect(e).to(have_property, 'message', 'oh pooh');
-					expect(service.version()).to(equal, default_version);
-				}
-			);
-		});	
-	});
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
 	
-	describe('When updating the schema', function() {
-		before(function() {
-			migrator = new Whendle.Migrator('XYZ', database);
-		});
+	describe 'reading the schema causes an error'
+		before
+			a = null
+			e = null
+			database.scalar = function(s, p, on_result, on_error) {
+				on_error({})
+			}
+			service.read(function(v) { a = v; }, function(error) { e = error; });
+		end
+		
+		it 'should not return a value'
+			a.should.be_null
+		end
+		
+		it 'should return the error'
+			e.should_not.be_null
+		end
+	end
 	
-		it('should update the version', function() {
-			service.update(migrator,
-				function(v) {
-					expect(service.version()).to(equal, 'XYZ');
-				},
-				function() { fail('callback unexpected') }
-			);
-		});
-	});
+	describe 'updating the schema'
+		before
+			a = null
+			e = null
+			migrator = new Whendle.Migrator('XYZ', database)
+			service.update(migrator, function(v) { a = v; }, function(error) { e = error; });
+		end
+		
+		it 'should update the version'
+			a.should.be 'XYZ'
+			service.version().should.be 'XYZ'
+		end
+		
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
 	
-	describe('When updating the schema causes an error', function() {
-		before(function() {
-			migrator = new Whendle.Migrator('XYZ', database);
-			stub(migrator, 'go').and_return(function(on_complete, on_error) {
-				on_error({ code: 0, message: 'oh pooh' });
-			});
-		});
-	
-		it('should call the failure function with an error', function() {
-			service.update(migrator,
-				function() { fail('callback unexpected') },
-				function(e) {
-					expect(e).to(have_property, 'message', 'oh pooh');
-					expect(service.version()).to(equal, default_version);
-				}
-			);
-		});
-	});
-});
+	describe 'updating the schema causes an error'
+		before
+			a = null
+			e = null
+			migrator = new Whendle.Migrator('XYZ', database)
+			migrator.go = function(on_complete, on_error) { on_error({}); }
+			service.update(migrator, function(v) { a = v; }, function(error) { e = error; });
+		end
+		
+		it 'should update the version'
+			a.should.be_null
+		end
+		
+		it 'should not return an error'
+			e.should_not.be_null
+		end	
+	end
+end

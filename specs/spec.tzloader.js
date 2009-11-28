@@ -1,146 +1,110 @@
 
-describe('TzLoader', function() {
-	ajax = new Object();
-	loader = new Whendle.TzLoader(ajax, 'tzdata/');
-
-	before(function() {
-		tzdata = undefined;
-		error = undefined;
-	});
+describe 'TzLoader'
+	before_each
+		ajax = new Object()
+		loader = new Whendle.TzLoader(ajax, 'tzdata/')
+	end
 	
-	describe('When loading a typical zone', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(file, on_complete) {
+	describe 'loading a zone'
+		it 'should provide the contents of the corresponding file'
+			ajax.load = function(file, on_complete) {
 				on_complete('Zone Africa/Luanda');
-			});
+			};
 			
-			loader.load('Africa/Luanda',
-				function(results) { tzdata = results; },
-				function(e) { error = e; }
-			);
-		});
+			a = ''
+			loader.load('Africa/Luanda', function(contents) { a = contents; })
+			a.should.equal 'Zone Africa/Luanda'
+		end
 		
-		it('should provide the contents of the corresponding file', function() {
-			expect(tzdata).to(equal, 'Zone Africa/Luanda');
-		});
-		
-		it('should not provide an error', function() {
-			expect(error).to(be_undefined);	
-		});
-	});
-	
-	describe('When loading a zone that is not in the default file', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(file, on_complete) {
-				if (file.endsWith('europe')) {
-					on_complete('Zone Asia/Vladivostok');
-				}
-				else {
-					on_complete('Zone ABC/XYZ');
-				}
-			});
+		it 'should provide the contents of an alternate file'
+			ajax.load = function(file, on_complete) {
+				on_complete(file.endsWith('europe') ? 'Zone Asia/Vladivostok' : 'Zone Asia/XYZ');
+			}
 			
-			loader.load('Asia/Vladivostok',
-				function(results) { tzdata = results; },
-				function(e) { error = e; }
-			);
-		});
-
-		it('should not provide the contents of the default file', function() {
-			expect(tzdata).not_to(equal, 'Zone ABC/XYZ');
-		});
+			a = ''
+			loader.load('Asia/Vladivostok', function(contents) { a = contents; });
+			a.should.equal 'Zone Asia/Vladivostok'
+		end
 		
-		it('should provide the contents of the correct file', function() {
-			expect(tzdata).to(equal, 'Zone Asia/Vladivostok');
-		});
-		
-		it('should not provide and error', function() {
-			expect(error).to(be_undefined);
-		});
-	});
+		it 'should propogate errors'
+			ajax.load = function(file, on_complete, on_error) {
+				on_error({});
+			}
+			
+			e = null
+			loader.load('Africa/Luanda', Prototype.emptyFunction, function(error) { e = error; });
+			e.should_not.be_null
+		end
+	end
 	
-	// ZONE=AREA/LOCATION1/LOCATION2
-	describe('When loading a zone with an extra location deliniation', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(file, on_complete) {
+	describe 'loading a zone with an extra location deliniation'
+		it 'should provide the contents of the corresponding file'
+			ajax.load = function(file, on_complete) {
 				on_complete('Zone America/Argentina/Buenos_Aires');
-			});
+			};
 			
-			loader.load('America/Argentina/Buenos_Aires',
-				function(results) { tzdata = results; },
-				function(e) { error = e; }
-			);
-		});
-		
-		it('should provide the contents of the corresponding file', function() {
-			expect(tzdata).to(equal, 'Zone America/Argentina/Buenos_Aires');
-		});
-		
-		it('should not provide an error', function() {
-			expect(error).to(be_undefined);	
-		});		
-	});
+			a = ''
+			loader.load('America/Argentina/Buenos_Aires', function(contents) { a = contents; })
+			a.should.equal 'Zone America/Argentina/Buenos_Aires'
+		end	
+	end
 	
-	// ZONE=AREA/LOCATION
-	describe('When loading a zone with an area that does not exist', function() {
-		before(function() {
-			loader.load('XYZ/Seattle',
-				function(results) { tzdata = results },
-				function(e) { error = e; }
-			);
-		});
+	describe 'loading a zone with a non-existant area component'
+		before_each
+			ajax.load = Prototype.emptyFunction;
+		end
 		
-		it('should not provide results', function() {
-			expect(tzdata).to(be_undefined);
-		});
+		it 'should not provide any results'
+			a = ''
+			loader.load('XYZ/Atlantis', function(contents) { a = contents; });
+			a.should.equal ''
+		end
 		
-		it('should provide an error', function() {
-			expect(error).to(have_property, 'message', 'XYZ/Seattle does not exist');
-		});
-	});
+		it 'should provide an error'
+			e = null
+			loader.load('XYZ/Atlantis', Prototype.emptyFunction, function(error) { e = error; })
+			e.should_not.be_null
+		end
+	end
 	
-	// ZONE=AREA/LOCATION
-	describe('When loading a zone with a location that does not exist', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(file, on_complete) {
-				on_complete('Zone ABC/XYZ');
-			});
-			
-			loader.load('Asia/Shambala',
-				function(results) { tzdata = results; },
-				function(e) { error = e; }
-			);
-		});
+	describe 'loading a zone with a non-existant location component'
+		before_each
+			ajax.load = function(file, on_complete) { on_complete('Zone Asia/Vladivostok'); }
+		end
 		
-		it('should not provide results', function() {
-			expect(tzdata).to(be_undefined);
-		});
+		it 'should not provide any results'
+			a = ''
+			loader.load('Asia/Atlantis', function(contents) { a = contents; });
+			a.should.equal ''
+		end
 		
-		it('should provide an error', function() {
-			expect(error).to(have_property, 'message', 'Asia/Shambala does not exist');
-		});
-	});
+		it 'should provide an error'
+			e = null
+			loader.load('Asia/Atlantis', Prototype.emptyFunction, function(error) { e = error; })
+			e.should_not.be_null
+		end	
+	end
 	
-	describe('When loading a file causes an error', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(a, b, on_error) {
+	describe 'raising loading errors'
+		before_each
+			e = null
+			ajax.load = function(file, on_complete, on_error) {
 				on_error({ message: 'oh pooh' });
-			});
+			}
 			
-			loader.load('Antarctica/Casey',
-				function(results) { tzdata = results; },
-				function(e) { error = e; }
-			);
-		});
+			loader.load('Antarctica/Casey', Prototype.emptyFunction, function(error) { e = error; });
+		end
 		
-		it('should not provide results', function() {
-			expect(tzdata).to(be_undefined);
-		});
+		it 'should provide an error message'
+			e.should.have_property 'message', 'oh pooh'
+		end
 		
-		it('should provide an error', function() {
-			expect(error).to(have_property, 'message', 'oh pooh');
-			expect(error).to(have_property, 'timezone', 'Antarctica/Casey');
-			expect(error).to(have_property, 'file', 'tzdata/antarctica');
-		});
-	});
-});
+		it 'should provide a the timezone name'
+			e.should.have_property 'timezone', 'Antarctica/Casey'
+		end
+		
+		it 'should provide the file name'
+			e.should.have_property 'file', 'tzdata/antarctica'
+		end
+	end
+end

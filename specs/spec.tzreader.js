@@ -1,102 +1,98 @@
 
-describe('TzReader', function() {
+describe 'TzReader'
+	describe 'reading contents'
+		it 'breaks data into multiple lines'
+			reader = new Whendle.TzReader('a\nb')
+			reader.next_line().should.equal 'a'
+			reader.next_line().should.equal 'b'
+		end
+		
+		it 'ignores empty lines'
+			reader = new Whendle.TzReader('a\n\nb')
+			reader.next_line().should.equal 'a'
+			reader.next_line().should.equal 'b'
+		end
+		
+		it 'ignores comment lines'
+			reader = new Whendle.TzReader('a\n# X\nb')
+			reader.next_line().should.equal 'a'
+			reader.next_line().should.equal 'b'
+		end
+		
+		it 'ignores comments at the ends of lines'
+			reader = new Whendle.TzReader('a\nb # X\n\c')
+			reader.next_line().should.equal 'a'
+			reader.next_line().should.equal 'b'
+			reader.next_line().should.equal 'c'
+		end
+	end
 	
-	describe('When reading tzdata', function() {
-		it('breaks it into multiple lines', function() {
-			var reader = new Whendle.TzReader('a\nb');
-			expect(reader.next_line()).to(equal, 'a');
-			expect(reader.next_line()).to(equal, 'b');
-		});
-		
-		it('ignores empty lines', function() {
-			var reader = new Whendle.TzReader('a\n\nb');
-			expect(reader.next_line()).to(equal, 'a');
-			expect(reader.next_line()).to(equal, 'b');
-		});
-		
-		it('ignores lines beginning with comments', function() {
-			var reader = new Whendle.TzReader('a\n# X\nb');
-			expect(reader.next_line()).to(equal, 'a');
-			expect(reader.next_line()).to(equal, 'b');
-		});
-		
-		it('ignores comments at the end of a line', function() {
-			var reader = new Whendle.TzReader('a\nb # X\n\c');
-			expect(reader.next_line()).to(equal, 'a');
-			expect(reader.next_line()).to(equal, 'b');
-			expect(reader.next_line()).to(equal, 'c');
-		});
-	});
+	describe 'reading rules'
+		it 'ignores other lines'
+			reader = new Whendle.TzReader('a\nRule X\nb')
+			reader.next_rule().NAME.should.equal 'X'
+			reader.next_rule().should.be_null
+		end
+	end
 	
-	describe('When reading rules', function() {
-		it('ignores other lines', function() {
-			var reader = new Whendle.TzReader('a\nRule X\nb');
-			expect(reader.next_rule().NAME).to(equal, 'X');
-			expect(reader.next_rule()).to(be_null);
-		});
-	});
+	describe 'reading rules by name'
+		reader = new Whendle.TzReader('Rule X\nRule Y 1\nRule Y 2\nRule Z')
+		
+		it 'finds the first occurence of a rule'
+			rule = reader.next_rule('Y')
+			rule.should_not.be_null
+			rule.NAME.should.equal 'Y'
+			rule.FROM.should.equal '1'
+		end
+		
+		it 'finds the next occurence of a rule'
+			rule = reader.next_rule('Y')
+			rule.should_not.be_null
+			rule.NAME.should.equal 'Y'
+			rule.FROM.should.equal '2'
+		end
+		
+		it 'stops at the last occurence of a rule'
+			rule = reader.next_rule('Y')
+			rule.should.be_null
+		end
+	end	
 	
-	describe('When reading rules by name', function() {
-		before(function() {
-			reader = new Whendle.TzReader('Rule X\nRule Y 1\nRule Y 2\nRule Z');
-		});
+	describe 'reading zones'
+		it 'ignores other lines'
+			reader = new Whendle.TzReader('a\nZone X/Y 0:00\nb')
+			reader.next_zone().NAME.should.equal 'X/Y'
+			reader.next_zone().should.be_null
+		end
+		
+		it 'delineates multiple zone lines'
+			reader = new Whendle.TzReader('Zone\tX/Y\t1:00\n\t\t\t2:00')
+			reader.next_zone().NAME.should.equal 'X/Y'
+			reader.next_zone().NAME.should.equal 'X/Y'
+			reader.next_zone().should.be_null
+		end
+	end
 	
-		it('finds the first occurence of a rule', function() {
-			var rule = reader.next_rule('Y');
-			expect(rule).not_to(be_null);
-			expect(rule.NAME).to(equal, 'Y');
-			expect(rule.FROM).to(equal, '1');
-		});
+	describe 'reading zones by name'
+		reader = new Whendle.TzReader('Zone X/Y\nZone Y/Z\t1:00\n\t\t\t-1:00\nZone Z/X')
 		
-		it('find the next occurence of a rule', function() {
-			var rule = reader.next_rule('Y');
-			expect(rule).not_to(be_null);
-			expect(rule.NAME).to(equal, 'Y');
-			expect(rule.FROM).to(equal, '2');
-		});
+		it 'finds the first occurence of a zone'
+			zone = reader.next_zone('Y/Z')
+			zone.should_not.be_null
+			zone.NAME.should.equal 'Y/Z'
+			zone.GMTOFF.should.equal '1:00'
+		end
 		
-		it('stops at the last occurence of a rule', function() {
-			var rule = reader.next_rule('Y');
-			expect(rule).to(be_null);
-		});
-	});
-
-	describe('When reading zones', function() {
-		it('ignores other lines', function() {
-			var reader = new Whendle.TzReader('a\nZone X/Y 0:00\nb');
-			expect(reader.next_zone().NAME).to(equal, 'X/Y');
-			expect(reader.next_zone()).to(be_null);
-		});
+		it 'find the next occurence of a zone'
+			zone = reader.next_zone('Y/Z')
+			zone.should_not.be_null
+			zone.NAME.should.equal 'Y/Z'
+			zone.GMTOFF.should.equal '-1:00'
+		end
 		
-		it('delineates multiple zone lines', function() {
-			var reader = new Whendle.TzReader('Zone\tX/Y\t1:00\n\t\t\t2:00');
-			expect(reader.next_zone().NAME).to(equal, 'X/Y');
-			expect(reader.next_zone().NAME).to(equal, 'X/Y');
-		});
-	});
-
-	describe('When reading zones by name', function() {
-		before(function() {
-			reader = new Whendle.TzReader('Zone X/Y\nZone Y/Z\t1:00\n\t\t\t-1:00\nZone Z/X');
-		});
-	
-		it('finds the first occurence of a zone', function() {
-			var zone = reader.next_zone('Y/Z');
-			expect(zone).not_to(be_null);
-			expect(zone.NAME).to(equal, 'Y/Z');
-			expect(zone.GMTOFF).to(equal, '1:00');
-		});
-		
-		it('find the next occurence of a zone', function() {
-			var zone = reader.next_zone('Y/Z');
-			expect(zone).not_to(be_null);
-			expect(zone.NAME).to(equal, 'Y/Z');
-			expect(zone.GMTOFF).to(equal, '-1:00');
-		});
-		
-		it('stops at the last occurence of a zone', function() {
-			var zone = reader.next_zone('Y/Z');
-			expect(zone).to(be_null);
-		});		
-	});
-});
+		it 'stops at the last occurence of a zone'
+			zone = reader.next_zone('Y/Z')
+			zone.should.be_null
+		end	
+	end
+end

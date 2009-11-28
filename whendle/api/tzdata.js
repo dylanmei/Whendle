@@ -36,7 +36,7 @@ Whendle.TzZone = Class.create({
 	},
 	
 	_parse: function() {
-		var rex = /Zone(?:\s(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:?\d*:?\d*))?(?:\s(\S+))?(?:\s(\S+))?(?:\s(.*))?/;
+		var rex = /Zone(?:\s+(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:?\d*:?\d*))?(?:\s+(\S+))?(?:\s+(\S+))?(?:\s+(.*))?/;
 		this._values = rex.exec(this._data);
 	}
 });
@@ -76,7 +76,7 @@ Whendle.TzRule = Class.create({
 	},
 	
 	_parse: function() {
-		var rex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+([^\t]+))?(?:\s+(\d+:\d+))?(?:[wsugz])?(?:\s+(\d+:?\d*))?(?:\s+([^\t]+))?/;
+		var rex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+(\S+))?(?:\s+(\S+))?(?:\s+(\S+))?(?:\s+(\d+:\d+))?(?:[wsugz])?(?:\s+(\d+:?\d*))?(?:\s+(\S+))?/;
 		this._values = rex.exec(this._data);
 	}
 });
@@ -118,10 +118,6 @@ Whendle.TzDay = Class.create({
 	
 	after: function(date, year) {
 		return this._compare(date, year || date.getUTCFullYear()) == 1;
-	},
-	
-	equals: function(date) {
-		return this._compare(date, date.getUTCFullYear()) == 0;
 	},
 	
 	_compare: function(d, y) {

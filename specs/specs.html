@@ -4,7 +4,7 @@
 		<script src="../jspec/lib/jspec.js"></script>
 		<script>
 function runSuites() {
-	$('v').insert('<div>Whendle #{w}, Prototype #{p}</div>'
+	$('versions').insert('<div>Whendle #{w}, Prototype #{p}</div>'
 		.interpolate({ w: Whendle.version, p: Prototype.Version }));
 
 	JSpec
@@ -20,7 +20,10 @@ function runSuites() {
 		.exec('spec.schema-service.js')
 		.exec('spec.migrators.js')
 		.exec('spec.timezone-service.js')
-		.exec('spec.gallery.js')
+		.exec('spec.gallery.loading.js')
+		.exec('spec.gallery.adding.js')
+		.exec('spec.gallery.removing.js')
+		.exec('spec.gallery.updating.js')
 		.exec('spec.finder.js')
 	.run({ failuresOnly: true })
 	.report();
@@ -47,7 +50,7 @@ function runSuites() {
 		<link type="text/css" rel="stylesheet" href="../jspec/lib/jspec.css" />
 	</head>
 	<body class="jspec" onLoad="runSuites();">
-		<div id="v" style="position:absolute;top:12px;left:24px;"></div>
+		<div id="versions" style="position:absolute;top:12px;left:24px;"></div>
 		<div id="jspec-top"><h2 id="jspec-title">JSpec <em><script>document.write(JSpec.version)</script></em></h2>
 		</div>
 		<div id="jspec"><div class="loading"></div></div>

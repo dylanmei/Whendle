@@ -1,56 +1,48 @@
 
-describe('Timezone Service', function() {
-	ajax = new Object();
+
+describe 'Timezone Service'
+	ajax = new Object
+	service = new Whendle.TimezoneService(ajax)
+	mock_response = function(offset, timezone) {
+		return { 'rawOffset': offset, 'timezoneId': timezone }
+	}
 	
-	before(function() {
-		error = undefined;
-		timezone = undefined;
-		service = new Whendle.TimezoneService(ajax);
-	});
+	describe 'looking up a timezone'
+		before
+			a = null;
+			e = null;
+			ajax.load = function(url, on_success) {
+				on_success(mock_response(123, 'abc'))
+			}
+			service.lookup(0, 0, function(v) { a = v; }, function(error) { e = error; });
+		end
+		
+		it 'should provide the timezone'
+			a.name.should.be 'abc'
+			a.offset.should.be 123 * 60
+		end
+		
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
 	
-	describe('When looking up a timezone', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(url, on_success) {
-				on_success({ 'rawOffset': 123, 'timezoneId': 'Some/Timezone' });
-			});
-
-			service.lookup(0, 0,
-				function(v) { timezone = v; }, 
-				function(e) { error = e; }
-			);			
-		});
-
-		it('should provide the identifier of the timezone', function() {
-			expect(timezone.name).to(equal, 'Some/Timezone');
-		});
+	describe 'handling an ajax error'
+		before
+			a = null;
+			e = null;
+			ajax.load = function(url, on_success, on_error) {
+				on_error({})
+			}
+			service.lookup(0, 0, function(v) { a = v; }, function(error) { e = error; });
+		end
 		
-		it('should provide the offset of the timezone', function() {
-			expect(timezone.offset).to(equal, 123 * 60);
-		});
+		it 'should not provide a result'
+			a.should.be_null
+		end
 		
-		it('should not provide an error', function() {
-			expect(error).to(be_undefined);
-		});
-	});
-
-	describe('When looking up a timezone causes an ajax error', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(r, s, on_error) {
-				on_error({ message: 'oh pooh' });
-			});
-
-			service.lookup(0, 0,
-				function(v) { timezone = v; }, 
-				function(e) { error = e; }
-			);	
-		});
-
-		it('should not provide a result', function() {
-			expect(timezone).to(be_undefined);
-		});
-
-		it('should provide an error', function() {
-			expect(error).to(have_property, 'message', 'oh pooh');
-		});
-	});
-});
+		it 'shouldreturn an error'
+			e.should_not.be_null
+		end
+	end
+end

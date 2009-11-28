@@ -1,46 +1,42 @@
 
-describe('TzRule', function() {
-	
-	describe('When making a typical rule object', function() {
-
-		before(function() {
-			rule = new Whendle.TzRule('Rule	Tunisia	1939	only	-	Apr	15	23:00s	1:00	S');
-		});
+describe 'TzRule'
+	describe 'creating a rule object from a tzdata line'
+		rule = new Whendle.TzRule('Rule	Tunisia	1939	only	-	Apr	15	23:00s	1:00	S')
 		
-		it('has a NAME value', function() {
-			expect(rule.NAME).to(equal, 'Tunisia');
-		});
+		it 'should have a NAME value'
+			rule.NAME.should.be 'Tunisia'
+		end
 		
-		it('has a FROM value', function() {
-			expect(rule.FROM).to(equal, '1939');
-		});
+		it 'should have a FROM value'
+			rule.FROM.should.be '1939'
+		end
 		
-		it('has a TO value', function() {
-			expect(rule.TO).to(equal, 'only');
-		});
+		it 'should have a TO value'
+			rule.TO.should.be 'only'
+		end
 		
-		it('has a TYPE value', function() {
-			expect(rule.TYPE).to(equal, '-');
-		});
+		it 'should have a TYPE value'
+			rule.TYPE.should.be '-'
+		end
 		
-		it('has an IN value', function() {
-			expect(rule.IN).to(equal, 'Apr');
-		});
+		it 'should have an IN value'
+			rule.IN.should.be 'Apr'
+		end
 		
-		it('has an ON value', function() {
-			expect(rule.ON).to(equal, '15');
-		});
+		it 'should have an ON value'
+			rule.ON.should.be '15'
+		end
 		
-		it('has an AT value', function() {
-			expect(rule.AT).to(equal, '23:00');
-		});
+		it 'should have an AT value'
+			rule.AT.should.be '23:00'
+		end
 		
-		it('has a SAVE value', function() {
-			expect(rule.SAVE).to(equal, '1:00');
-		});
+		it 'should have a SAVE value'
+			rule.SAVE.should.be '1:00'
+		end
 		
-		it('has a LETTERS value', function() {
-			expect(rule.LETTERS).to(equal, 'S');
-		});
-	});
-});
+		it 'should have a LETTERS value'
+			rule.LETTERS.should.be 'S'
+		end
+	end
+end

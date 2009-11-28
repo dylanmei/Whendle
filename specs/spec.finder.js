@@ -1,116 +1,124 @@
 
-describe('Finder (Search)', function() {
-	ajax = new Object();
-	database = new Object();
-	view = new (Class.create(Whendle.Finder.View, {
-		initialize: function($super) { $super(); },
-		loaded: function(a, b, c, d) { places = a; index = b; total = c; error = d; }
-	}))();
+describe 'Finder'
+	ajax = new Object
+	datbase = new Object
+	view = new Whendle.View
+	presenter = new Whendle.Finder.Presenter(view, ajax, database)
 	
-	before(function() {
-		index = undefined;
-		total = undefined;
-		places = undefined;
-		error = undefined;
-		presenter = new Whendle.Finder.Presenter(view, ajax, database);
-	});
+	mock_results = function(results, count) {
+		return { 'totalResultsCount': count || results.length, 'geonames': results }
+	}
 	
-	describe('When a search has less than 4 characters', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function() {
-				places = 'oops';
-			});
-
-			view.fire(Whendle.Events.searching, { query: '123' });
-		});
+	describe 'searches with less than the minimum characters'
+		before
+			a = null
+			b = null
+			e = null
+			ajax.load = function() { a = true; }
+			view.loaded = function(locations, index, total, error) { b = true; e = error; }
+			view.fire(Whendle.Events.searching, { query: 'abc' })
+		end
 		
-		it('should not make a search request', function() {
-			expect(places).to(be_undefined);
-		});
+		it 'should not make a service request'
+			a.should.be_null
+		end
 		
-		it('should not provide an err', function() {
-			expect(error).to(be_undefined);
-		});		
-	});
-	
-	describe('When a search yields no results', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(r, on_success) {
-				on_success({ 'totalResultsCount': 0, 'geonames': [] });
-			});
-			
-			view.fire(Whendle.Events.searching, { query: '1234' });
-		});
-	
-		it('should not provide any places', function() {
-			expect(Object.isArray(places)).to(be, true);
-			expect(places).to(be_empty);
-		});
+		it 'should not respond to the view'
+			b.should.be_null
+		end
 		
-		it('should provide zero as the index of the results', function() {
-			expect(index).to(equal, 0);
-		});
-		
-		it('should provide zero as the total count of results', function() {
-			expect(total).to(equal, 0);
-		});
-		
-		it('should not provide an error', function() {
-			expect(error).to(be_undefined);
-		});		
-	});
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
 	
-	describe('When a search yields results', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(r, on_success) {
-				on_success({ 'totalResultsCount': 1234, 'geonames': [ {}, {}, {} ] });
-			});
-			
-			view.fire(Whendle.Events.searching, { start: 987, query: '1234' });
-		});
-	
-		it('should provide places', function() {
-			expect(Object.isArray(places)).to(be, true);
-			expect(places).to(have_length, 3);
-		});
+	describe 'searches that return with no results'
+		before
+			a = null
+			b = null
+			c = null
+			e = null
+			ajax.load = function(r, on_success) {
+				on_success(mock_results([]));
+			}
+			view.loaded = function(locations, index, total, error) { a = locations; b = index; c = total; e = error; }
+			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
+		end
 		
-		it('should provide the index of the results', function() {
-			expect(index).to(equal, 987);
-		});
+		it 'should provide an empty set of locations'
+			a.should.be_empty
+		end
 		
-		it('should provide the total count of results', function() {
-			expect(total).to(equal, 1234);
-		});
+		it 'should return 0 for an index'
+			b.should.be 0
+		end
 		
-		it('should not provide an error', function() {
-			expect(error).to(be_undefined);
-		});			
-	});
+		it 'should return 0 for the total'
+			c.should.be 0
+		end
+		
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
 	
-	describe('When a search causes an error', function() {
-		before(function() {
-			stub(ajax, 'load').and_return(function(a, b, on_error) {
-				on_error({ message: 'oh pooh' });
-			});
-			
-			view.fire(Whendle.Events.searching, { query: '1234' });
-		});
+	describe 'searches that return with results'
+		before
+			a = null
+			b = null
+			c = null
+			e = null
+			ajax.load = function(r, on_success) {
+				on_success(mock_results([{}, {}, {}]));
+			}
+			view.loaded = function(locations, index, total, error) { a = locations; b = index; c = total; e = error; }
+			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
+		end		
+		
+		it 'should provide a set of locations'
+			a.should.have_length 3
+		end
+		
+		it 'should return an index'
+			b.should.be 0
+		end
+		
+		it 'should return the total'
+			c.should.be 3
+		end
+		
+		it 'should not return an error'
+			e.should.be_null
+		end		
+	end
 	
-		it('should not provide any places', function() {
-			expect(places).to(be_null);
-		});
-
-		it('should provide zero as the index of the results', function() {
-			expect(index).to(equal, 0);
-		});
-
-		it('should provide zero as the total count of results', function() {
-			expect(total).to(equal, 0);
-		});
-	
-		it('should provide an error', function() {
-			expect(error).to(have_property, 'message', 'oh pooh');
-		});
-	});
-});
-
+	describe 'searches that cause an error'
+		before
+			a = null
+			b = null
+			c = null
+			e = null
+			ajax.load = function(r, on_success, on_error) {
+				on_error({});
+			}
+			view.loaded = function(locations, index, total, error) { a = locations; b = index; c = total; e = error; }
+			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
+		end		
+		
+		it 'should not provide a set of locations'
+			a.should.be_null
+		end
+		
+		it 'should return an index'
+			b.should.be 0
+		end
+		
+		it 'should return the total'
+			c.should.be 0
+		end
+		
+		it 'should not return an error'
+			e.should_not.be_null
+		end		
+	end	
+end
