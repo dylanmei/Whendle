@@ -1,5 +1,10 @@
 /* This file belongs to Whendle, a clock application for the Palm Pre */
 
+.splash-image {
+	width: 100%;
+	text-align: center;
+}
+
 .splash-activity {
 	position: fixed;
 	bottom: 10px;
