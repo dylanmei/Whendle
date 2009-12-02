@@ -27,7 +27,7 @@
 Whendle.Gallery = {
 };
 
-Whendle.Gallery.View = Class.create(Whendle.View, {
+Whendle.Gallery.View = Class.create(Whendle.Observable, {
 	initialize: function($super) {
 		$super();
 	},

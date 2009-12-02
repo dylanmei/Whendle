@@ -3,7 +3,7 @@ describe 'Gallery'
 	database = new Object
 	timezones = new Object
 	timekeeper = new Whendle.Observable
-	view = new Whendle.View
+	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database)
 	
 	describe 'removing a clock'

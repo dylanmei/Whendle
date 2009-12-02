@@ -8,7 +8,7 @@ describe 'Gallery'
 	timekeeper.time_format = function() { return ''; }
 	timekeeper.localtime = function() { return Date.to_object(Date.current()); }
 	
-	view = new Whendle.View
+	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database)
 	
 	mock_tzlookup_result = function(name, offset) {

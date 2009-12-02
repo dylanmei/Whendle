@@ -5,7 +5,6 @@
 	{ "source": "api\/timezone.js" },
 	{ "source": "api\/wait.js" },
 	{ "source": "api\/observable.js" },
-	{ "source": "api\/view.js" },
 	{ "source": "api\/palm-service.js" },
 	{ "source": "api\/settings-service.js" },
 	{ "source": "api\/database-service.js" },

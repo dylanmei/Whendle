@@ -27,7 +27,7 @@
 Whendle.Finder = {
 };
 
-Whendle.Finder.View = Class.create(Whendle.View, {
+Whendle.Finder.View = Class.create(Whendle.Observable, {
 	initialize: function($super) {
 		$super();
 	},

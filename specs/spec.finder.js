@@ -2,7 +2,7 @@
 describe 'Finder'
 	ajax = new Object
 	datbase = new Object
-	view = new Whendle.View
+	view = new Whendle.Observable
 	presenter = new Whendle.Finder.Presenter(view, ajax, database)
 	
 	mock_results = function(results, count) {
