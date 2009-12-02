@@ -10,13 +10,11 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	setup: function() {
 		this.model = {
-			'items': [],
-			'format': 'HH24'
+			'items': []
 		};
 		this.setup_widgets();
 		this.attach_events();
-	
-		this.fire(Whendle.Events.loading, {});
+		this.fire(Whendle.Events.loading, { 'timer': new Whendle.Timer(this.controller.window) });
 	},
 	
 	setup_widgets: function() {
@@ -49,58 +47,53 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_remove_clock: function(event) {
 		var clock = event.item;
-		$.trace('about to remove...', clock.location);
-		this.fire(Whendle.Events.removing, { 'clock': clock });
+		this.fire(Whendle.Events.removing, { 'id': clock.id });
 	},
 	
-	clocks_loaded: function(event, error) {
-		if (this.report_error(error)) return;
+	loaded: function(event) {
+		if (this.report_error(event.error)) return;
 
 		this.model.items = event.clocks;
-		this.model.format = event.format;
 		this.controller.modelChanged(this.model, this);
-		this.start_clocks();
 	},
 
-	clock_added: function(event, error) {
-		var current = this.model.items.pop();
-		var clock = event.clock;
-		var format = event.format;
+	added: function(event) {
+		if (this.report_error(event.error)) return;
 		
-		if (this.report_error(error)) {
-			clock = current;
-			clock.adding = false;
-			format = this.model.format;
-		}
-		
-		this.model.items.push(clock);
-		this.model.format = format;
+		this.model.items.push(event.clocks[0]);
 		this.controller.modelChanged(this.model, this);
-		this.update_clocks();
 	},
 	
-	clock_removed: function(event, error) {
-		if (this.report_error(error)) return;
-		
-		// todo: need to clean the model?
+	removed: function(event) {
+		if (this.report_error(event.error)) return;
+
 		clock = this.model.items.find(function(c) {
-			return c.id == event.id;
+			return c.id == event.clocks[0].id;
 		});
 		
 		if (clock) {
 			this.model.items = this.model.items.without(clock);
 			this.controller.modelChanged(this.model, this);
-			this.update_clocks();
 		}
 	},
 	
-	clock_updated: function(event, error) {
-		this.update_clocks();
-	},
-	
-	refresh: function(event) {
-		this.stop_clocks();
-		this.fire(Whendle.Events.loading, {});
+	changed: function(event) {
+		if (this.report_error(event.error)) return;
+		var clocks = event.clocks;
+		var items = this.model.items;
+		var changes = false;
+		clocks.each(function(clock) {
+			match = items.find(function(item) {
+				return item.id == clock.id;
+			});
+			if (match) {
+				changes = true;
+				match.time = clock.time;
+				match.day = clock.day;
+			}
+		});
+		if (changes)
+			this.controller.modelChanged(this.model, this);
 	},
 	
 	report_error: function(error) {
@@ -113,86 +106,11 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		if (location && location.name) {
 			// assuming we have come from the finder
 			// after the user has found a location...
-			this.new_clock(location);
+			this.fire(Whendle.Events.adding, { 'location': location });
 		}
-		
-		if (this.timer == -1) {
-			this.start_clocks();
-		}
-	},
-	
-	new_clock: function(location) {
-		var clock = new Whendle.Clock.from_location(location);
-		clock.adding = true;
-		this.model.items.push(clock);
-		this.controller.modelChanged(this.model, this);
-		
-		this.fire(Whendle.Events.adding, { 'location': location });
-	},
-
-	start_clocks: function() {
-		this.update_clocks();
-
-		var now = Date.current();
-		this.start_timer.bind(this)
-			.delay(60 - now.getSeconds());
-	},
-	
-	start_timer: function() {
-		this.update_clocks();
-		this.timer = new PeriodicalExecuter(
-			this.update_clocks.bind(this), 60, this.controller.window);
-	},
-	
-	update_clocks: function() {
-		var now = Date.current();
-		
-		var length = this.list.mojo.getLength();
-		for (var i = 0; i < length; i++) {
-			var row = this.list.mojo.getNodeByIndex(i);
-			var clock = this.list.mojo.getItemByNode(row);
-			
-			var when = now.copy();
-			when.addMinutes(when.getTimezoneOffset());
-			when.addMinutes(clock.offset);
-			
-			row.down('div.gallery-row-time').innerHTML = this.format_time(when);
-			row.down('div.gallery-row-day').innerHTML = this.format_day(when);
-		}
-	},
-	
-	format_time: function(t) {
-	
-		var hours = t.getHours().toString();
-		var minutes = t.getMinutes().toPaddedString(2);
-		
-		if (this.model.format == 'HH12') {
-			var template = t.getHours() < 12 ? $.string('time_HH12am') : $.string('time_HH12pm');
-			return template.interpolate({ 'hours': (hours % 12 || 12), 'minutes': minutes });
-		}
-		
-		return $.string('time_HH24').interpolate({ 'hours': hours, 'minutes': minutes });
-	},
-	
-	format_day: function(d) {
-		var today = Date.today();
-		var day = d.copy();
-		day.setMilliseconds(0);
-		day.setSeconds(0);
-		day.setMinutes(0);
-		day.setHours(0);
-		return day < today ? 'Yesterday' : day > today ? 'Tomorrow' : 'Today';
 	},
 	
 	deactivate: function(event) {
-		this.stop_clocks();
-	},
-	
-	stop_clocks: function() {
-		if (this.timer && this.timer != -1) {
-			this.timer.stop();
-			this.timer = -1;
-		}
 	},
 	
 	cleanup: function(event) {

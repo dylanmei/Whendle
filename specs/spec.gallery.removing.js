@@ -14,15 +14,13 @@ describe 'Gallery'
 			database.remove = function(s, p, on_result) {
 				on_result(b = true)
 			}
-			view.clock_removed = function(event, error) { a = event; e = error; }
-			view.fire(Whendle.Events.removing, {
-				'clock': new Whendle.Clock(987, 'XYZ', 456, new Whendle.Location('A', 'B', 'C', 1, 23))
-			});
+			view.removed = function(event) { a = event.clocks; e = event.error; }
+			view.fire(Whendle.Events.removing, { 'id': 987 });
 		end
 		
-		it 'should return the id of the clock'
-			a.should.have_property 'id'
-			a.id.should.be 987
+		it 'should return the clock'
+			a.should.have_length 1
+			a[0].id.should.be 987
 		end
 		
 		it 'should delete the clock from the database'
@@ -41,18 +39,16 @@ describe 'Gallery'
 			database.remove = function(s, p, on_result, on_error) {
 				on_error({})
 			}
-			view.clock_removed = function(event, error) { a = event; e = error; }
-			view.fire(Whendle.Events.removing, {
-				'clock': new Whendle.Clock(987, 'XYZ', 456, new Whendle.Location('A', 'B', 'C', 1, 23))
-			});
+			view.removed = function(event) { a = event.clocks; e = event.error; }
+			view.fire(Whendle.Events.removing, { 'id': 987 });
 		end		
 	
 		it 'should not return a result'
-			a.should_not.have_property 'id'
+			a.should.be_empty
 		end
 		
 		it 'should return an error'
-			e.should_not.be_null
+			e.should_not.be_undefined
 		end
 	end
 end

@@ -41,6 +41,8 @@ Whendle.Clock.from_location = function(location) {
 with (Whendle.Clock.prototype) {
 	__defineGetter__('location', function() { return this._location.name; });
 	__defineGetter__('area', function() { return this._location.area; });
+	__defineGetter__('country', function() { return this._location.country; });
+	__defineGetter__('district', function() { return this._location.district; });
 	__defineGetter__('latitude', function() { return this._location.latitude; });
 	__defineGetter__('longitude', function() { return this._location.longitude; });
 }

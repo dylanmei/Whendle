@@ -39,7 +39,8 @@ Whendle = {
 		loading: ':loading',
 		searching: ':searching',
 		adding: ':adding',
-		removing: ':removing'
+		removing: ':removing',
+		timer: ':timer'
 	},
 	
 	services: function(name, instance) {

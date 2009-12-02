@@ -26,8 +26,8 @@
 
 Whendle.Timezone = Class.create({
 	initialize: function(tz_zones, tz_rules) {
-		this._zones = tz_zones;
-		this._rules = tz_rules;
+		this._zones = tz_zones || [];
+		this._rules = tz_rules || [];
 	},
 
 	offset: function(date) {

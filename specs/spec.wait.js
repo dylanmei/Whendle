@@ -82,4 +82,23 @@ describe 'Wait'
 			done.should.be_true
 		end
 	end
+	
+	describe 'default activities'
+		before
+			a()
+			b()
+			c = wait.on(/* no parameters */)
+			wait.ready()
+		end
+		
+		it 'should block the wait'
+			done.should.be_false
+		end
+		
+		
+		it 'should resume the wait when invoked'
+			c()
+			done.should.be_true
+		end
+	end
 end

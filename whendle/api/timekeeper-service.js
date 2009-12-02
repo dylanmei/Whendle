@@ -24,16 +24,59 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+Whendle.Timer = Class.create(Whendle.Observable, {
+	initialize: function($super, window) {
+		$super();
+		this.window = window;
+		this.frequency = 1;
+	},
+
+	start: function() {
+		this.mark = Date.current().getMinutes();
+		this.timer = this.window.setInterval(
+			this.on_interval.bind(this), 1000);
+	},
+
+	execute: function() {
+		this.fire(Whendle.Events.timer);
+	},
+
+	stop: function() {
+		if (this.timer) {
+			this.window.clearInterval(this.timer);
+			this.timer = null
+		}
+	},
+
+	on_interval: function() {
+		var minute = Date.current().getMinutes();
+		if (minute == this.mark) return;
+	
+		if (!this.executing) {
+			try {
+				this.executing = true;
+				this.execute();
+			}
+			finally {
+				this.mark = minute;
+				this.executing = false;
+			}
+		}
+	}
+});
+
 Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 	initialize: function($super, system) {
 		$super();
 		this._system = system || new Whendle.PalmService();
+		this._localtime = { 'year': 0, 'month': 0, 'day': 0, 'hour': 0, 'minute': 0, 'second': 0 }
 		this._format = null;
 		this._timezone = null;
 		this._listener = null;
 	},
 	
 	setup: function(on_complete, on_error) {
+		var self = this;
 		var wait = new Whendle.Wait(on_complete);
 		var on_preferences = wait.on(this._on_preferences.bind(this, 'setup'));
 		var on_system_time = wait.on(this._on_system_time.bind(this, 'setup'));
@@ -42,6 +85,17 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		this._make_system_time_request(on_system_time);
 		
 		wait.ready();
+	},
+	
+	start: function(timer) {
+		this.timer = timer;
+		timer.observe(Whendle.Events.timer,
+			this.on_timer_tick.bind(this));
+		timer.start();
+	},
+	
+	stop: function() {
+		if (this.timer) this.timer.stop();
 	},
 	
 	_on_preferences: function(call_state, p) {
@@ -54,12 +108,15 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		else {
 			if (p.timeFormat != this._format) {
 				this._format = p.timeFormat;
-				this.fire(Whendle.Events.system, 'time format changed');
+				this.fire(Whendle.Events.system, 'timeformat');
 			}
 		}
 	},
 	
 	_on_system_time: function(call_state, t) {
+		this._localtime = t.localtime;
+		this._localtime.offset = t.offset;
+		
 		if (call_state == 'setup') {
 			this._timezone = t.timezone;
 			// first time, so subscribe
@@ -69,7 +126,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		else {
 			if (t.timezone != this._timezone) {
 				this._timezone = t.timezone;
-				this.fire(Whendle.Events.system, 'timezone changed');
+				this.fire(Whendle.Events.system, 'timezone');
 			}
 		}
 	},
@@ -88,6 +145,19 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 			parameters: { 'subscribe': subscribe || false },
 			onSuccess: callback
 		});
+	},
+	
+	on_timer_tick: function() {
+		var d = Date.from_object(this._localtime);
+		d.addMinutes(1); // fixme: gahhh
+		var time = Date.to_object(d);
+		time.offset = this._localtime.offset;
+		this._localtime = time;
+		this.fire(Whendle.Events.timer, this._localtime);
+	},
+	
+	localtime: function() {
+		return this._localtime;
 	},
 	
 	timezone: function() {

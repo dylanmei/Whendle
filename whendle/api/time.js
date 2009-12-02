@@ -34,9 +34,22 @@ Date.today = function() {
 }
 
 Date.current = function() {
-	var now = new Date();
-//	now.addMonths(-1);
-	return now;
+	return new Date();
+}
+
+Date.to_object = function(date) {
+	return {
+		'year': date.getFullYear(),
+		'month': date.getMonth(),
+		'day': date.getDate(),
+		'hour': date.getHours(),
+		'minute': date.getMinutes(),
+		'second': date.getSeconds()
+	};
+}
+
+Date.from_object = function(obj) {
+	return new Date(obj.year, obj.month, obj.day, obj.hour, obj.minute, obj.second);
 }
 
 Date.prototype.copy = function() {

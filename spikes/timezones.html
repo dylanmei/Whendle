@@ -13,9 +13,9 @@
 	<script src="../whendle/api/timezone-service.js"></script>
 	<script>
 
-document.tzpath = '../whendle/tzdata'; // copy to ./tzdata for mozilla
-document.observe('dom:loaded', function() {
+document.tzpath = '../whendle/tzdata'; // firefox set ~ security.fileuri.strict_origin_policy = false
 
+document.observe('dom:loaded', function() {
 	prepare_date();
 	
 	$$('.links li').each(function(li) {

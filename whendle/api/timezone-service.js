@@ -65,7 +65,6 @@ Whendle.TimezoneService = Class.create({
 	load: function(name, on_complete, on_error) {
 		on_complete = on_complete || Prototype.emptyFunction;
 		on_error = on_error || Prototype.emptyFunction;
-		
 		this._tzloader.load(
 			name,
 			this._on_load_result.bind(this, name, on_complete, on_error),
@@ -75,7 +74,6 @@ Whendle.TimezoneService = Class.create({
 	
 	_on_load_result: function(name, on_complete, on_error, text) {
 		var zone_reader = this._new_reader(text);
-		
 		var rules = [];
 		var zones = [];
 		

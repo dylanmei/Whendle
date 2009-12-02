@@ -32,6 +32,10 @@ Whendle.Wait = Class.create({
 	
 	on: function(activity) {
 		this._ready = false;
+
+		if (!activity)
+			activity = function() {};
+
 		this._activities.push(activity);
 		return this._on_activity.bind(this, activity);
 	},
@@ -57,7 +61,7 @@ Whendle.Wait = Class.create({
 		activity.apply(0, args);
 
 		this._activities = this._activities
-			.reject(function(a) { return a == activity; });
+			.reject(function(a) { return a === activity; });
 		
 		this._try_callback();
 	}
