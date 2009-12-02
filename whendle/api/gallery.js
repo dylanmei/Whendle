@@ -168,7 +168,9 @@ Whendle.Gallery.Presenter = Class.create({
 		day.setSeconds(0);
 		day.setMinutes(0);
 		day.setHours(0);
-		return day < today ? 'Yesterday' : day > today ? 'Tomorrow' : 'Today';
+		return day < today
+			? $.string('day_Yesterday', 'Yesterday') : day > today
+				? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
 	},
 
 	_on_add_clock: function(view, event) {

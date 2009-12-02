@@ -12,4 +12,7 @@
 	, "time_HH24": "#{hours}:#{minutes}"
 	, "time_HH12am": "#{hours}:#{minutes} am"
 	, "time_HH12pm": "#{hours}:#{minutes} pm"
+	, "day_Today": "Today"
+	, "day_Yesterday": "Yesterday"
+	, "day_Tomorrow": "Tomorrow"
 }
