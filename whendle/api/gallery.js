@@ -128,10 +128,11 @@ Whendle.Gallery.Presenter = Class.create({
 	
 	adjust_clock: function(clock, localtime, on_complete) {
 		var self = this;
+		var now = Date.from_object(localtime);
 		var on_timezone = function(timezone) {
 			var when = self.offset_time(localtime, timezone);
 			clock.time = self.format_time(when);
-			clock.day = self.format_day(when);
+			clock.day = self.format_day(now, when);
 			on_complete();
 		};
 		this._timezones.load(clock.timezone, on_timezone);
@@ -161,15 +162,11 @@ Whendle.Gallery.Presenter = Class.create({
 		return $.string('time_HH24', '#{hours}:#{minutes}').interpolate({ 'hours': hours, 'minutes': minutes });
 	},
 	
-	format_day: function(d) {
-		var today = Date.today();
-		var day = d.copy();
-		day.setMilliseconds(0);
-		day.setSeconds(0);
-		day.setMinutes(0);
-		day.setHours(0);
-		return day < today
-			? $.string('day_Yesterday', 'Yesterday') : day > today
+	format_day: function(here, there) {
+		var here = here.day();
+		var there = there.day();
+		return there < here
+			? $.string('day_Yesterday', 'Yesterday') : there > here
 				? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
 	},
 

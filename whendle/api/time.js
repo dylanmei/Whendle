@@ -40,7 +40,7 @@ Date.current = function() {
 Date.to_object = function(date) {
 	return {
 		'year': date.getFullYear(),
-		'month': date.getMonth(),
+		'month': date.getMonth() + 1,
 		'day': date.getDate(),
 		'hour': date.getHours(),
 		'minute': date.getMinutes(),
@@ -49,12 +49,22 @@ Date.to_object = function(date) {
 }
 
 Date.from_object = function(obj) {
-	return new Date(obj.year, obj.month, obj.day, obj.hour, obj.minute, obj.second);
+	return new Date(obj.year, obj.month - 1, obj.day, obj.hour, obj.minute, obj.second);
 }
 
 Date.prototype.copy = function() {
 	return new Date(this.getTime());
 }
+
+Date.prototype.day = function() {
+	var d = this.copy();
+	d.setMilliseconds(0);
+	d.setSeconds(0);
+	d.setMinutes(0);
+	d.setHours(0);
+	return d;
+}
+
 Date.prototype.addYears = function(n) {
 	 this.setFullYear(this.getFullYear() + n);
 }
