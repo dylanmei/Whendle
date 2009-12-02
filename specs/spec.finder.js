@@ -13,18 +13,20 @@ describe 'Finder'
 		before
 			a = null
 			b = null
+			c = null
+			d = false
 			e = null
-			ajax.load = function() { a = true; }
-			view.loaded = function(locations, index, total, error) { b = true; e = error; }
+			ajax.load = function() { d = true; }
+			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
 			view.fire(Whendle.Events.searching, { query: 'abc' })
 		end
 		
 		it 'should not make a service request'
-			a.should.be_null
+			d.should.be_false
 		end
 		
-		it 'should not respond to the view'
-			b.should.be_null
+		it 'should not find anything for the view'
+			a.should.be_null
 		end
 		
 		it 'should not return an error'
@@ -41,7 +43,7 @@ describe 'Finder'
 			ajax.load = function(r, on_success) {
 				on_success(mock_results([]));
 			}
-			view.loaded = function(locations, index, total, error) { a = locations; b = index; c = total; e = error; }
+			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
 			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
 		end
 		
@@ -71,7 +73,7 @@ describe 'Finder'
 			ajax.load = function(r, on_success) {
 				on_success(mock_results([{}, {}, {}]));
 			}
-			view.loaded = function(locations, index, total, error) { a = locations; b = index; c = total; e = error; }
+			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
 			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
 		end		
 		
@@ -101,12 +103,12 @@ describe 'Finder'
 			ajax.load = function(r, on_success, on_error) {
 				on_error({});
 			}
-			view.loaded = function(locations, index, total, error) { a = locations; b = index; c = total; e = error; }
+			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
 			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
 		end		
 		
 		it 'should not provide a set of locations'
-			a.should.be_null
+			a.should.be_empty
 		end
 		
 		it 'should return an index'

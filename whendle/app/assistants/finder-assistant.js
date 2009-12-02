@@ -90,17 +90,17 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		this.fire(Whendle.Events.searching, { 'start': index, 'query': text });
 	},
 
-	loaded: function(places, index, total, error) {
-		if (index == 0) {
-			this.model.items = places;
+	found: function(event) {
+		if (event.index == 0) {
+			this.model.items = event.locations;
 			this.controller.modelChanged(this.model, this);
 		}
 		else {
-			this.model.items = this.model.items.concat(places);
-			this.list.mojo.noticeAddedItems(index, places);
+			this.model.items = this.model.items.concat(event.locations);
+			this.list.mojo.noticeAddedItems(index, event.locations);
 		}
 		
-		this.update_status(this.count(), total);
+		this.update_status(this.count(), event.total);
 	},
 	
 	update_status: function(count, total) {

@@ -32,7 +32,13 @@ Whendle.Finder.View = Class.create(Whendle.View, {
 		$super();
 	},
 	
-	loaded: function(places, index, total, error) {
+	// 	event = {
+	//		locations: [ {Whendle.Location} ],
+	//		index: #,
+	//		total: #
+	//		error: { message:'' }
+	//	}
+	found: function(event) {
 	}
 });
 
@@ -77,15 +83,15 @@ Whendle.Finder.Presenter = Class.create({
 	},
 	
 	_on_search_results: function(view, index, results) {
-		var places = [];
+		var locations = [];
 		var total = results.totalResultsCount || 0;
 
 		if (total) {
 			var mapper = function(gn) { return this._new_location(gn); }
-			places = results.geonames.collect(mapper.bind(this));
+			locations = results.geonames.collect(mapper.bind(this));
 		}
 		
-		view.loaded(places, index, total);
+		view.found({ 'locations': locations, 'index': index, 'total': total });
 	},
 	
 	_new_location: function(geoname) {
@@ -99,6 +105,6 @@ Whendle.Finder.Presenter = Class.create({
 	},
 	
 	_on_search_error: function(view, error) {
-		view.loaded(null, 0, 0, error);
+		view.found({ 'locations': [], 'index': 0, 'total': 0, 'error': error });
 	}
 });
