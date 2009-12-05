@@ -26,8 +26,7 @@
 
 Time = Class.create({
 	initialize: function() {
-		this._date = new Date();
-		this._millisecond(0);
+		this._date = new Date(0)
 	},
 	
 	toString: function() {
@@ -129,7 +128,8 @@ Time.minutes = 'minutes';
 Time.seconds = 'seconds';
 
 Time.now = function() {
-	return new Time();
+	return new Time()
+		.ticks(new Date().getTime());
 }
 
 Time.today = function() {
@@ -149,94 +149,30 @@ Time.prototype.__defineGetter__('iso', function() {
 		+ this.second().toPaddedString(2) + 'Z';
 });
 
-// todo remove
-Date.today = function() {
-	var now = Date.current();
-	now.setMilliseconds(0);
-	now.setSeconds(0);
-	now.setMinutes(0);
-	now.setHours(0);
-	return now;
-}
-
-// todo remove
-Date.current = function() {
-	return new Date();
-}
-
-// todo remove
-Date.to_object = function(date) {
-	return {
-		'year': date.getFullYear(),
-		'month': date.getMonth() + 1,
-		'day': date.getDate(),
-		'hour': date.getHours(),
-		'minute': date.getMinutes(),
-		'second': date.getSeconds()
-	};
-}
-
-// todo remove
-Date.from_object = function(obj) {
-	return new Date(obj.year, obj.month - 1, obj.day, obj.hour, obj.minute, obj.second);
-}
-
-// todo remove
 Date.prototype.copy = function() {
 	return new Date(this.getTime());
 }
 
-// todo remove
-Date.prototype.day = function() {
-	var d = this.copy();
-	d.setMilliseconds(0);
-	d.setSeconds(0);
-	d.setMinutes(0);
-	d.setHours(0);
-	return d;
-}
-
-// todo remove
 Date.prototype.addYears = function(n) {
 	 this.setFullYear(this.getFullYear() + n);
 }
-// todo remove
+
 Date.prototype.addMonths = function(n) {
 	this.setMonth(this.getMonth() + n, this.getDate());
 }
-// todo remove
+
 Date.prototype.addDays = function(n) {
 	this.setDate(this.getDate() + n);
 }
-// todo remove
+
 Date.prototype.addHours = function(n) {
 	this.setHours(this.getHours() + n);
 }
-// todo remove
+
 Date.prototype.addMinutes = function(n) {
 	this.setMinutes(this.getMinutes() + n, this.getSeconds(), this.getMilliseconds());
 }
-// todo remove
+
 Date.prototype.addSeconds = function(n) {
 	this.setSeconds(this.getSeconds() + n, this.getMilliseconds());
 }
-
-// todo remove
-Date.prototype.__defineGetter__('ISO', function() {
-	return this.getUTCFullYear() + '-'
-		+ (this.getUTCMonth() + 1).toPaddedString(2) + '-'
-		+ (this.getUTCDate()).toPaddedString(2) + 'T'
-		+ (this.getUTCHours()).toPaddedString(2) + ':'
-		+ (this.getUTCMinutes()).toPaddedString(2) + ':'
-		+ (this.getUTCSeconds()).toPaddedString(2) + 'Z';
-});
-
-// todo remove
-Date.prototype.__defineGetter__('Local', function() {
-	return this.getFullYear() + '-'
-		+ (this.getMonth() + 1).toPaddedString(2) + '-'
-		+ (this.getDate()).toPaddedString(2) + ' '
-		+ (this.getHours()).toPaddedString(2) + ':'
-		+ (this.getMinutes()).toPaddedString(2) + ':'
-		+ (this.getSeconds()).toPaddedString(2);	
-});

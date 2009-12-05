@@ -58,12 +58,18 @@ document.clocks = [
 ];
 
 document.observe('dom:loaded', function() {
+//	$.trace('palm', new Date(1259979404000).Local);
+//	$.trace('palm', new Date(1259979404000 + (480 * 60000)).Local);
+	
+//	$.trace(Date.now());
+//	$.trace(new Time().ticks(Date.now()).iso);
+//	$.trace(new Date(Date.now()));
+
 	document.system = new SystemService(document.tzone, document.tformat);
 	var timekeeper = new Whendle.TimekeeperService(document.system);
 	timekeeper.setup(function() {
 		document.gallery = new Gallery(timekeeper, new TimezoneService(), new DatabaseService());
 	});
-	
 	prepare_appender();
 });
 
@@ -180,11 +186,18 @@ SystemService = Class.create({
 			if (options.parameters.subscribe)
 				this._time_subscription = callback;
 
-			var now = Date.current();
+			var now = Time.now()
 			callback({
 				'timezone': this._timezone,
-				'offset': -now.getTimezoneOffset(),
-				'localtime': Date.to_object(now)
+				'offset': -480,
+				'localtime': {
+					'year': now.year(),
+					'month': now.month(),
+					'day': now.day(),
+					'hour': now.hour(),
+					'minute': now.minute(),
+					'second': now.second()
+				}
 			});
 		}
 	},

@@ -119,18 +119,19 @@ Whendle.Gallery.Presenter = Class.create({
 				self._timekeeper.start(timer);
 		});
 		
-		var localtime = this._timekeeper.localtime();
 		clocks.each(function(clock) {
-			self.adjust_clock(clock, localtime, wait.on());
+			self.adjust_clock(clock, wait.on());
 		});
 		wait.ready();
 	},
 	
-	adjust_clock: function(clock, localtime, on_complete) {
+	adjust_clock: function(clock, on_complete) {
+		var now = this._timekeeper.time();
+		var offset = this._timekeeper.offset();
+		
 		var self = this;
-		var now = Date.from_object(localtime);
 		var on_timezone = function(timezone) {
-			var when = self.offset_time(localtime, timezone);
+			var when = self.offset_time(now, offset, timezone);
 			clock.time = self.format_time(when);
 			clock.day = self.format_day(now, when);
 			on_complete();
@@ -138,11 +139,11 @@ Whendle.Gallery.Presenter = Class.create({
 		this._timezones.load(clock.timezone, on_timezone);
 	},
 	
-	offset_time: function(localtime, timezone) {
-		t = Date.from_object(localtime);
-		t.addMinutes(-localtime.offset);
-		t.addMinutes(timezone.offset(t));
-		return t;
+	offset_time: function(local_time, local_offset, timezone) {
+		var time = local_time.clone()
+			.subtract(Time.minutes, local_offset);
+		return time
+			.add(Time.minutes, timezone.offset(time.date()));
 	},
 	
 	format_place: function(location, district, country) {
@@ -150,23 +151,24 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 
 	format_time: function(t) {
-		var hours = t.getHours().toString();
-		var minutes = t.getMinutes().toPaddedString(2);
+		var hour = t.hour()
+		var minute = t.minute().toPaddedString(2);
 		
-		var pattern = this._timekeeper.time_format();
+		var pattern = this._timekeeper.format();
 		if (pattern == 'HH12') {
-			var template = t.getHours() < 12 ? $.string('time_HH12am', '#{hours}:#{minutes} am') : $.string('time_HH12pm', '#{hours}:#{minutes} pm');
-			return template.interpolate({ 'hours': (hours % 12 || 12), 'minutes': minutes });
+			var template = hour < 12 ? $.string('time_HH12am', '#{hours}:#{minutes} am') : $.string('time_HH12pm', '#{hours}:#{minutes} pm');
+			return template.interpolate({ 'hours': (hour % 12 || 12), 'minutes': minute });
 		}
 		
-		return $.string('time_HH24', '#{hours}:#{minutes}').interpolate({ 'hours': hours, 'minutes': minutes });
+		return $.string('time_HH24', '#{hours}:#{minutes}')
+			.interpolate({ 'hours': hour, 'minutes': minute });
 	},
 	
 	format_day: function(here, there) {
-		var here = here.day();
-		var there = there.day();
-		return there < here
-			? $.string('day_Yesterday', 'Yesterday') : there > here
+		var here = here.clone().hour(0).minute(0).second(0);
+		var there = there.clone().hour(0).minute(0).second(0);
+		return there.compare(here) < 0
+			? $.string('day_Yesterday', 'Yesterday') : there.compare(here) > 0
 				? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
 	},
 
@@ -215,8 +217,7 @@ Whendle.Gallery.Presenter = Class.create({
 			'longitude': clock.longitude
 		}];
 
-		var localtime = this._timekeeper.localtime();
-		this.adjust_clock(clocks[0], localtime,
+		this.adjust_clock(clocks[0],
 			function() { view.added({ 'clocks': clocks }); }
 		);
 	},
@@ -245,7 +246,7 @@ Whendle.Gallery.Presenter = Class.create({
 			function(error) { view.changed({ 'clocks': [], 'reason': reason, 'error': error }) });
 	},
 	
-	_on_timekeeping_tick: function(view, localtime) {
+	_on_timekeeping_tick: function(view, time) {
 		this._on_timekeeping_change(view, 'time');
 	},
 	
@@ -255,9 +256,8 @@ Whendle.Gallery.Presenter = Class.create({
 		});
 
 		var self = this;
-		var localtime = this._timekeeper.localtime();
 		clocks.each(function(clock) {
-			self.adjust_clock(clock, localtime, wait.on());
+			self.adjust_clock(clock, wait.on());
 		});
 		wait.ready();	
 	}

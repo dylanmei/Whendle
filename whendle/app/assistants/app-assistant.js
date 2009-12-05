@@ -60,7 +60,7 @@ AppAssistant.prototype.load_dependencies = function(on_complete) {
 AppAssistant.prototype.on_timekeeper_ready = function() {
 	var settings = Whendle.settings();
 	var timekeeper = Whendle.timekeeper();
-	settings.time_format = timekeeper.time_format();
+	settings.time_format = timekeeper.format();
 }
 
 AppAssistant.prototype.on_schema_ready = function() {

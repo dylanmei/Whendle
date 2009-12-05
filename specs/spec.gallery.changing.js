@@ -5,8 +5,9 @@ describe 'Gallery'
 	timezones.load = function(tz, on_complete) { on_complete(new Whendle.Timezone()); }
 
 	timekeeper = new Whendle.Observable
-	timekeeper.time_format = function() { return ''; }
-	timekeeper.localtime = function() { return Date.to_object(Date.current()); }
+	timekeeper.format = function() { return ''; }
+	timekeeper.time = function() { return Time.now(); }
+	timekeeper.offset = function() { return 0; }
 
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database)
