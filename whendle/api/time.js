@@ -26,7 +26,7 @@
 
 Time = Class.create({
 	initialize: function() {
-		this._date = new Date(0)
+		this._date = new Date(0);
 	},
 	
 	toString: function() {

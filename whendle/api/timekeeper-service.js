@@ -29,6 +29,7 @@ Whendle.Timer = Class.create(Whendle.Observable, {
 		$super();
 		this.window = window;
 		this.frequency = 250;
+		this._executing = false;
 	},
 	
 	now: function() {
@@ -48,10 +49,13 @@ Whendle.Timer = Class.create(Whendle.Observable, {
 	},
 
 	on_interval: function() {
+		if (this._executing) return;
 		try {
+			this._executing = true;
 			this.fire(Whendle.Events.timer, this.now());
 		}
 		finally {
+			this._executing = false;
 		}
 	}
 });
