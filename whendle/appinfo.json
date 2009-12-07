@@ -1,7 +1,7 @@
 {
-	"id": "net.bettington.whendle",
+	"id": "org.fastlap.whendle",
 	"version": "0.1.0",
-	"vendor": "Bettington Bakery",
+	"vendor": "Fastlap Farms",
 	"type": "web",
 	"noWindow" : "true",
  	"main": "index.html",
