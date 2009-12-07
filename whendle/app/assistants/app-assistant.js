@@ -12,27 +12,9 @@ AppAssistant.prototype.setup = function() {
 //    - Notification; after user taps banner or dashboard
 //
 AppAssistant.prototype.handleLaunch = function (launch_params) {
-	if (launch_params) {
-		Mojo.Log.info('AppAssistant.handleLaunch called with parameters.');
-	}
-	else {
-		if (this.try_focus_stage()) return;
-
-		this.load_services();
-		this.load_dependencies(
-			this.launch.bind(this));
-	}
-};
-
-AppAssistant.prototype.try_focus_stage = function() {
-	var existingController = this.controller.getStageController(Whendle.stage_name);
-	if (existingController) {
-		Mojo.Log.info('focusing stage');
-		existingController.popScenesTo('gallery');    
-		existingController.activate();
-		return true;
-	}
-	return false;
+	this.load_services();
+	this.load_dependencies(
+		this.launch.bind(this));
 };
 
 AppAssistant.prototype.load_services = function() {
@@ -58,9 +40,6 @@ AppAssistant.prototype.load_dependencies = function(on_complete) {
 };
 
 AppAssistant.prototype.on_timekeeper_ready = function() {
-	var settings = Whendle.settings();
-	var timekeeper = Whendle.timekeeper();
-	settings.time_format = timekeeper.format();
 }
 
 AppAssistant.prototype.on_schema_ready = function() {
@@ -70,9 +49,13 @@ AppAssistant.prototype.on_schema_error = function(error) {
 	Mojo.Log.info('error reading schema: ', error.message);
 };
 
+AppAssistant.prototype.on_timekeeper_error = function(error) {
+	Mojo.Log.info('error starting timekeeper: ', error.message);
+};
+
 AppAssistant.prototype.launch = function() {
 	var scene_name = this.should_show_splash()
-		? 'splash' : 'gallery';
+		? 'startup' : 'gallery';
 
 	this.controller.createStageWithCallback(
 		{ name: Whendle.stage_name, lightweight: true },

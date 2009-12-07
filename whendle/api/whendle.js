@@ -30,7 +30,7 @@ Whendle = {
 	stage_name: 'whendle-card-stage',
 	tzpath: 'tzdata/',
 
-	show_splash: false,
+	show_splash: true,
 	reset_schema: false,
 	reset_settings: false,
 	

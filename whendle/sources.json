@@ -28,8 +28,8 @@
         "source": "app\/assistants\/stage-assistant.js"
     },
 	{
-		"scenes": "splash",
-		"source": "app\/assistants\/splash-assistant.js"
+		"scenes": "startup",
+		"source": "app\/assistants\/startup-assistant.js"
 	},
 	{
 		"scenes": "finder",

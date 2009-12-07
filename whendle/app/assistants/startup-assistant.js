@@ -1,5 +1,5 @@
 
-function SplashAssistant(settings, database, schema) {
+function StartupAssistant(settings, database, schema) {
 	this.appController = Mojo.Controller.getAppController();
     this.stageController = this.appController.getStageController(Whendle.stage_name);
 	
@@ -8,7 +8,7 @@ function SplashAssistant(settings, database, schema) {
 	this.schema = schema || Whendle.schema();
 };
 
-SplashAssistant.prototype.setup = function() {
+StartupAssistant.prototype.setup = function() {
 	this.database_ready = true;
 	this.database_error = false;
 	
@@ -43,7 +43,7 @@ SplashAssistant.prototype.setup = function() {
 	this.setup_widgets(is_initializing, is_updating);
 };
 
-SplashAssistant.prototype.update_schema = function(version) {
+StartupAssistant.prototype.update_schema = function(version) {
 	version = version || this.schema.version();
 	var migrator = this.schema.migrator(version);
 	if (!migrator) {
@@ -57,22 +57,22 @@ SplashAssistant.prototype.update_schema = function(version) {
 	}
 };
 
-SplashAssistant.prototype.on_schema_updated = function(version) {
+StartupAssistant.prototype.on_schema_updated = function(version) {
 	Mojo.Log.info('schema updated to', version);
 	this.update_schema(version);
 };
 
-SplashAssistant.prototype.on_schema_error = function(error) {
+StartupAssistant.prototype.on_schema_error = function(error) {
 	Mojo.Log.info('error preparing schema: ', error.message);
 	this.database_error = true;
 }
 
-SplashAssistant.prototype.update_settings = function() {
+StartupAssistant.prototype.update_settings = function() {
 	this.settings.version(Whendle.version);
 	this.settings.save();
 }
 
-SplashAssistant.prototype.wait_for_dependencies = function(on_ready) {
+StartupAssistant.prototype.wait_for_dependencies = function(on_ready) {
 	if (this.database_ready) {
 		on_ready();
 	}
@@ -85,11 +85,11 @@ SplashAssistant.prototype.wait_for_dependencies = function(on_ready) {
 	}
 };
 
-SplashAssistant.prototype.start_application = function() {
+StartupAssistant.prototype.start_application = function() {
 	this.stageController.swapScene('gallery');
 };
 
-SplashAssistant.prototype.setup_widgets = function(is_initializing, is_updating) {
+StartupAssistant.prototype.setup_widgets = function(is_initializing, is_updating) {
     this.controller.setupWidget('spinner',
          { spinnerSize: 'small' },
          { spinning: true }
@@ -111,7 +111,7 @@ SplashAssistant.prototype.setup_widgets = function(is_initializing, is_updating)
 	}
 }
 
-SplashAssistant.prototype.cleanup = function(event) {
+StartupAssistant.prototype.cleanup = function(event) {
 	/* remove any event handlers you added in activate and do any other cleanup that should happen before
 	   this scene is popped or another scene is pushed on top */
 	if (this.tap_handler) {
@@ -120,7 +120,7 @@ SplashAssistant.prototype.cleanup = function(event) {
 	}
 }
 
-SplashAssistant.prototype.on_tap = function() {
+StartupAssistant.prototype.on_tap = function() {
 	this.start_application();
 }
 
