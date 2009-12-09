@@ -15,7 +15,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.setup_widgets();
 		this.attach_events();
 		
-		this.fire(Whendle.Events.loading,
+		this.fire(Whendle.Event.loading,
 			{ 'timer': new Whendle.Timer(this.controller.window) });
 	},
 	
@@ -57,7 +57,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_remove_clock: function(event) {
 		var clock = event.item;
-		this.fire(Whendle.Events.removing, { 'id': clock.id });
+		this.fire(Whendle.Event.removing, { 'id': clock.id });
 	},
 	
 	ready: function() {
@@ -153,7 +153,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		if (location && location.name) {
 			// assuming we have come from the finder
 			// after the user has found a location...
-			this.fire(Whendle.Events.adding, { 'location': location });
+			this.fire(Whendle.Event.adding, { 'location': location });
 		}
 	},
 	

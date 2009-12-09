@@ -23,7 +23,7 @@ describe 'Gallery'
 				on_result([])
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.loading)
+			view.fire(Whendle.Event.loading)
 		end
 
 		it 'should not provide any clocks'
@@ -43,7 +43,7 @@ describe 'Gallery'
 				on_result([ new_clock_record(1), new_clock_record(2) ])
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.loading)
+			view.fire(Whendle.Event.loading)
 		end
 		
 		it 'should provide clocks'
@@ -63,7 +63,7 @@ describe 'Gallery'
 				on_error({})
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.loading)
+			view.fire(Whendle.Event.loading)
 		end
 		
 		it 'should not provide any clocks'
@@ -81,7 +81,7 @@ describe 'Gallery'
 			database.rowset = function(s, f, on_result) { on_result([]) }
 			timekeeper.start = function() { a = true }
 			view.loaded = -{}
-			view.fire(Whendle.Events.loading, { 'timer': {} })
+			view.fire(Whendle.Event.loading, { 'timer': {} })
 		end
 		
 		it 'should start the timekeeper'

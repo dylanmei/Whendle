@@ -78,16 +78,16 @@ Whendle.Gallery.Presenter = Class.create({
 		this._database = database || Whendle.database();
 		this._startup = startup || Whendle.startup();
 
-		view.observe(Whendle.Events.loading,
+		view.observe(Whendle.Event.loading,
 			this.on_loading.bind(this, view));
-		view.observe(Whendle.Events.adding,
+		view.observe(Whendle.Event.adding,
 			this._on_add_clock.bind(this, view));
-		view.observe(Whendle.Events.removing,
+		view.observe(Whendle.Event.removing,
 			this._on_remove_clock.bind(this, view));
 			
-		this._timekeeper.observe(Whendle.Events.system,
+		this._timekeeper.observe(Whendle.Event.system,
 			this._on_timekeeping_change.bind(this, view));
-		this._timekeeper.observe(Whendle.Events.timer,
+		this._timekeeper.observe(Whendle.Event.timer,
 			this._on_timekeeping_tick.bind(this, view));
 	},
 

@@ -25,7 +25,7 @@ describe 'Gallery'
 			timezones.load = function(tz, callback) { callback(new Whendle.Timezone()); }
 			database.insert = function(s, p, on_result) { on_result(123); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.adding,
+			view.fire(Whendle.Event.adding,
 				{ 'location': new Whendle.Location('A', 'B', 'C', 1, 23) });
 		end
 
@@ -56,7 +56,7 @@ describe 'Gallery'
 			e = null
 			timezones.lookup = function(x, y, on_success, on_error) { on_error({}); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.adding, { 'location': new Whendle.Location() })
+			view.fire(Whendle.Event.adding, { 'location': new Whendle.Location() })
 		end
 
 		it 'should not provide a clock'
@@ -75,7 +75,7 @@ describe 'Gallery'
 			timezones.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z', 1)); }
 			database.insert = function(s, p, on_result, on_error) { on_error({}); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.adding, { 'location': new Whendle.Location() })
+			view.fire(Whendle.Event.adding, { 'location': new Whendle.Location() })
 		end
 
 		it 'should not provide a clock'

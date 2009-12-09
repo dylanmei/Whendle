@@ -18,7 +18,7 @@ describe 'Finder'
 			e = null
 			ajax.load = function() { d = true; }
 			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
-			view.fire(Whendle.Events.searching, { query: 'abc' })
+			view.fire(Whendle.Event.searching, { query: 'abc' })
 		end
 		
 		it 'should not make a service request'
@@ -44,7 +44,7 @@ describe 'Finder'
 				on_success(mock_results([]));
 			}
 			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
-			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
+			view.fire(Whendle.Event.searching, { query: 'abcxyz' });
 		end
 		
 		it 'should provide an empty set of locations'
@@ -74,7 +74,7 @@ describe 'Finder'
 				on_success(mock_results([{}, {}, {}]));
 			}
 			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
-			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
+			view.fire(Whendle.Event.searching, { query: 'abcxyz' });
 		end		
 		
 		it 'should provide a set of locations'
@@ -104,7 +104,7 @@ describe 'Finder'
 				on_error({});
 			}
 			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
-			view.fire(Whendle.Events.searching, { query: 'abcxyz' });
+			view.fire(Whendle.Event.searching, { query: 'abcxyz' });
 		end		
 		
 		it 'should not provide a set of locations'

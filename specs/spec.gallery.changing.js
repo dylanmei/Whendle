@@ -24,7 +24,7 @@ describe 'Gallery'
 				on_result([ new_clock_record(1), new_clock_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }
-			timekeeper.fire(Whendle.Events.system, 'test reason')
+			timekeeper.fire(Whendle.Event.system, 'test reason')
 		end
 		
 		it 'loads the clocks'
@@ -49,7 +49,7 @@ describe 'Gallery'
 				on_result([ new_clock_record(1), new_clock_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }
-			timekeeper.fire(Whendle.Events.timer, {})
+			timekeeper.fire(Whendle.Event.timer, {})
 		end
 		
 		it 'loads the clocks'

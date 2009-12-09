@@ -52,7 +52,7 @@ Whendle.Timer = Class.create(Whendle.Observable, {
 		if (this._executing) return;
 		try {
 			this._executing = true;
-			this.fire(Whendle.Events.timer, this.now());
+			this.fire(Whendle.Event.timer, this.now());
 		}
 		finally {
 			this._executing = false;
@@ -85,7 +85,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 	
 	start: function(timer) {
 		this.timer = timer;
-		timer.observe(Whendle.Events.timer,
+		timer.observe(Whendle.Event.timer,
 			this.on_timer_tick.bind(this));
 		timer.start();
 	},
@@ -104,7 +104,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		else {
 			if (response.timeFormat != this._format) {
 				this._format = response.timeFormat;
-				this.fire(Whendle.Events.system, 'timeformat');
+				this.fire(Whendle.Event.system, 'timeformat');
 			}
 		}
 	},
@@ -128,7 +128,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		else {
 			if (response.timezone != this._timezone) {
 				this._timezone = response.timezone;
-				this.fire(Whendle.Events.system, 'timezone');
+				this.fire(Whendle.Event.system, 'timezone');
 			}
 		}
 	},
@@ -153,7 +153,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		now.second(0);
 		if (now.compare(this._time) != 0) {
 			this._time = now.clone();
-			this.fire(Whendle.Events.timer, now);
+			this.fire(Whendle.Event.timer, now);
 		}
 	},
 	

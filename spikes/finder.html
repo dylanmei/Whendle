@@ -58,7 +58,7 @@ View = Class.create(Whendle.Finder.View, {
 		//$.trace('fetching timezone for: #{latitude} x #{longitude}'
 		//	.interpolate(location));
 		
-		//this.fire(Whendle.Events.adding, { 'location': location });
+		//this.fire(Whendle.Event.adding, { 'location': location });
 	},
 	
 	fetch_locations: function(text, index) {
@@ -66,7 +66,7 @@ View = Class.create(Whendle.Finder.View, {
 		$.trace('fetching locations for: #{text} (index=#{index})'
 			.interpolate({ 'text': text, 'index': index }));
 		
-		this.fire(Whendle.Events.searching, { 'start': index, 'query': text });
+		this.fire(Whendle.Event.searching, { 'start': index, 'query': text });
 	},
 	
 	new_input: function() {

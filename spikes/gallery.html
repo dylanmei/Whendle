@@ -79,11 +79,11 @@ Gallery = Class.create(Whendle.Gallery.View, {
 		$super();
 		this.presenter =
 			new Whendle.Gallery.Presenter(this, startup, timekeeper, tzservice, database);
-		this.fire(Whendle.Events.loading, { 'timer': new Whendle.Timer(window) });
+		this.fire(Whendle.Event.loading, { 'timer': new Whendle.Timer(window) });
 	},
 	
 	add: function(location) {
-		this.fire(Whendle.Events.adding, { 'location': location });
+		this.fire(Whendle.Event.adding, { 'location': location });
 		remove_from_finder(location.name);
 	},
 	
@@ -91,7 +91,7 @@ Gallery = Class.create(Whendle.Gallery.View, {
 		var clock = document.clocks.find(function(c) {
 			return c.id == id;
 		});
-		this.fire(Whendle.Events.removing, { 'id': id });
+		this.fire(Whendle.Event.removing, { 'id': id });
 		if (clock)
 			add_to_finder(clock.location);
 	},

@@ -33,7 +33,7 @@ Whendle = {
 	show_splash: false,
 	reset_schema: false,
 	
-	Events: {
+	Event: {
 		system: ':system',
 		starting: ':starting',
 		loading: ':loading',

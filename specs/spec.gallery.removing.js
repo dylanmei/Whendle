@@ -16,7 +16,7 @@ describe 'Gallery'
 				on_result(b = true)
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.removing, { 'id': 987 });
+			view.fire(Whendle.Event.removing, { 'id': 987 });
 		end
 		
 		it 'should return the clock'
@@ -41,7 +41,7 @@ describe 'Gallery'
 				on_error({})
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Events.removing, { 'id': 987 });
+			view.fire(Whendle.Event.removing, { 'id': 987 });
 		end		
 	
 		it 'should not return a result'

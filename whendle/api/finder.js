@@ -49,7 +49,7 @@ Whendle.Finder.Presenter = Class.create({
 		this._ajax = ajax || new Whendle.AjaxService();
 		this._database = database || Whendle.database();
 
-		view.observe(Whendle.Events.searching,
+		view.observe(Whendle.Event.searching,
 			this._on_search.bind(this, view));
 	},
 	
