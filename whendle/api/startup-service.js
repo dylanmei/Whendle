@@ -20,8 +20,6 @@ Whendle.StartupService = Class.create({
 	
 	run: function(on_complete, on_error) {
 		
-	
-	
 		if (this.ready()) {
 			if (on_complete) on_complete();
 		}

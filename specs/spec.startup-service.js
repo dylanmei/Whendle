@@ -20,11 +20,6 @@ describe 'Startup Service'
 		it 'should report a need to run an install operation'
 			service.needs_install().should.be_true
 		end
-		
-		it 'should run a schema update'
-			service.run()
-			a.should.be_true
-		end
 	end
 	
 	describe 'with an out of date schema'
@@ -40,11 +35,6 @@ describe 'Startup Service'
 		
 		it 'should report a need to run an upgrade operation'
 			service.needs_upgrade().should.be_true
-		end
-
-		it 'should run a schema update'
-			service.run()
-			a.should.be_true
 		end
 	end
 	
@@ -66,10 +56,44 @@ describe 'Startup Service'
 		it 'should not report a need to run an upgrade operation'
 			service.needs_upgrade().should.be_false
 		end
+	end
+	
+	describe 'running when ready'
+		before
+			a = false
+			schema.migrator = -{a = true}
+			schema.version = -{return 'xyz'}
+		end
 		
-		it 'should not run a schema update'
+		it 'should not perform a schema update'
 			service.run()
 			a.should.be_false
+		end		
+	end
+	
+	describe 'running an install'
+		before
+			a = false
+			schema.migrator = -{a = true}
+			schema.version = -{return null}
+		end
+		
+		it 'should perform a schema update'
+			service.run()
+			a.should.be_true
+		end
+	end
+	
+	describe 'running an upgrade'
+		before
+			a = false
+			schema.migrator = -{a = true}
+			schema.version = -{return 'abc'}
+		end
+		
+		it 'should perform a schema update'
+			service.run()
+			a.should.be_true
 		end
 	end
 end
