@@ -2,9 +2,6 @@
 GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	initialize: function($super) {
 		$super();
-		this.appController = Mojo.Controller.getAppController();
-		this.stageController = this.appController.getStageController(Whendle.stage_name);
-		
 		this._presenter = new Whendle.Gallery.Presenter(this);
 	},
 	
@@ -52,7 +49,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	on_find_tapped: function() {
-		this.stageController.pushScene({ name: 'finder' });
+		Mojo.Controller.stageController.pushScene({ name: 'finder' });
 	},
 	
 	on_remove_clock: function(event) {

@@ -2,9 +2,6 @@
 FinderAssistant = Class.create(Whendle.Finder.View, {
 	initialize: function($super) {
 		$super();
-		this.appController = Mojo.Controller.getAppController();
-		this.stageController = this.appController.getStageController(Whendle.stage_name);
-
 		this._presenter = new Whendle.Finder.Presenter(this);
 	},
 	
@@ -62,7 +59,7 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		var index = event.index;
 		if (index < this.count()) {
 			var location = this.model.items[index];
-			this.stageController.popScene(location, {});
+			Mojo.Controller.stageController.popScene(location, {});
 		}
 	},
 	

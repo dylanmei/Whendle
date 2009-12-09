@@ -3,8 +3,8 @@
 	"version": "0.1.0",
 	"vendor": "Fastlap Farms",
 	"type": "web",
-	"noWindow" : "true",
  	"main": "index.html",
 	"title": "Whendle",
-	"icon": "resources/icon.png"
+	"icon": "resources/icon.png",
+	"removable": true
 }
