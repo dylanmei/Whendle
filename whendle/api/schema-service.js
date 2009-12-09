@@ -34,6 +34,14 @@ Whendle.SchemaService = Class.create({
 		return this._version;
 	},
 	
+	max_version: function() {
+		return Whendle.schema_version;
+	},
+	
+	up_to_date: function() {
+		return this._version && this._version == max_version;
+	},
+	
 	read: function(on_complete, on_error) {
 		on_error = on_error || Prototype.emptyFunction;
 		on_complete = this._on_version_exists.bind(this, on_complete || Prototype.emptyFunction, on_error);

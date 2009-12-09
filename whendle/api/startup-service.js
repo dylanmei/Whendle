@@ -1,9 +1,7 @@
 
-Whendle.StartupService = Class.create(Whendle.Observable, {
-	initialize: function($super, schema) {
-		$super();
+Whendle.StartupService = Class.create({
+	initialize: function(schema) {
 		this._schema = schema || Whendle.schema();
-		this._status = {};
 	},
 	
 	ready: function() {
@@ -12,21 +10,29 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 	},
 	
 	needs_install: function() {
-		return this._schema.version() == '0.0';
+		version = this._schema.version();
+		return !version || version == '0.0';
 	},
 	
 	needs_upgrade: function() {
-		return this.needs_install() || this._schema.version() != Whendle.schema_version;
+		return this.needs_install() || this._schema.version() != this._schema.max_version();
 	},
 	
 	run: function(on_complete, on_error) {
-		this._update_schema(null, on_complete, on_error);
+		
+	
+	
+		if (this.ready()) {
+			if (on_complete) on_complete();
+		}
+		else {
+			on_complete = on_complete || Prototype.emptyFunction;
+			on_error = on_error || Prototype.emptyFunction;
+			this._update_schema(null, on_complete, on_error);
+		}
 	},
 	
 	_update_schema: function(version, on_complete, on_error) {
-		on_complete = on_complete || Prototype.emptyFunction;
-		on_error = on_error || Prototype.emptyFunction;
-		
 		version = version || this._schema.version();
 		var migrator = this._schema.migrator(version);
 		if (!migrator) {
