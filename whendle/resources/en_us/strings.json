@@ -1,6 +1,7 @@
 {
-	  "splash_message_first_time": "Starting up for the first time..."
+	  "splash_message_installing": "Starting up for the first time..."
 	, "splash_message_updating": "Updating a few things..."
+	, "splash_message_starting": "Starting up..."
 	, "splash_message_continue": "Tap to continue..."
 	, "gallery_find_location": "Find a location..."
 	, "finder_input_hint": "Find a location..."

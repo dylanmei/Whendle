@@ -31,6 +31,13 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 	initialize: function($super) {
 		$super();
 	},
+
+	//	event = {
+	//		status: #,
+	//		text: ''
+	//	}
+	notify: function(event) {
+	},
 	
 	// 	event = {
 	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
@@ -65,13 +72,14 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 Whendle.Gallery.Presenter = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(view, timekeeper, timezones, database) {
+	initialize: function(view, startup, timekeeper, timezones, database) {
 		this._timekeeper = timekeeper || Whendle.timekeeper();
 		this._timezones = timezones || Whendle.timezones();
 		this._database = database || Whendle.database();
+		this._startup = startup || Whendle.startup();
 
 		view.observe(Whendle.Events.loading,
-			this._on_load_ready.bind(this, view));
+			this.on_loading.bind(this, view));
 		view.observe(Whendle.Events.adding,
 			this._on_add_clock.bind(this, view));
 		view.observe(Whendle.Events.removing,
@@ -82,36 +90,78 @@ Whendle.Gallery.Presenter = Class.create({
 		this._timekeeper.observe(Whendle.Events.timer,
 			this._on_timekeeping_tick.bind(this, view));
 	},
-	
-	_on_load_ready: function(view, event) {
+
+	on_loading: function(view, event) {
+		var self = this;
 		var timer = (event || {}).timer;
+
+		this.startup(view,
+			this.on_load_ready.bind(this, view, timer)
+		);
+	},
+	
+	startup: function(view, on_complete) {
+		if (this._startup.ready()) {
+			on_complete();
+		}
+		else {
+			var needs_install = this._startup.needs_install();
+			var needs_upgrade = this._startup.needs_upgrade();
+
+			if (needs_install || needs_upgrade) {
+				var feedback = needs_install ?
+					$.string('splash_message_installing') :
+					$.string('splash_message_updating');
+
+				this.notify_status(view, Whendle.Status.installing, feedback);
+				this._startup.run(on_complete);
+			}
+		}
+	},
+	
+	on_load_ready: function(view, timer) {
+		this.notify_status(view, Whendle.Status.loading,
+			$.string('splash_message_starting')
+		);
+
 		this.load_clocks(view,
-			this._on_clocks_loaded.bind(this, view, timer),
-			function(error) { view.loaded({ 'clocks': [], 'error': error }) });
+			this.on_clocks_loaded.bind(this, view, timer),
+			function(error) { view.loaded({ 'clocks': [], 'error': error }); });
+	},
+	
+	notify_status: function(view, status, text) {
+		if (view && view.notify) {
+			view.notify({
+				'status': status,
+				'text': text
+			});
+		}
 	},
 	
 	load_clocks: function(view, on_complete, on_error) {
-		var self = this;
+		var mapper = this.map_records_to_clocks.bind(this);
 		this._database.rowset('select * from clocks', [],
 			function(results) {
-				if (!results) results = [];
-				var clocks = results.collect(function(r) {
-					return {
-						'id': r.id,
-						'name': r.location,
-						'timezone': r.timezone,
-						'place': self.format_place(r.location, r.district, r.country),
-						'latitude': r.latitude,
-						'longitude': r.longitude
-					}
-				});			
-				on_complete(clocks);
+				on_complete(
+					results ? results.collect(mapper) : []
+				);
 			},
 			on_error
 		);
 	},
 	
-	_on_clocks_loaded: function(view, timer, clocks) {
+	map_records_to_clocks: function(r) {
+		return {
+			'id': r.id,
+			'name': r.location,
+			'timezone': r.timezone,
+			'place': this.format_place(r.location, r.district, r.country),
+			'latitude': r.latitude,
+			'longitude': r.longitude
+		}
+	},
+	
+	on_clocks_loaded: function(view, timer, clocks) {
 		var self = this;
 		var wait = new Whendle.Wait(function() {
 			view.loaded({ 'clocks': clocks });

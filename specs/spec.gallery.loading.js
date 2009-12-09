@@ -9,8 +9,9 @@ describe 'Gallery'
 	timekeeper.time = function() { return Time.now(); }
 	timekeeper.offset = function() { return 0; }
 
+	startup = { ready: function() { return true; } }
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database)
+	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
 	
 	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
 	

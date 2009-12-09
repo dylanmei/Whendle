@@ -30,19 +30,26 @@ Whendle = {
 	stage_name: 'whendle-card-stage',
 	tzpath: 'tzdata/',
 
-	show_splash: true,
+	show_splash: false,
 	reset_schema: false,
-	reset_settings: false,
 	
 	Events: {
 		system: ':system',
+		starting: ':starting',
 		loading: ':loading',
 		searching: ':searching',
 		adding: ':adding',
 		removing: ':removing',
+		status: ':status',
 		timer: ':timer'
 	},
 	
+	Status: {
+		installing: 'installing',
+		loading: 'loading',
+		exception: 'exception'
+	},
+
 	services: function(name, instance) {
 		if (!Whendle._services)
 			Whendle._services = {};
@@ -55,8 +62,8 @@ Whendle = {
 		return Whendle.services('Whendle.system');
 	},
 	
-	settings: function() {
-		return Whendle.services('Whendle.settings');
+	startup: function() {
+		return Whendle.services('Whendle.startup');
 	},
 	
 	database: function() {

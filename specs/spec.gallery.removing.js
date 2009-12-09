@@ -3,8 +3,9 @@ describe 'Gallery'
 	database = new Object
 	timezones = new Object
 	timekeeper = new Whendle.Observable
+	startup = { ready: function() { return true; } }
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database)
+	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
 	
 	describe 'removing a clock'
 		before

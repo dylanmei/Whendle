@@ -9,8 +9,9 @@ describe 'Gallery'
 	timekeeper.time = function() { return Time.now(); }
 	timekeeper.offset = function() { return 0; }
 	
+	startup = { ready: function() { return true; } }
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, timekeeper, timezones, database)
+	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
 	
 	mock_tzlookup_result = function(name, offset) {
 		return { 'offset': 0, 'name': name }

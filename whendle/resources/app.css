@@ -1,22 +1,24 @@
 /* This file belongs to Whendle, a clock application for the Palm Pre */
 
-.splash-image {
-	width: 100%;
+.splash-page {
+	position:absolute;
+	top: 0px;
+	left: 0px;
 	text-align: center;
+	background-color:#fff;
+	-webkit-border-radius: 24px;
 }
 
-.splash-activity {
+.splash-image {
+	width: 280;
+	height: 345;
+}
+
+.splash-status {
+	font-size: 0.75em;
 	position: fixed;
-	bottom: 10px;
-}
-
-.splash-spinner {
-	float: left;
-	margin-left: 10px;
-}
-
-.splash-message {
-	margin-left: 10px;
+	bottom: 24px;
+	width:100%;
 }
 
 .finder-list {

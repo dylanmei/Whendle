@@ -6,11 +6,11 @@
 	{ "source": "api\/wait.js" },
 	{ "source": "api\/observable.js" },
 	{ "source": "api\/palm-service.js" },
-	{ "source": "api\/settings-service.js" },
 	{ "source": "api\/database-service.js" },
 	{ "source": "api\/schema-service.js" },
 	{ "source": "api\/timezone-service.js" },
 	{ "source": "api\/timekeeper-service.js" },
+	{ "source": "api\/startup-service.js" },
 	{ "source": "api\/migrators.js" },
 	{ "source": "api\/ajax-service.js" },
 	{ "source": "api\/gallery.js" },
@@ -20,6 +20,7 @@
 	
 	{ "source": "app\/widgets\/search-text.js" },
 	{ "source": "app\/widgets\/search-status.js" },
+	{ "source": "app\/widgets\/splash-page.js" },
 	
 	{
 		"source": "app\/assistants\/app-assistant.js"
@@ -27,10 +28,6 @@
     {
         "source": "app\/assistants\/stage-assistant.js"
     },
-	{
-		"scenes": "startup",
-		"source": "app\/assistants\/startup-assistant.js"
-	},
 	{
 		"scenes": "finder",
 		"source": "app\/assistants\/finder-assistant.js"

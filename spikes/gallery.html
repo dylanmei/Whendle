@@ -67,17 +67,18 @@ document.observe('dom:loaded', function() {
 
 	document.system = new SystemService(document.tzone, document.tformat);
 	var timekeeper = new Whendle.TimekeeperService(document.system);
+	var startup = { ready: function() { return true; } }
 	timekeeper.setup(function() {
-		document.gallery = new Gallery(timekeeper, new TimezoneService(), new DatabaseService());
+		document.gallery = new Gallery(startup, timekeeper, new TimezoneService(), new DatabaseService());
 	});
 	prepare_appender();
 });
 
 Gallery = Class.create(Whendle.Gallery.View, {
-	initialize: function($super, timekeeper, tzservice, database) {
+	initialize: function($super, startup, timekeeper, tzservice, database) {
 		$super();
 		this.presenter =
-			new Whendle.Gallery.Presenter(this, timekeeper, tzservice, database);
+			new Whendle.Gallery.Presenter(this, startup, timekeeper, tzservice, database);
 		this.fire(Whendle.Events.loading, { 'timer': new Whendle.Timer(window) });
 	},
 	
