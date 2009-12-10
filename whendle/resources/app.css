@@ -21,6 +21,34 @@
 	width:100%;
 }
 
+.growler {
+	position: absolute;
+	top: -4px;
+	left: 0px;
+}
+
+.growler-page {
+	min-width: 100px;
+	max-width: 220px;
+	min-height: 40px;
+	font-size: 0.8em;
+	padding: 8px;
+	opacity: 0.95;
+	background-color: #fff;
+	-webkit-border-radius: 4px;
+}
+
+.growler-drop1 {
+	display:block;
+	padding: 0 0 0 25px;
+	background:url(growler-drop-left.png) left bottom no-repeat;
+}
+.growler-drop2 {
+	display:block;
+	padding: 0 25px 25px 0;
+	background:url(growler-drop-right.png) right bottom no-repeat;
+}
+
 .finder-list {
 	/* makes room for search box */
 	padding-top: 46px;

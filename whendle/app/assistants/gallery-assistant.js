@@ -18,8 +18,10 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	setup_widgets: function() {
 		this.splash = this.controller.get('splash');
+		this.growler = this.controller.get('growler');
 		this.list = this.controller.get('list');
 
+		this.controller.setupWidget(this.growler.id, {});
 		this.controller.setupWidget(this.splash.id, {});
 		this.controller.setupWidget(this.list.id, {
 				itemTemplate: 'gallery/list-item',
@@ -36,12 +38,18 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	attach_events: function() {
+		this.controller.listen(this.growler.id, Mojo.Event.tap,
+			this.growler.tap_handler = this.on_growler_tapped.bind(this));
 		this.controller.listen(this.splash.id, Mojo.Event.tap,
 			this.splash.tap_handler = this.on_splash_tapped.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listAdd,
 			this.list.add_handler = this.on_find_tapped.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listDelete,
 			this.list.delete_handler = this.on_remove_clock.bind(this));
+	},
+	
+	on_growler_tapped: function() {
+		this.growler.mojo.dismiss();
 	},
 	
 	on_splash_tapped: function() {
@@ -105,6 +113,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		
 		this.model.items.push(event.clocks[0]);
 		this.controller.modelChanged(this.model, this);
+		this.growler.mojo.dismiss();
 	},
 	
 	removed: function(event) {
@@ -147,6 +156,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	activate: function(location) {
 		if (location && location.name) {
+			this.growler.mojo.information('Adding ' + location.name + '...');
 			// assuming we have come from the finder
 			// after the user has found a location...
 			this.fire(Whendle.Event.adding, { 'location': location });
@@ -161,6 +171,8 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	detach_events: function() {
+		this.controller.stopListening(this.growler, Mojo.Event.tap, this.growler.tap_handler);
+		this.controller.stopListening(this.splash, Mojo.Event.tap, this.splash.tap_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listAdd, this.list.add_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listDelete, this.list.delete_handler);
 	}
