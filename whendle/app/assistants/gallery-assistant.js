@@ -156,7 +156,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	activate: function(location) {
 		if (location && location.name) {
-			this.growler.mojo.information('Adding ' + location.name + '...');
+			this.growler.mojo.spin('Adding ' + location.name + '...');
 			// assuming we have come from the finder
 			// after the user has found a location...
 			this.fire(Whendle.Event.adding, { 'location': location });

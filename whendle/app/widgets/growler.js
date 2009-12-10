@@ -5,11 +5,18 @@ Mojo.Widget.Growler = Class.create({
 		this.render_widget(id);
 		this.setup_children(id);
 		this.attach_events();
-		this.controller.exposeMethods(['information', 'dismiss']);
+		this.controller.exposeMethods(['info', 'spin', 'dismiss']);
 	},
 	
-	information: function(text) {
-		this.text.innerHTML = text;
+	spin: function(message) {
+		this.text.update(message);
+		this.start_spinning();
+		this.reveal();
+	},	
+	
+	info: function(message) {
+		this.text.update(message);
+		this.stop_spinning();
 		this.reveal();
 	},
 	
@@ -27,8 +34,9 @@ Mojo.Widget.Growler = Class.create({
 			left: page_left + 'px'
 		});
 	},
-
+	
 	dismiss: function() {
+		
 		var page = this.controller.element;
 		var size = page.getDimensions();
 		var offset = page.viewportOffset();
@@ -36,9 +44,11 @@ Mojo.Widget.Growler = Class.create({
 		var speed = 1;
 		var accelerate = 1.2;
 		
+		var self = this;
 		new PeriodicalExecuter(function(pe) {
 			if (offset.top + size.height < 0) {
 				pe.stop();
+				self.stop_spinning();
 				page.hide();
 			}
 			else {
@@ -49,6 +59,20 @@ Mojo.Widget.Growler = Class.create({
 				});
 			}
 		}, 0.01, this.controller.window);	
+	},
+	
+	start_spinning: function() {
+		if (!this.spinning) {
+			this.spinning = true;
+			this.spinner.mojo.start();
+		}
+	},
+	
+	stop_spinning: function() {
+		if (this.spinning) {
+			this.spinning = false;
+			this.spinner.mojo.stop();
+		}
 	},
 
 	make_identifier: function() {
@@ -70,7 +94,16 @@ Mojo.Widget.Growler = Class.create({
 	},
 	
 	setup_children: function(prefix) {
+		this.spinner = this.controller.get(prefix + '-spinner');
+		this.icon = this.controller.get(prefix + '-icon');
 		this.text = this.controller.get(prefix + '-text');
+		
+		this.controller.scene.setupWidget(
+			this.spinner.id,
+			{ 'spinnerSize': 'small' },
+			{ 'spinning': false }
+		);
+		
 		this.controller.instantiateChildWidgets();
 	},
 	
