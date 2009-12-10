@@ -32,5 +32,5 @@
 	
 	{ "source": "app\/widgets\/search-text.js" },
 	{ "source": "app\/widgets\/search-status.js" },
-	{ "source": "app\/widgets\/splash-page.js" }
+	{ "source": "app\/widgets\/splash.js" }
 ]

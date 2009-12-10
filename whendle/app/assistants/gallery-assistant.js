@@ -83,7 +83,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	loaded: function(event) {
-		$.trace('loaded...');
 		if (this.report_error(event.error)) return;
 		
 		var show_splash = Whendle.show_splash ||

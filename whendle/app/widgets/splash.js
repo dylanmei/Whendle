@@ -1,5 +1,5 @@
 
-Mojo.Widget.SplashPage = Class.create({
+Mojo.Widget.Splash = Class.create({
 	setup: function() {
 		var id = this.make_identifier();
 		this.render_widget(id);
@@ -52,7 +52,7 @@ Mojo.Widget.SplashPage = Class.create({
 	
 	render_widget: function(prefix) {
 		var model = { 'id': prefix };
-		var content = Mojo.View.render({object: model, template: 'templates/splash-page'});
+		var content = Mojo.View.render({object: model, template: 'templates/splash'});
 		Element.insert(this.controller.element, content);
 		
 		var page = this.controller.element;
