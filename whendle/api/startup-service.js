@@ -52,7 +52,7 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 
 		this.fire(':status', notice);
 		this.prepare_schema
-			.defer.bind(this);
+			.bind(this).defer();
 	},
 	
 	on_setup_exception: function(which, error) {
