@@ -67,20 +67,23 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		this._offset = 0;
 		this._time = new Time();
 		this._timer = null;
+		this._subscriptions;
 		this._format;
 		this._timezone;
 	},
 	
 	setup: function(on_complete, on_error) {
-		var self = this;
-		var wait = new Whendle.Wait(on_complete);
-		var on_preferences = wait.on(this._on_preferences.bind(this));
-		var on_system_time = wait.on(this._on_system_time.bind(this));
+		this._subscriptions = {
+			preferences: false,
+			system_time: false,
+			on_ready: on_complete || Prototype.emptyFunction
+		};
+		
+		var on_preferences = this._on_preferences.bind(this);
+		var on_system_time = this._on_system_time.bind(this);
 		
 		this._make_preferences_request(on_preferences);
 		this._make_system_time_request(on_system_time);
-		
-		wait.ready();
 	},
 	
 	start: function(timer) {
@@ -101,6 +104,9 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 			if (!first_time)
 				this.fire(Whendle.Event.system, 'timeformat');
 		}
+		if (first_time) {
+			this.on_subscribed('preferences');
+		}
 	},
 	
 	_on_system_time: function(response) {
@@ -116,10 +122,11 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		if (first_time || response.timezone != this._timezone) {
 			this._timezone = response.timezone;
 			this._offset = response.offset;
-			
-			if (!first_time) {
+			if (!first_time)
 				this.fire(Whendle.Event.system, 'timezone');
-			}
+		}
+		if (first_time) {
+			this.on_subscribed('system_time');
 		}
 	},
 	
@@ -137,6 +144,18 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 			parameters: { 'subscribe': true },
 			onSuccess: callback
 		});
+	},
+	
+	on_subscribed: function(which) {
+
+		if (this._subscriptions[which]) return;
+		this._subscriptions[which] = 1;
+		
+		if (this._subscriptions.preferences &&
+			this._subscriptions.system_time) {
+
+			this._subscriptions.on_ready();
+		}
 	},
 	
 	on_timer_tick: function(now) {

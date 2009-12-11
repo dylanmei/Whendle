@@ -110,7 +110,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 			}
 		}
 		else {
-			this.splash.mojo.dismiss.delay(1, true);
+			this.splash.mojo.dismiss(true);
 		}
 
 		this.model.items = event.clocks;
