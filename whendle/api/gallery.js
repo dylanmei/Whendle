@@ -95,26 +95,27 @@ Whendle.Gallery.Presenter = Class.create({
 		var self = this;
 		var timer = (event || {}).timer;
 
-		this.startup(view,
-			this.on_load_ready.bind(this, view, timer)
+		this._startup.observe(
+			':status',
+			this.on_startup_status.bind(this, view, timer)
 		);
+		this._startup.run();
 	},
-	
-	startup: function(view, on_complete) {
-		if (this._startup.ready()) {
-			on_complete();
+
+	on_startup_status: function(view, timer, event) {
+		if (event.ready) {
+			this.on_load_ready(view, timer);
 		}
 		else {
-			var needs_install = this._startup.needs_install();
-			var needs_upgrade = this._startup.needs_upgrade();
-
+			var needs_install = this._startup.is_installing();
+			var needs_upgrade = this._startup.is_upgrading();
+			
 			if (needs_install || needs_upgrade) {
 				var feedback = needs_install ?
 					$.string('splash_message_installing') :
 					$.string('splash_message_updating');
 
 				this.notify_status(view, Whendle.Status.installing, feedback);
-				this._startup.run(on_complete);
 			}
 		}
 	},
@@ -123,7 +124,7 @@ Whendle.Gallery.Presenter = Class.create({
 		this.notify_status(view, Whendle.Status.loading,
 			$.string('splash_message_starting')
 		);
-
+		
 		this.load_clocks(view,
 			this.on_clocks_loaded.bind(this, view, timer),
 			function(error) { view.loaded({ 'clocks': [], 'error': error }); });

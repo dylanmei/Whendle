@@ -101,7 +101,9 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 			this.splash.mojo.message($.string('splash_message_continue'));
 		}
 		else {
-			this.splash.hide();
+			// fixme: max 1 second from when startup invoked...
+			//
+			this.splash.mojo.dismiss.delay(1, true);
 		}
 
 		this.model.items = event.clocks;

@@ -8,8 +8,8 @@ Mojo.Widget.Splash = Class.create({
 		this.controller.exposeMethods(['message', 'interactive', 'dismiss']);
 	},
 	
-	dismiss: function() {
-		if (!this.interactive()) return;
+	dismiss: function(force) {
+		if (!force && !this.interactive()) return;
 		
 		this.text.hide();
 		var page = this.controller.element;

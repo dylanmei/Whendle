@@ -9,7 +9,7 @@ describe 'Gallery'
 	timekeeper.time = function() { return Time.now(); }
 	timekeeper.offset = function() { return 0; }
 	
-	startup = { ready: function() { return true; } }
+	startup = new Whendle.Observable;
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
 	

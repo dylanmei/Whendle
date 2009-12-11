@@ -58,16 +58,13 @@ document.clocks = [
 ];
 
 document.observe('dom:loaded', function() {
-//	$.trace('palm', new Date(1259979404000).Local);
-//	$.trace('palm', new Date(1259979404000 + (480 * 60000)).Local);
-	
-//	$.trace(Date.now());
-//	$.trace(new Time().ticks(Date.now()).iso);
-//	$.trace(new Date(Date.now()));
 
 	document.system = new SystemService(document.tzone, document.tformat);
+	var startup = new Whendle.Observable();
+	startup.run = function() {
+		this.fire(Whendle.Event.status, { 'ready': true });
+	}
 	var timekeeper = new Whendle.TimekeeperService(document.system);
-	var startup = { ready: function() { return true; } }
 	timekeeper.setup(function() {
 		document.gallery = new Gallery(startup, timekeeper, new TimezoneService(), new DatabaseService());
 	});

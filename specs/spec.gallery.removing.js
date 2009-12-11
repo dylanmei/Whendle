@@ -3,7 +3,7 @@ describe 'Gallery'
 	database = new Object
 	timezones = new Object
 	timekeeper = new Whendle.Observable
-	startup = { ready: function() { return true; } }
+	startup = new Whendle.Observable;
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
 	
