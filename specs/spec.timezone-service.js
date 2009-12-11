@@ -2,7 +2,8 @@
 
 describe 'Timezone Service'
 	ajax = new Object
-	service = new Whendle.TimezoneService(ajax)
+	loader = new Object
+	service = new Whendle.TimezoneService(ajax, loader)
 	mock_response = function(offset, timezone) {
 		return { 'rawOffset': offset, 'timezoneId': timezone }
 	}
@@ -41,8 +42,26 @@ describe 'Timezone Service'
 			a.should.be_null
 		end
 		
-		it 'shouldreturn an error'
+		it 'should return an error'
 			e.should_not.be_null
+		end
+	end
+	
+	describe 'loading a timezone'
+		before
+			a = null
+			b = 0
+			loader.load = function(name, f) { b++; f('Zone a/b') }
+			service.load('a/b', -{a = true})
+			service.load('a/b', -{})
+		end
+		
+		it 'should load the timezone from disk'
+			a.should.be_true
+		end
+		
+		it 'should cache the timezone'
+			b.should.be 1
 		end
 	end
 end
