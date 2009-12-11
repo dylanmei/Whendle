@@ -10,18 +10,19 @@ describe 'Startup Service'
 		before
 			a = null
 			b = null
-			schema.read = -{a = true}
+			schema.read = function(f) { a = true; f(); }
 			schema.migrator = -{return null}
-			timekeeper.setup = -{b = true}
+			schema.version = -{return null}
+			timekeeper.setup = function(f) { b = true; f(); }
 			service.run();
 		end
 	
 		it 'should init the timekeeper'
-			a.should.be_true
+			b.should.be_true
 		end
 		
 		it 'should connect to the schema'
-			b.should.be_true
+			a.should.be_true
 		end
 	end
 
@@ -29,13 +30,11 @@ describe 'Startup Service'
 		before
 			a = null
 			b = null
-			c = null
-			timekeeper.setup = function(on_complete) {on_complete()}
-			schema.read = function(on_complete) {on_complete()}
-			schema.migrator = -{a = true}
+			timekeeper.setup = function(f) { f() }
+			schema.read = function(f) { f() }
 			service.observe(Whendle.Event.status, function(event) {
-				if (b == null) b = event.ready;
-				else c = event.ready;
+				a = event.ready
+				b = event.installing
 			});
 
 			schema.version = -{return null}
@@ -43,15 +42,11 @@ describe 'Startup Service'
 		end
 		
 		it 'should fire a not-ready status'
-			b.should.be_false
+			a.should.be_false
 		end
 		
-		it 'should run a schema operation'
-			a.should.be_true
-		end
-		
-		it 'should complete with a ready status'
-			c.should.be_true
+		it 'should fire an installing status'
+			b.should.be_true
 		end
 	end
 
@@ -59,13 +54,11 @@ describe 'Startup Service'
 		before
 			a = null
 			b = null
-			c = null
-			timekeeper.setup = function(on_complete) {on_complete()}
-			schema.read = function(on_complete) {on_complete()}
-			schema.migrator = -{a = true}
+			timekeeper.setup = function(f) { f() }
+			schema.read = function(f) { f() }
 			service.observe(Whendle.Event.status, function(event) {
-				if (b == null) b = event.ready;
-				else c = event.ready;
+				a = event.ready
+				b = event.upgrading
 			});
 			
 			schema.version = -{return 'abc'}
@@ -73,15 +66,11 @@ describe 'Startup Service'
 		end
 		
 		it 'should fire a not-ready status'
-			b.should.be_false
+			a.should.be_false
 		end
 		
-		it 'should run a schema operation'
-			a.should.be_true
-		end
-		
-		it 'should complete with a ready status'
-			c.should.be_true
+		it 'should fire an upgrading status'
+			b.should.be_true
 		end
 	end
 	
@@ -89,11 +78,13 @@ describe 'Startup Service'
 		before
 			a = null
 			b = null
-			timekeeper.setup = function(on_complete) {on_complete()}
-			schema.read = function(on_complete) {on_complete()}
-			schema.migrator = -{a = true}
+			c = null
+			timekeeper.setup = function(f) {f () }
+			schema.read = function(f) { f() }
 			service.observe(Whendle.Event.status, function(event) {
-				if (b == null) b = event.ready;
+				a = event.ready;
+				b = event.installing || false
+				c = event.updating || false
 			});
 
 			schema.version = -{return 'xyz'}
@@ -101,11 +92,15 @@ describe 'Startup Service'
 		end
 	
 		it 'should fire a ready status'
-			b.should.be_true
+			a.should.be_true
 		end
 		
-		it 'should not run a schema operation'
-			a.should.be_null
+		it 'should not fire an installing status'
+			b.should.be_false
+		end
+
+		it 'should not fire an upgrading status'
+			c.should.be_false
 		end
 	end
 end

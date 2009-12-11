@@ -45,6 +45,7 @@ Whendle = {
 	
 	Status: {
 		installing: 'installing',
+		updating: 'updating',
 		loading: 'loading',
 		exception: 'exception'
 	},

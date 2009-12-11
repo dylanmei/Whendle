@@ -51,7 +51,7 @@ Mojo.Widget.Splash = Class.create({
 	},
 	
 	render_widget: function(prefix) {
-		var model = { 'id': prefix };
+		var model = { 'id': prefix, 'message': $.string('splash_message_default') };
 		var content = Mojo.View.render({object: model, template: 'templates/splash'});
 		Element.insert(this.controller.element, content);
 		

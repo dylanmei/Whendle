@@ -5,40 +5,32 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 		$super();
 		this._schema = schema || Whendle.schema();
 		this._timekeeper = timekeeper || Whendle.timekeeper();
-		this._ready_state = 0;
 	},
 	
 	run: function() {
-		this.setup_timekeeper();
+		// 1. connect to the database (schema)
+		// 2. connect to the time services (timekeeper)
+		// 3. notify any listeners of our status: ready, installing, upgrading
+		// 4. install or upgrade
+		// 5. notify any listeners of our status: ready
+		
 		this.setup_schema();
 	},
 
-	setup_timekeeper: function() {
-		this._timekeeper.setup(
-			this.on_setup_complete.bind(this, 'timekeeper')
-		);
-	},
-	
 	setup_schema: function() {
+		var on_complete = this.setup_timekeeper.bind(this);
 		this._schema.read(
-			this.on_setup_complete.bind(this, 'schema'),
+			on_complete,
 			this.on_setup_exception.bind(this, 'schema')
 		);
 	},
-	
-	on_setup_complete: function(which) {
-		var SCHEMA_READY = 1;
-		var TIMEKEEPER_READY = 2;
-		var STARTUP_READY = SCHEMA_READY | TIMEKEEPER_READY;
 
-		if (which == 'schema') {
-			this._ready_state |= SCHEMA_READY;
-		}
-		else if (which == 'timekeeper') {
-			this._ready_state |= TIMEKEEPER_READY;
-		}
-		
-		if (this._ready_state != STARTUP_READY) return;
+	setup_timekeeper: function() {
+		var on_complete = this.on_setup_complete.bind(this);
+		this._timekeeper.setup(on_complete);
+	},
+	
+	on_setup_complete: function() {
 
 		var notice = { ready: true };
 		if (this.is_installing()) {

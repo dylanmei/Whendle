@@ -94,15 +94,22 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		if (this.report_error(event.error)) return;
 		
 		var show_splash = Whendle.show_splash ||
-			this.notice.status == Whendle.Status.installing;
+			this.notice.status == Whendle.Status.installing ||
+			this.notice.status == Whendle.Status.updating;
 			
 		if (show_splash) {
 			this.splash.mojo.interactive(true);
-			this.splash.mojo.message($.string('splash_message_continue'));
+			if (this.notice.status == Whendle.Status.installing) {
+				this.splash.mojo.message($.string('splash_message_install_continue'));
+			}
+			else if (this.notice.status == Whendle.Status.updating) {
+				this.splash.mojo.message($.string('splash_message_update_continue'));
+			}
+			else {
+				this.splash.mojo.message($.string('splash_message_continue'));
+			}
 		}
 		else {
-			// fixme: max 1 second from when startup invoked...
-			//
 			this.splash.mojo.dismiss.delay(1, true);
 		}
 

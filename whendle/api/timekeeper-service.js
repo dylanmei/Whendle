@@ -67,15 +67,15 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		this._offset = 0;
 		this._time = new Time();
 		this._timer = null;
-		this._format = null;
-		this._timezone = null;
+		this._format;
+		this._timezone;
 	},
 	
 	setup: function(on_complete, on_error) {
 		var self = this;
 		var wait = new Whendle.Wait(on_complete);
-		var on_preferences = wait.on(this._on_preferences.bind(this, 'setup'));
-		var on_system_time = wait.on(this._on_system_time.bind(this, 'setup'));
+		var on_preferences = wait.on(this._on_preferences.bind(this));
+		var on_system_time = wait.on(this._on_system_time.bind(this));
 		
 		this._make_preferences_request(on_preferences);
 		this._make_system_time_request(on_system_time);
@@ -94,22 +94,16 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		if (this.timer) this.timer.stop();
 	},
 	
-	_on_preferences: function(call_state, response) {
-		if (call_state == 'setup') {
+	_on_preferences: function(response) {
+		var first_time = Object.isUndefined(this._format);
+		if (first_time || response.timeFormat != this._format) {
 			this._format = response.timeFormat;
-			// first time, so subscribe
-			this._make_preferences_request.bind(this).defer(
-				this._on_preferences.bind(this, 'update'), true);
-		}
-		else {
-			if (response.timeFormat != this._format) {
-				this._format = response.timeFormat;
+			if (!first_time)
 				this.fire(Whendle.Event.system, 'timeformat');
-			}
 		}
 	},
 	
-	_on_system_time: function(call_state, response) {
+	_on_system_time: function(response) {
 		var lt = response.localtime;
 		this._time
 			.year(lt.year)
@@ -117,34 +111,30 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 			.day(lt.day)
 			.hour(lt.hour)
 			.minute(lt.minute);
-		this._offset = response.offset;
-
-		if (call_state == 'setup') {
+		
+		var first_time = Object.isUndefined(this._timezone);
+		if (first_time || response.timezone != this._timezone) {
 			this._timezone = response.timezone;
-			// first time, so subscribe
-			this._make_system_time_request.bind(this).defer(
-				this._on_system_time.bind(this, 'update'), true);
-		}
-		else {
-			if (response.timezone != this._timezone) {
-				this._timezone = response.timezone;
+			this._offset = response.offset;
+			
+			if (!first_time) {
 				this.fire(Whendle.Event.system, 'timezone');
 			}
 		}
 	},
 	
-	_make_preferences_request: function(callback, subscribe) {
+	_make_preferences_request: function(callback) {
 		this._system.request('palm://com.palm.systemservice', {
 			method: 'getPreferences',
-			parameters: { 'subscribe': subscribe || false, 'keys': [ 'timeFormat' ] },
+			parameters: { 'subscribe': true, 'keys': [ 'timeFormat' ] },
 			onSuccess: callback
 		});
 	},
 	
-	_make_system_time_request: function(callback, subscribe) {
+	_make_system_time_request: function(callback) {
 		this._system.request('palm://com.palm.systemservice/time', {
 			method: 'getSystemTime',
-			parameters: { 'subscribe': subscribe || false },
+			parameters: { 'subscribe': true },
 			onSuccess: callback
 		});
 	},

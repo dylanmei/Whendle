@@ -107,15 +107,18 @@ Whendle.Gallery.Presenter = Class.create({
 			this.on_load_ready(view, timer);
 		}
 		else {
-			var needs_install = this._startup.is_installing();
-			var needs_upgrade = this._startup.is_upgrading();
+			var needs_install = event.installing;
+			var needs_upgrade = event.upgrading;
 			
 			if (needs_install || needs_upgrade) {
 				var feedback = needs_install ?
 					$.string('splash_message_installing') :
 					$.string('splash_message_updating');
+				var status = needs_install ?
+					Whendle.Status.installing :
+					Whendle.Status.updating;
 
-				this.notify_status(view, Whendle.Status.installing, feedback);
+				this.notify_status(view, status, feedback);
 			}
 		}
 	},
