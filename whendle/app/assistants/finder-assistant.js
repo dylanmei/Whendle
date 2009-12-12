@@ -94,7 +94,7 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		}
 		else {
 			this.model.items = this.model.items.concat(event.locations);
-			this.list.mojo.noticeAddedItems(index, event.locations);
+			this.list.mojo.noticeAddedItems(event.index, event.locations);
 		}
 		
 		this.update_status(this.count(), event.total);
