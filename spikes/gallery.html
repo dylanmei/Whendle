@@ -17,6 +17,10 @@
 	<script src="../whendle/api/timekeeper-service.js" type="text/javascript"></script>
 	<script src="../whendle/api/timezone-service.js" type="text/javascript"></script>
 	<script src="../whendle/api/gallery.js" type="text/javascript"></script>
+	
+	<script src="database-service.js" type="text/javascript"></script>
+	<script src="system-service.js" type="text/javascript"></script>
+	<script src="timezone-service.js" type="text/javascript"></script>
 	<script>
 
 $.trace = function() { console.log($A(arguments).join(' ')); }
@@ -135,114 +139,15 @@ Gallery = Class.create(Whendle.Gallery.View, {
 				return c.id == id;
 			});
 			if (clock) {
-				row.down('.-row-time').innerHTML = clock.time;
+				flip_time_elements(
+					row.down('.-row-hours'),
+					row.down('.-row-minutes'),
+					clock.time2,
+					clock.format
+				);
 				row.down('.-row-day').innerHTML = clock.day;
 			}
 		});
-	}
-});
-
-TimezoneService = Class.create(Whendle.TimezoneService, {
-	initialize: function($super, tzloader) {
-		$super(null, new Whendle.TzLoader(new Whendle.AjaxService(), document.tzpath));
-	},
-	
-	lookup: function(latitude, longitude, on_complete, on_error) {
-		var location = document.locations.find(function(l) {
-			return l.latitude == latitude && l.longitude == longitude;
-		});
-
-		zone = null;
-		if (location) zone = document.zones[location.name];
-		if (zone) {
-			on_complete({ name: zone, offset: 0 });
-		}
-		else {
-			$.trace('missing zone during lookup');
-		}
-	}
-});
-
-SystemService = Class.create({
-	initialize: function(zone, format) {
-		this._timezone = zone;
-		this._timeformat = format;
-		this._pref_subscription = null;
-		this._time_subscription = null;
-	},
-	
-	request: function(uri, options) {
-		if (options.method == 'getPreferences') {
-			var callback = options.onSuccess;
-			if (options.parameters.subscribe)
-				this._pref_subscription = callback;
-			callback({ 'timeFormat': this._timeformat });
-			
-		}
-		if (options.method == 'getSystemTime') {
-			var callback = options.onSuccess;
-			if (options.parameters.subscribe)
-				this._time_subscription = callback;
-
-			var now = Time.now()
-			callback({
-				'timezone': this._timezone,
-				'offset': -480,
-				'localtime': {
-					'year': now.year(),
-					'month': now.month(),
-					'day': now.day(),
-					'hour': now.hour(),
-					'minute': now.minute(),
-					'second': now.second()
-				}
-			});
-		}
-	},
-	
-	timeformat: function(v) {
-		if (v !== undefined && v != this._timeformat) {
-			this._timeformat = v;
-			if (this._pref_subscription)
-				this._pref_subscription({ 'timeFormat': v });
-		}
-		return this._timeformat;
-	},
-	
-	timezone: function(v) {
-		if (v !== undefined && v != this._timezone) {
-			this._timezone = v;
-			if (this._time_subscription)
-				this._time_subscription({ 'timezone': v });
-		}
-		return this._timezone;
-	}
-});
-
-DatabaseService = Class.create({
-	rowset: function(statement, parameters, on_results, on_error) {
-		if (statement == 'select * from clocks') {
-			on_results(document.clocks);
-		}
-	},
-	
-	insert: function(statement, parameters, on_results, on_error) {
-		if (statement.startsWith('insert into clocks')) {
-			var id = document.clocks.length + 1;
-			document.clocks.push({ 'id': id, 'location': parameters[0], 'district': parameters[1], 'country': parameters[2],
-				'latitude': parameters[3], 'longitude': parameters[4], 'timezone': parameters[5] });
-			on_results(id);
-		}
-	},
-	
-	remove: function(statement, parameters, on_results, on_error) {
-		if (statement.startsWith('delete from clocks')) {
-			var id = parameters[0];
-			document.clocks = document.clocks.reject(function(c) {
-				return c.id == id;
-			});
-			on_results(id);
-		}
 	}
 });
 
@@ -289,9 +194,54 @@ function new_info(clock) {
 }
 
 function new_time(clock) {
+	
+	var hours = new_div('-row-hours');
+	var minutes = new_div('-row-minutes');
+	flip_time_elements(hours, minutes,
+		clock.time2, clock.format);
+	
 	return new_div('vbox')
-		.insert(new_div('-row-time', clock.time))
+		.insert(
+			new_div('-row-time hbox')
+				.insert(minutes)
+				.insert(hours))
 		.insert(new_div('-row-day', clock.day));
+}
+
+function flip_time_elements(hours, minutes, time, format) {
+	var p1 = get_flip_position(time.hour(), format);
+	var p2 = get_flip_position(time.minute());
+	
+	hours.setStyle({
+		'backgroundPosition': p1.x + 'px ' + p1.y + 'px'
+	});
+	minutes.setStyle({
+		'backgroundPosition': p2.x + 'px ' + p2.y + 'px'
+	});
+}
+
+function get_flip_position(n, format) {
+//$.trace(n, ':', 'x =', Math.floor(n / 10), 'y =', n % 10);
+	
+	var x = -1;
+	var y = -1;
+	var w = 59 + 13;
+	var h = 57 + 3;
+	var h24 = format != 12;
+	
+	if (h24) {
+		var index_x = Math.floor(n / 10);
+		var index_y = n % 10;
+		
+		x = x - (index_x * w);
+		y = y - (index_y * h);
+	}
+	else {
+		x = x - (6 * w);
+		y = y - (n % 12 * h);
+	}
+	
+	return { 'x': x, 'y': y };
 }
 
 function new_controls(clock) {
@@ -394,17 +344,22 @@ function on_appender_click(event) {
 	min-height: 400px;
 	margin: 40px auto;
 	border: 1px solid black;
+	font-family: sans-serif;
+/*
 	-webkit-border-radius: 6px;
 	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
 	-moz-border-radius: 6px;
-	-moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
+	-moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);
+*/
 }
 
 .-row, #appender {
 	padding: 10px;
 	width: 380px;
-	border-bottom: 1px solid #ccc;
 	cursor: arrow;
+}
+.-row {
+	border-bottom: 1px solid #ccc;
 }
 .-row-name {
 	display: block;
@@ -418,14 +373,10 @@ function on_appender_click(event) {
 .-row-link {
 	color: blue;
 }
-.-row-time, .-row-day {
-	font-size: 0.9;
-	text-align: right;
-}
 
 .-row-up, .-row-delete, .-row-down {
 	width: 15px;
-	margin-left: 10px;
+	margin-left: 4px;
 	text-align: center;
 	cursor: pointer;
 	font-size: .9em;
@@ -459,6 +410,34 @@ ul.selection li {
 }
 ul.selection li.emph {
 	color: #55C;
+}
+
+.-row-time {
+	text-align: right;
+}
+
+.-row-hours {
+	float:right;
+	height:58px;
+	width:59px;
+	background-image: url(../whendle/resources/gallery-flip-digits-white.png);
+	background-position-x: 0;
+	background-position-x: y;
+	background-repeat: no-repeat;
+}
+.-row-minutes {
+	float:right;
+	height:58px;
+	width:59px;
+	margin-left:-6px;
+	background-image: url(../whendle/resources/gallery-flip-digits-white.png);
+	background-position-x: 0;
+	background-position-x: y;
+	background-repeat: no-repeat;
+}
+.-row-day {
+	font-size: 0.9em;
+	text-align: right;
 }
 	</style>
 </head>

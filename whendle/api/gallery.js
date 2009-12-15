@@ -188,6 +188,9 @@ Whendle.Gallery.Presenter = Class.create({
 			var when = self.offset_time(now, offset, timezone);
 			clock.time = self.format_time(when);
 			clock.day = self.format_day(now, when);
+			
+			clock.time2 = when.clone();
+			clock.format = self._timekeeper.format() == 'HH12' ? 12 : 24;
 			on_complete();
 		};
 		this._timezones.load(clock.timezone, on_timezone);
@@ -225,7 +228,7 @@ Whendle.Gallery.Presenter = Class.create({
 			? $.string('day_Yesterday', 'Yesterday') : there.compare(here) > 0
 				? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
 	},
-
+	
 	_on_add_clock: function(view, event) {
 		if (!event) return;
 		var location = event.location;
