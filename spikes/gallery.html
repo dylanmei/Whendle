@@ -101,8 +101,9 @@ Gallery = Class.create(Whendle.Gallery.View, {
 		var list = $('list');
 		var sibling = null;
 		event.clocks.each(function(c) {
-			row = new_row(c);
-			if (!sibling) {
+			var first = sibling == null;
+			row = new_row(c, first);
+			if (first) {
 				list.insert({ 'top': row });
 			}
 			else {
@@ -178,13 +179,20 @@ function remove_from_finder(location_name) {
 	});
 }
 
-function new_row(clock) {
-	return new_div('-row hbox')
+function new_row(clock, is_first) {
+	var row = new_div('-row hbox')
 		.writeAttribute('clock_id', clock.id)
 		.insert(new_info(clock))
 		.insert(new_spacer())
-		.insert(new_time(clock))
-		.insert(new_controls(clock));
+		.insert(new_time(clock));
+//		.insert(new_controls(clock));
+	if (is_first) {
+		row.setStyle({
+			'backgroundPosition': '0 0'
+		});
+	}
+	
+	return row;
 }
 
 function new_info(clock) {
@@ -340,26 +348,24 @@ function on_appender_click(event) {
 	<link href="flex-box.css" media="screen" rel="stylesheet" type="text/css" />
 	<style>
 .app {
-	width: 400px;
+	width:320px;
 	min-height: 400px;
 	margin: 40px auto;
 	border: 1px solid black;
 	font-family: sans-serif;
-/*
-	-webkit-border-radius: 6px;
-	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
-	-moz-border-radius: 6px;
-	-moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);
-*/
 }
 
 .-row, #appender {
-	padding: 10px;
-	width: 380px;
+	min-width: 312px;
+	padding: 4px;
 	cursor: arrow;
+	background: url(../whendle/resources/gallery-background.png) 0 -182px no-repeat;
 }
 .-row {
-	border-bottom: 1px solid #ccc;
+	background: url(../whendle/resources/gallery-background.png) 0 -91px no-repeat;
+}
+.-row.first {
+	background-position: 0 0;
 }
 .-row-name {
 	display: block;
@@ -421,8 +427,7 @@ ul.selection li.emph {
 	height:58px;
 	width:59px;
 	background-image: url(../whendle/resources/gallery-flip-digits-white.png);
-	background-position-x: 0;
-	background-position-x: y;
+	background-position: 0 0;
 	background-repeat: no-repeat;
 }
 .-row-minutes {
@@ -431,8 +436,7 @@ ul.selection li.emph {
 	width:59px;
 	margin-left:-6px;
 	background-image: url(../whendle/resources/gallery-flip-digits-white.png);
-	background-position-x: 0;
-	background-position-x: y;
+	background-position-x: 0 0;
 	background-repeat: no-repeat;
 }
 .-row-day {
