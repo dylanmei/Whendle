@@ -231,22 +231,15 @@ function flip_time_elements(hours, minutes, time, format) {
 function get_flip_position(n, format) {
 //$.trace(n, ':', 'x =', Math.floor(n / 10), 'y =', n % 10);
 	
-	var x = -1;
-	var y = -1;
-	var w = 59 + 13;
-	var h = 57 + 3;
+	var x = -2;
+	var y = -2;
+	var w = 64;
+	var h = 64;
 	var h24 = format != 12;
 	
-	if (h24) {
-		var index_x = Math.floor(n / 10);
-		var index_y = n % 10;
-		
-		x = x - (index_x * w);
-		y = y - (index_y * h);
-	}
-	else {
-		x = x - (6 * w);
-		y = y - (n % 12 * h);
+	y = y - (n * h);
+	if (!h24) {
+		y = y - 3840;
 	}
 	
 	return { 'x': x, 'y': y };
@@ -424,17 +417,17 @@ ul.selection li.emph {
 
 .-row-hours {
 	float:right;
-	height:58px;
-	width:59px;
+	height:60px;
+	width:60px;
 	background-image: url(../whendle/resources/gallery-flip-digits-white.png);
 	background-position: 0 0;
 	background-repeat: no-repeat;
 }
 .-row-minutes {
 	float:right;
-	height:58px;
-	width:59px;
-	margin-left:-6px;
+	height:60px;
+	width:60px;
+	margin-left:-2px;
 	background-image: url(../whendle/resources/gallery-flip-digits-white.png);
 	background-position-x: 0 0;
 	background-repeat: no-repeat;
