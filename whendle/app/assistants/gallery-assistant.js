@@ -31,7 +31,8 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 				swipeToDelete: true,
 				autoconfirmDelete: true,
 				renderLimit: 80,
-				reorderable: false
+				reorderable: false,
+				dividerFunction: null
 			},
 			this.model
 		);
@@ -114,14 +115,14 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		}
 
 		this.model.items = event.clocks;
-		this.controller.modelChanged(this.model, this);
+		this.refresh_model();
 	},
-
+	
 	added: function(event) {
 		if (this.report_error(event.error)) return;
 		
 		this.model.items.push(event.clocks[0]);
-		this.controller.modelChanged(this.model, this);
+		this.refresh_model();
 		this.growler.mojo.dismiss();
 	},
 	
@@ -134,7 +135,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		
 		if (clock) {
 			this.model.items = this.model.items.without(clock);
-			this.controller.modelChanged(this.model, this);
+			this.refresh_model();
 		}
 	},
 	
@@ -144,17 +145,68 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		var items = this.model.items;
 		var changes = false;
 		clocks.each(function(clock) {
-			match = items.find(function(item) {
+			var match = items.find(function(item) {
 				return item.id == clock.id;
 			});
 			if (match) {
 				changes = true;
 				match.time = clock.time;
 				match.day = clock.day;
+				match.format = clock.format;
 			}
 		});
-		if (changes)
-			this.controller.modelChanged(this.model, this);
+		if (changes) {
+			this.refresh_model();
+		}
+	},
+	
+	refresh_model: function() {
+		this.controller.modelChanged(this.model, this);
+		this.fixup_clocks(this.model.items);
+	},
+	
+	fixup_clocks: function(clocks) {
+		var self = this;
+		var rows = this.list.select('.gallery-row');
+		clocks.each(function(clock) {
+			var match = rows.find(function(row) {
+				return row.readAttribute('clock') == clock.id;
+			});
+			
+			if (match) {
+				var dh = match.down('.gallery-row-hour');
+				var dm = match.down('.gallery-row-minute');
+				self.fixup_flip_time_elements(dh, dm, clock.time, clock.format);
+			}
+		});
+	},
+	
+	fixup_flip_time_elements: function(hours, minutes, time, format) {
+		var p1 = this.fixup_get_flip_position(time.hour(), format);
+		var p2 = this.fixup_get_flip_position(time.minute());
+		
+		hours.setStyle({
+			'backgroundPosition': p1.x + 'px ' + p1.y + 'px'
+		});
+		minutes.setStyle({
+			'backgroundPosition': p2.x + 'px ' + p2.y + 'px'
+		});		
+	},
+	
+	fixup_get_flip_position: function(n, format) {
+		//$.trace(n, ':', 'x =', Math.floor(n / 10), 'y =', n % 10);
+		var x = -2;
+		var y = -2;
+		var w = 64;
+		var h = 64;
+		var h24 = format != 12;
+		
+		y = y - (n * h);
+		if (!h24) {
+			y = y - 3840;
+		}
+		
+		return { 'x': x, 'y': y };
 	},
 	
 	report_error: function(error) {

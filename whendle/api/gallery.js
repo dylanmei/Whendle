@@ -186,11 +186,11 @@ Whendle.Gallery.Presenter = Class.create({
 		var self = this;
 		var on_timezone = function(timezone) {
 			var when = self.offset_time(now, offset, timezone);
-			clock.time = self.format_time(when);
+			//clock.time = self.format_time(when);
+			clock.time = when;
 			clock.day = self.format_day(now, when);
-			
-			clock.time2 = when.clone();
 			clock.format = self._timekeeper.format() == 'HH12' ? 12 : 24;
+			
 			on_complete();
 		};
 		this._timezones.load(clock.timezone, on_timezone);

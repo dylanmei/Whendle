@@ -1,5 +1,9 @@
 /* This file belongs to Whendle, a clock application for the Palm Pre */
 
+body.whendle {
+	background-color: #fff;
+}
+
 .splash-page {
 	position:absolute;
 	top: 0px;
@@ -78,10 +82,22 @@
 	margin-left: 10px;
 }
 
-
 .finder-row .palm-row-wrapper,
 .gallery-row .palm-row-wrapper {
 	padding: 4px 10px 8px 10px;
+}
+
+.gallery-row {
+	height: 90px;
+	background: url(gallery-background.png) 0 -90px no-repeat;
+}
+
+.gallery-row.first {
+	background: url(gallery-background.png) 0 0 no-repeat;
+}
+
+.gallery-list .last {
+	background: url(gallery-background.png) 0 -180px no-repeat;
 }
 
 .gallery-row-name, .gallery-row-time {
@@ -92,8 +108,25 @@
 	font-size: 0.7em;
 }
 
+.gallery-row-name, .gallery-row-area {
+	max-width: 180px;
+	text-overflow: ellipses;
+}
+
 .gallery-row-time, .gallery-row-day {
 	text-align: right;
+}
+
+.gallery-row-hour, .gallery-row-minute {
+	height:60px;
+	width:60px;
+	background-image: url(gallery-flip-digits-white.png);
+	background-position: -2px -2px;
+	background-repeat: no-repeat;
+}
+
+.gallery-row-minute {
+	margin-left: -2px;
 }
 
 .hbox {

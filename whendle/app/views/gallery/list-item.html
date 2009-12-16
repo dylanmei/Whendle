@@ -1,4 +1,4 @@
-<div class="palm-row gallery-row" x-mojo-tap-highlight="momentary">	
+<div class="palm-row gallery-row" clock="#{id}" x-mojo-tap-highlight="momentary">	
 	<div class="palm-row-wrapper hbox">
 		<div class="vbox">
 			<div x-mojo-element="Spinner" name="spinner"></div>
@@ -7,7 +7,10 @@
 		</div>
 		<div class="spacer"></div>
 		<div class="vbox">
-			<div class="gallery-row-time">#{time}</div>
+			<div class="gallery-row-time hbox">
+				<div class="gallery-row-hour"></div>
+				<div class="gallery-row-minute"></div>
+			</div>
 			<div class="gallery-row-day">#{day}</div>
 		</div>
 	</div>
