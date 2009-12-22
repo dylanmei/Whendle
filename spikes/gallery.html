@@ -68,20 +68,30 @@ document.observe('dom:loaded', function() {
 	timekeeper.setup(function() {
 		document.gallery = new Gallery(startup, timekeeper, new TimezoneService(), new DatabaseService());
 	});
-	prepare_appender();
 });
+
+//
+//	Gallery
+//
 
 Gallery = Class.create(Whendle.Gallery.View, {
 	initialize: function($super, startup, timekeeper, tzservice, database) {
 		$super();
 		this.presenter =
 			new Whendle.Gallery.Presenter(this, startup, timekeeper, tzservice, database);
+
+		this.setup();
 		this.fire(Whendle.Event.loading, { 'timer': new Whendle.Timer(window) });
+	},
+	
+	setup: function() {
+		this.list = new List($('list'));
+		this.list.observe(':service', this.on_clock_service.bind(this));
+		this.drawer = $('drawer');
 	},
 	
 	add: function(location) {
 		this.fire(Whendle.Event.adding, { 'location': location });
-		remove_from_finder(location.name);
 	},
 	
 	remove: function(id) {
@@ -89,56 +99,27 @@ Gallery = Class.create(Whendle.Gallery.View, {
 			return c.id == id;
 		});
 		this.fire(Whendle.Event.removing, { 'id': id });
-		if (clock)
-			add_to_finder(clock.location);
 	},
 
 	loaded: function(event) {
-		var list = $('list');
-		var sibling = null;
-		event.clocks.each(function(c) {
-			row = new_row(c);
-			if (!sibling) {
-				list.insert({ 'top': row });
-			}
-			else {
-				sibling.insert({ 'after': row });
-			}
-			sibling = row;
-		});
+		this.list.load(event.clocks);
 	},
 	
 	added: function(event) {
-		var clock = event.clocks[0];
-		var list = $('list');
-		var row = new_row(clock);
-		var sibling = list.select('.-row').last();
-		if (!sibling) {
-			list.insert({ 'top': row });
-		}
-		else {
-			sibling.insert({ 'after': row });
-		}
+		this.list.add(event.clocks[0]);
 	},
 	
 	removed: function(event) {
 		var clock = event.clocks[0];
-		remove_row(clock.id);
+		this.list.remove(clock);
 	},
 	
 	changed: function(event) {
-		var list = $('list');
-		var clocks = event.clocks;
-		list.select('.-row').each(function(row) {
-			var id = row.readAttribute('clock_id');
-			var clock = clocks.find(function(c) {	
-				return c.id == id;
-			});
-			if (clock) {
-				row.down('.-row-time').innerHTML = clock.time;
-				row.down('.-row-day').innerHTML = clock.day;
-			}
-		});
+		this.list.change(event.clocks);
+	},
+	
+	on_clock_service: function(event) {
+		$.trace('clock =', event.clock, 'service =', event.service);
 	}
 });
 
@@ -162,6 +143,10 @@ TimezoneService = Class.create(Whendle.TimezoneService, {
 		}
 	}
 });
+
+//
+// System Service
+//
 
 SystemService = Class.create({
 	initialize: function(zone, format) {
@@ -219,6 +204,9 @@ SystemService = Class.create({
 	}
 });
 
+//
+//	Database Service
+//
 DatabaseService = Class.create({
 	rowset: function(statement, parameters, on_results, on_error) {
 		if (statement == 'select * from clocks') {
@@ -246,190 +234,320 @@ DatabaseService = Class.create({
 	}
 });
 
-function prepare_appender() {
-	$('appender').observe('click', on_appender_click);
-	$('finder').observe('click', on_finder_click);
-	$('formatter').observe('click', on_formatter_click);
+//
+//	List
+//
+List = Class.create(Whendle.Observable, {
+	initialize: function($super, container) {
+		$super();
+		this._container = container;
+		this.setup();
+	},
 	
-	document.locations.each(function(l) {
-		var clock = document.clocks.find(function(c) {
-			return c.location == l.name;
-		});
-		if (!clock) {
-			add_to_finder(l.name);
-		}
-	});
-}
-
-function add_to_finder(location_name) {
-	var li = new Element('li');
-	li.innerHTML = location_name;
-	$('finder').insert(li);
-}
-
-function remove_from_finder(location_name) {
-	$('finder').select('li').each(function(li) {
-		if (li.innerHTML == location_name) li.remove();
-	});
-}
-
-function new_row(clock) {
-	return new_div('-row hbox')
-		.writeAttribute('clock_id', clock.id)
-		.insert(new_info(clock))
-		.insert(new_spacer())
-		.insert(new_time(clock))
-		.insert(new_controls(clock));
-}
-
-function new_info(clock) {
-	return new_div('vbox')
-		.insert(new_div('-row-name', clock.name))
-		.insert(new_div('-row-area', clock.place));
-}
-
-function new_time(clock) {
-	return new_div('vbox')
-		.insert(new_div('-row-time', clock.time))
-		.insert(new_div('-row-day', clock.day));
-}
-
-function new_controls(clock) {
-	return new_div('vbox')
-//		.insert(new_div('-row-up', '+')
-//			.observe('click', on_clock_up.curry(clock.id)))
-		.insert(new_div('-row-delete', 'x')
-			.observe('click', on_clock_delete.curry(clock.id)));
-//		.insert(new_div('-row-down', '-')
-//			.observe('click', on_clock_down.curry(clock.id)));
-}
-
-function new_spacer() {
-	return new_div(['spacer']);
-}
-
-function new_div(classes, content) {
-	if (!classes) classes = '';
-	if (Object.isArray(classes))
-		classes = classes.join(' ');
+	setup: function() {
+		$('appender').observe('click', this.on_appender_click.bind(this));
+		$('finder').observe('click', this.on_finder_click.bind(this));
+		$('formatter').observe('click', this.on_formatter_click.bind(this));
+		$('drawer').observe('click', this.on_drawer_click.bind(this));
 		
-	var element = new Element('div', { 'class': classes });
-	if (content)
-		element.innerHTML = content;
-	return element;
-}
-
-function remove_row(clock_id) {
-	var rows = $('list').select('.-row');
-	rows.each(function(row) {
-		var id = row.readAttribute('clock_id');
-		if (id == clock_id) {
-			row.remove();
+		var self = this;
+		document.locations.each(function(l) {
+			var clock = document.clocks.find(function(c) {
+				return c.location == l.name;
+			});
+			if (!clock) {
+				self.add_location_to_finder(l.name);
+			}
+		});	
+	},
+	
+	on_finder_click: function(event) {
+		var li = event.findElement('li');
+		if (li) {
+			var location = document.locations.find(function(l) {
+				return l.name == li.innerHTML;
+			});
+			
+			if (location) {
+				document.gallery.add(location);
+			}
 		}
-	});
-}
+		$('finder').hide();
+	},
 
-function on_clock_up(clock_id) {
-	$.trace('up', clock_id);
-}
+	on_formatter_click: function(event) {
+		var li = event.findElement('li');
+		if (li) {
+			var format = li.readAttribute('value');
+			document.system.timeformat(format);
+		}
+		$('formatter').hide();
+	},
 
-function on_clock_down(clock_id) {
-	$.trace('down', clock_id);
-}
-
-function on_clock_delete(clock_id) {
-	document.gallery.remove(clock_id);
-}
-
-function on_finder_click(event) {
-	var li = event.findElement('li');
-	if (li) {
-		var location = document.locations.find(function(l) {
-			return l.name == li.innerHTML;
+	on_appender_click: function(event) {
+		var link = event.findElement('.link');
+		if (link) {
+			
+			var el = null;
+			if (link.innerHTML == 'location') el = $('finder');
+			if (link.innerHTML == 'format') el = $('formatter');
+			if (el == null) return;
+			if (el.visible()) {
+				el.hide();
+			}
+			else {
+				$$('.selection').each(function(el) { el.hide() });
+				el.setStyle({
+					display: 'block',
+					top: (link.viewportOffset().top + 4) + 'px',
+					left: (link.viewportOffset().left - 8) + 'px'
+				});
+			}
+		}
+	},
+	
+	on_row_click: function(id, event) {
+		var next_row = event.findElement('div.-row');
+		var prev_row = this._container.select('.-row').find(function(r) {
+			return r.hasClassName('open');
 		});
 		
-		if (location) {
-			document.gallery.add(location);
+		if (prev_row) {
+			prev_row.removeClassName('open');
 		}
-	}
-	this.hide();
-}
+		if (next_row) {
+			this.open_drawer(next_row);
+			next_row.addClassName('open');
+		}
+	},
+	
+	get_open_row: function() {
+		return this._container.select('.-row').find(function(r) {
+			return r.hasClassName('open');
+		});	
+	},
+	
+	open_drawer: function(row) {
+		var size = row.getDimensions();
+		var pos = row.viewportOffset();
+		var offset = -8;
 
-function on_formatter_click(event) {
-	var li = event.findElement('li');
-	if (li) {
-		var format = li.readAttribute('value');
-		document.system.timeformat(format);
-	}
-	this.hide();
-}
-
-function on_appender_click(event) {
-	var link = event.findElement('.link');
-	if (link) {
-		
-		var el = null;
-		if (link.innerHTML == 'location') el = $('finder');
-		if (link.innerHTML == 'format') el = $('formatter');
-		if (el == null) return;
-		if (el.visible()) {
-			el.hide();
+		$('drawer')
+			.show()
+			.setStyle({
+				top: pos.top + size.height + offset + 'px',
+				left: pos.left + 'px'
+			});
+		$('drawer')
+			.down('.buttons')
+			.setStyle({
+				'background-position': '0 0'
+			});
+	},
+	
+	on_drawer_click: function(event) {
+		if (event.findElement('.exit')) {
+			this.close_drawer();
 		}
 		else {
-			$$('.selection').each(function(el) { el.hide() });
-			el.setStyle({
-				display: 'block',
-				top: (link.viewportOffset().top + 4) + 'px',
-				left: (link.viewportOffset().left - 8) + 'px'
-			});
+			var element = event.findElement('.buttons');
+			if (!element) return;
+
+			var row = this.get_open_row();
+			
+			var x = event.pointerX();
+			var offset = element.viewportOffset();
+			x = x - offset.left;
+			var service = -1;
+			if (x <= 45) service = 0;
+			if (x >= 50 && x <= 95) service = 1;
+			if (x >= 100 && x <= 145) service = 2;
+			if (x >= 150 && x <= 195) service = 3;
+			if (x >= 200 && x <= 245) service = 4;
+			
+			if (service != -1) {
+				var clock = row.readAttribute('clock_id');
+				this.launch_service(clock, service);
+			}
 		}
+	},
+	
+	launch_service: function(clock, index) {
+		var service = ['time', 'place', 'weather', 'photos', 'tweets'][index];
+		var buttons = $('drawer')
+			.down('.buttons')
+			.setStyle({
+				'background-position': '0 ' + (-index * 52) + 'px'
+			});
+		
+		this.fire(':service', {id: clock, service: service});
+	},
+	
+	close_drawer: function() {
+		$('drawer').hide();
+		var row = this._container.select('.-row').find(function(r) {
+			return r.hasClassName('open');
+		});
+		if (row) row.removeClassName('open');
+	},
+	
+	_on_append: function() {
+		this.fire(':append', { 'index': this.count() });
+	},
+	
+	_on_select: function(location) {
+		this.fire(':select', { 'location': location });
+	},
+	
+	load: function(clocks) {
+		var self = this;
+		var sibling = null;
+		clocks.each(function(c) {
+			var row = self.new_row(c);
+			
+			if (!sibling) {
+				self._container.insert({ 'top': row });
+			}
+			else {
+				sibling.insert({ 'after': row });
+			}
+			sibling = row;
+		});
+	},
+	
+	add: function(clock) {
+		var row = this.new_row(clock);
+		var sibling = this._container.select('.-row').last();
+		if (!sibling) {
+			this._container.insert({ 'top': row });
+		}
+		else {
+			sibling.insert({ 'after': row });
+		}
+		this.remove_location_from_finder(clock.name);
+	},
+	
+	change: function(clocks) {
+		var rows = this._container.select('.-row');
+		rows.each(function(row) {
+			var id = row.readAttribute('clock_id');
+			var clock = clocks.find(function(c) {	
+				return c.id == id;
+			});
+			if (clock) {
+				row.down('.-row-time').innerHTML = clock.time;
+				row.down('.-row-day').innerHTML = clock.day;
+			}
+		});	
+	},
+	
+	remove: function(clock) {
+		var rows = this._container.select('.-row');
+		rows.each(function(row) {
+			var id = row.readAttribute('clock_id');
+			if (id == clock_id) {
+				row.remove();
+			}
+		});	
+	},
+	
+	remove_location_from_finder: function(name) {
+		$('finder').select('li').each(function(li) {
+			$.trace(li.innerHTML, name);
+			if (li.innerHTML == name) li.remove();
+		});	
+	},
+	
+	add_location_to_finder: function(name) {
+		var li = new Element('li');
+		li.innerHTML = name;
+		$('finder').insert(li);	
+	},
+	
+	new_row: function(clock) {
+		return this.new_div('-row hbox')
+			.writeAttribute('clock_id', clock.id)
+			.observe('click', this.on_row_click.bind(this, clock.id))
+			.insert(this.new_info(clock))
+			.insert(this.new_spacer())
+			.insert(this.new_time(clock));
+	},
+
+	new_info: function(clock) {
+		return this.new_div('')
+			.insert(this.new_div('-row-name', clock.name))
+			.insert(this.new_div('-row-area', clock.place));
+	},
+
+	new_time: function(clock) {
+		return this.new_div('')
+			.insert(this.new_div('-row-time', clock.time))
+			.insert(this.new_div('-row-day', clock.day));
+	},
+
+	new_spacer: function() {
+		return this.new_div('spacer');
+	},
+
+	new_div: function(classes, content) {
+		if (!classes) classes = '';
+		if (Object.isArray(classes))
+			classes = classes.join(' ');
+		
+		var element = new Element('div',
+			classes.length ? { 'class': classes } : null);
+		if (content)
+			element.innerHTML = content;
+		return element;
 	}
-}
+});
 
 	</script>
 	<link href="flex-box.css" media="screen" rel="stylesheet" type="text/css" />
 	<style>
 .app {
-	width: 400px;
+	width: 320px;
 	min-height: 400px;
 	margin: 40px auto;
 	border: 1px solid black;
-	-webkit-border-radius: 6px;
-	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
-	-moz-border-radius: 6px;
-	-moz-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
+	background-color: #efefef;
+	
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 }
 
 .-row, #appender {
+	width: 300px;
 	padding: 10px;
-	width: 380px;
 	border-bottom: 1px solid #ccc;
 	cursor: arrow;
 }
+
+.-row.open {
+	height: 370px;
+	background: url(../whendle/resources/gallery-header-open.png) 0 0 repeat-x;
+}
+
 .-row-name {
-	display: block;
-	font-size: 1.2em;
+	font-size: 1.0em;
 	font-weight: bold;
+	text-shadow: 0 2px 1px #fff;
 }
 .-row-area {
-	display: block;
-	font-size: 0.9em;
+	font-size: 0.8em;
 }
 .-row-link {
 	color: blue;
 }
-.-row-time, .-row-day {
-	font-size: 0.9;
+.-row-time {
+	font-size: 0.8em;
 	text-align: right;
+	font-weight: bold;
+	text-shadow: 0 2px 1px #fff;
 }
 
-.-row-up, .-row-delete, .-row-down {
-	width: 15px;
-	margin-left: 10px;
-	text-align: center;
-	cursor: pointer;
-	font-size: .9em;
-	line-height: 1em;
+.-row-day {
+	font-size: 0.8em;
+	text-align: right;
 }
 
 #appender .link {
@@ -460,6 +578,26 @@ ul.selection li {
 ul.selection li.emph {
 	color: #55C;
 }
+
+#drawer {
+	position: absolute;
+	top: 0; left: 0;
+	width: 320px;
+}
+
+.buttons {
+	height: 52px;
+	width: 246px;
+	margin: 0 0 0 10px;
+	background: url(../whendle/resources/gallery-buttons.png) 0 0 no-repeat;
+	
+}
+.exit {
+	margin: 10px;
+	cursor: pointer;
+}
+
+
 	</style>
 </head>
 <body>
@@ -472,6 +610,15 @@ ul.selection li.emph {
 		</div>
 	</div>
 </div>
+
+<div id="drawer" style="display:none;">
+	<div class="hbox" style="width:100%">
+		<div class="buttons"></div>
+		<div class="spacer"></div>
+		<div class="exit">x</div>
+	</div>
+</div>
+
 
 <ul id="finder" class="selection" style="display:none;min-width:120px">
 </ul>
