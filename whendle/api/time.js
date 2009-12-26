@@ -30,7 +30,7 @@ Time = Class.create({
 	},
 	
 	toString: function() {
-		return this.ISO;
+		return this.iso;
 	},
 	
 	ticks: function(n) {
