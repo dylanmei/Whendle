@@ -5,22 +5,38 @@
 <head>
 	<title>Whendle spikes - day and night</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
-	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
 	<script src="../whendle/api/time.js" type="text/javascript"></script>
 	<script>
 $.trace = function() { console.log($A(arguments).join(' ')); }
 Math.K = Math.PI/180.0;
 
 document.observe('dom:loaded', function() {
-	document.dec = 0.0;
-	document.tau = 0.0;
+	document.dec = -23.5;
 	document.now = Time.now();
+	document.tau = time_to_hour_angle(document.now);
 
-	wire_adjuster($('link1'), $('declination'), function(value) { document.dec = value; });
-	wire_adjuster($('link2'), $('hour-angle'), function(value) { document.tau = (value * 60) / 4; });
+	wire_adjuster($('link1'), $('declination'),
+		function(value) { document.dec = value; }
+	);
+
+	wire_adjuster($('link2'), $('hour-angle'),
+		function(value) { document.tau = (value * 60) / 4; }
+	);
 
 	redraw();
 });
+
+function time_to_hour_angle(t) {
+
+	var offset = new Date()
+		.getTimezoneOffset();
+	t.add(Time.minutes, offset);
+	
+	var hour = t.hour();
+	var minute = t.minute();
+	var time = hour * 60 + minute;
+	return (time - 720) / 4;
+}
 
 function wire_adjuster(source, target, on_change) {
 	source.observe('click', function() {
@@ -46,23 +62,27 @@ function wire_adjuster(source, target, on_change) {
 
 
 function redraw() {
+
+//	$.trace('DEC =', document.dec, 'TAU =', document.tau);
+
 	var dec = document.dec;
 	var tau = document.tau;
-
 	var img = new Image();
-	img.onload = function() {
-		draw_daynight(this, dec, tau);
+	
+	var on_ready = function() {
+		draw_daynight(img, dec, tau);
 		draw_controls(dec, tau);
 	}
+
+	img.onload = on_ready;
 	img.src = 'map-surface.jpg';
-	
 }
 
 function draw_controls(dec, tau) {
 	var declination = dec + '&deg;';
 	var hour_angle = tau / 15 >= 0 ?
-		Math.round(10 * tau / 15) / 10.0 + ' h' :
-		'-' + Math.round(10 * Math.abs(tau / 15)) / 10.0 + ' h';
+		'Noon + ' + Math.round(10 * tau / 15) / 10.0 + 'h' :
+		'Noon - ' + Math.round(10 * Math.abs(tau / 15)) / 10.0 + 'h';
 	
 	$('link1').next('.reading').innerHTML = declination;
 	$('link2').next('.reading').innerHTML = hour_angle;
@@ -97,8 +117,8 @@ function draw_sun(ctx, dec, tau) {
 	var radius = 4 * (canvas.height / 180);
 
 	ctx.lineWidth = 2;
-	ctx.fillStyle = 'rgba(255, 255, 100, 0.8)';
-	ctx.strokeStyle = 'rgba(240, 120, 0, 0.5)';
+	ctx.fillStyle = 'rgba(255, 255, 100, 0.6)';
+	ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
 
 	var x = (tau * (canvas.width / 360)) + 1;
 	var y = (dec * (canvas.height / 180)) + 1;
@@ -119,27 +139,62 @@ function draw_sun(ctx, dec, tau) {
 function draw_terminator(ctx, dec, tau) {
 	var canvas = ctx.canvas;
 	
-	ctx.lineWidth = 2;
-	ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+	var xextent = canvas.width;
+	var yextent = canvas.height;
+	var xorigin = (xextent / 2);
+	var yorigin = (yextent / 2);
+	var xscale = (xextent / 360);
+	var yscale = (yextent / 180);
 	
-	var xorigin = (canvas.width / 2);
-	var yorigin = (canvas.height / 2);
-	var xscale = (canvas.width / 360);
-	var yscale = (canvas.height / 180);
-	
+	ctx.fillStyle = 'rgba(0, 0, 0, 0.50)';
 	ctx.beginPath();
-	
-	for (var i = 0; i < 360; i++) {
+	for (var i = 0; i < 361; i++) {
 		
 		var x = (i - 180) * xscale + xorigin;
 		var lng = i + tau + 180;
 		var tl = -Math.cos(lng * Math.K) / Math.tan(dec * Math.K);
 		var al = Math.atan(tl) / Math.K;
-		var y = yorigin - (yscale * Math.round(al));
-		
+		var y = yorigin - (yscale * al);
+
 		if (i == 0) ctx.moveTo(x, y);
-		else ctx.lineTo(x, y);
+		else {
+			ctx.lineTo(x, y);
+		}
 	}
+	
+	var ypole = dec < 0 ? 0 : yextent;
+	ctx.lineTo(xextent, ypole);
+	ctx.lineTo(0, ypole);
+	
+	ctx.fill();
+//	ctx.save();
+//	ctx.clip();
+//	ctx.globalAlpha = 0.75;
+//	ctx.drawImage(map, 0, 0);
+//	ctx.restore();		
+}
+
+function draw_point(ctx, x, y) {
+	draw_x(ctx, x, y, 0);
+}
+
+function draw_anchor(ctx, x, y) {
+	draw_x(ctx, x, y, 1);
+}
+
+function draw_x(ctx, x, y, i) {
+	var color = ['rgba(255, 0, 0, 0.8)', 'rgba(200, 0, 255, 0.8)'][i || 0];
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = color;
+	
+	ctx.beginPath();
+	
+	ctx.moveTo(x - 5, y - 5);
+	ctx.lineTo(x + 5, y + 5);
+	
+	ctx.moveTo(x - 5, y + 5);
+	ctx.lineTo(x + 5, y - 5);
+
 	ctx.stroke();
 }
 
@@ -163,6 +218,9 @@ h4 {
 	cursor: pointer;	
 }
 .reading {
+	color: #333;
+	font-weight: bold;
+	font-style: italic;
 	font-size: 80%;
 }
 ul.selection {
@@ -202,28 +260,24 @@ ul.selection li.emph {
 
 <h4>compute the day/night terminator on a world map</h4>
 <div id="adjuster">
-	adjust the <span id="link1">declination</span> <span class="reading">(0&deg;)</span>,
-	and <span id="link2">hour angle</span> <span class="reading">(0 Hour)</span>
+	adjust the <span id="link1">declination</span> <span class="reading"></span>,
+	and <span id="link2">hour angle</span> <span class="reading"></span>
 </div>
 
 <ul id="declination" class="selection" style="min-width:80px;display:none;">
-	<li class="first" value="HH12">23&deg;</li>
+	<li class="first" value="HH12">23.5&deg;</li>
 	<li value="HH12">20&deg;</li>
-	<li value="HH12">17&deg;</li>
-	<li value="HH12">14&deg;</li>
-	<li value="HH12">11&deg;</li>
+	<li value="HH12">16&deg;</li>
+	<li value="HH12">12&deg;</li>
 	<li value="HH12">8&deg;</li>
-	<li value="HH12">5&deg;</li>
-	<li value="HH12">2&deg;</li>
+	<li value="HH12">4&deg;</li>
 	<li value="HH12">0&deg;</li>
-	<li value="HH12">-2&deg;</li>
-	<li value="HH12">-5&deg;</li>
+	<li value="HH12">-4&deg;</li>
 	<li value="HH12">-8&deg;</li>
-	<li value="HH12">-11&deg;</li>
-	<li value="HH12">-14&deg;</li>
-	<li value="HH12">-17&deg;</li>
+	<li value="HH12">-12&deg;</li>
+	<li value="HH12">-16&deg;</li>
 	<li value="HH12">-20&deg;</li>
-	<li value="HH12">-23&deg;</li>
+	<li value="HH12">-23.5&deg;</li>
 </ul>
 
 <ul id="hour-angle" class="selection" style="min-width:80px;display:none;">
