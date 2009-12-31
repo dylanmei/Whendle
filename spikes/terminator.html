@@ -5,64 +5,45 @@
 <head>
 	<title>Whendle spikes - day and night</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
-	<script src="http://github.com/dylanmei/Whendle/raw/master/whendle/api/time.js" type="text/javascript"></script>
+	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
+	<script src="../whendle/api/time.js" type="text/javascript"></script>
+	<script src="../whendle/api/observable.js" type="text/javascript"></script>
 	<script>
 $.trace = function() { console.log($A(arguments).join(' ')); }
 Math.K = Math.PI/180.0;
 
 document.observe('dom:loaded', function() {
-	document.dec = -23.5;
-	document.now = Time.now();
-	document.tau = time_to_hour_angle(document.now);
-	document.center = 'map';
-
 	wire_adjuster($('link1'), $('declination'),
-		function(value) { document.dec = value; }
+		function(value) { return { 'declination': document.dec = parseFloat(value) } }
 	);
 
 	wire_adjuster($('link2'), $('hour-angle'),
-		function(value) { document.tau = (value * 60) / 4; }
+		function(value) { return { 'hour_angle': (parseFloat(value) * 60) / 4 } }
 	);
+	
+	var now = Time.now();
+	now.add(Time.minutes, new Date().getTimezoneOffset());
 
-	redraw();
+	document.map = new SunlightMap();
+	document.map.observe(':updated', on_map_updated);
+	document.map.update(now);
 });
 
-function on_map_click(e) {
-	var canvas = e.findElement('canvas');
-	if (!canvas) return;
-	var x = e.pointerX();
-	var xscale = canvas.width / 360;
-	var xorigin = canvas.width / 2;
+function on_map_updated(event) {
+	var declination = event.declination + '&deg;';
+	var hour_angle = event.hour_angle / 15 >= 0 ?
+		'Noon + ' + Math.round(10 * event.hour_angle / 15) / 10.0 + 'h' :
+		'Noon - ' + Math.round(10 * Math.abs(event.hour_angle / 15)) / 10.0 + 'h';
 	
-	if (document.center != 'sun') {
-		document.tau = (xorigin - x) / xscale;
-		redraw();
-	}
-	else {
-		var xoffset = xorigin - x;
-		document.tau = document.tau + (xoffset / xscale);
-		redraw();
-	}
+	$('link1').next('.reading').innerHTML = declination;
+	$('link2').next('.reading').innerHTML = hour_angle;
 }
 
 function on_center_change(v) {
-	document.center = v;
-	redraw();
+	document.map.center(v);
 }
 
-function time_to_hour_angle(t) {
-
-	var offset = new Date()
-		.getTimezoneOffset();
-	t.add(Time.minutes, offset);
-	
-	var hour = t.hour();
-	var minute = t.minute();
-	var time = hour * 60 + minute;
-	return (time - 720) / 4;
-}
-
-function wire_adjuster(source, target, on_change) {
+function wire_adjuster(source, target, format_value) {
 	source.observe('click', function() {
 		var visible = target.visible();
 		$$('.selection').each(function(el) { el.hide() });
@@ -79,181 +60,251 @@ function wire_adjuster(source, target, on_change) {
 		if (e.element() == this) return;
 		var v = e.element().innerHTML;
 		this.hide();
-		on_change(parseFloat(v));
-		redraw();
+		document.map.updated(format_value(v))
 	});
 }
 
-
-function redraw() {
-	var dec = document.dec;
-	var tau = document.tau;
-	var center = document.center;
-	var img = new Image();
+SunlightCalculator = Class.create({
+	declination: function(time) {
+		return -23.5;
+	},
 	
-	var on_ready = function() {
-		draw_daynight(img, center, dec, tau);
-		draw_controls(dec, tau);
+	hour_angle: function(time) {
+		var hour = time.hour();
+		var minute = time.minute();
+		var t = hour * 60 + minute;
+		return (t - 720) / 4;
 	}
+});
 
-	img.onload = on_ready;
-	img.src = 'http://github.com/dylanmei/Whendle/raw/master/spikes/map-surface.jpg';
-}
-
-function draw_controls(dec, tau) {
-	var declination = dec + '&deg;';
-	var hour_angle = tau / 15 >= 0 ?
-		'Noon + ' + Math.round(10 * tau / 15) / 10.0 + 'h' :
-		'Noon - ' + Math.round(10 * Math.abs(tau / 15)) / 10.0 + 'h';
+SunlightView = Class.create(Whendle.Observable, {
+	initialize: function($super) {
+		$super();
+	},
 	
-	$('link1').next('.reading').innerHTML = declination;
-	$('link2').next('.reading').innerHTML = hour_angle;
-}
+	//	event = {
+	//		declination: #,
+	//		hour_angle: #
+	//	}
+	updated: function(event) {
+	}	
+});
 
-function draw_daynight(map, center, dec, tau) {
-	var canvas = $('canvas');
-	var bounds = { left: 0, top: 0, right: canvas.width, bottom: canvas.height }
-	var ctx = canvas.getContext('2d');
+SunlightPresenter = Class.create({
+	initialize: function(view, calculator) {
+		this.calculator = calculator;
+		view.observe(':updating', this.on_updating.bind(this, view));
+	},
 	
-	draw_map(ctx, map, center, tau);
-	draw_sun(ctx, center, dec, tau);
-	draw_terminator(ctx, center, dec, tau);
-	draw_gridlines(ctx);
-}
-
-function draw_map(ctx, map, center, tau) {
-	var canvas = ctx.canvas;
-
-	if (center != 'sun') {
-		ctx.drawImage(map, 0, 0);
-	}
-	else {
-		var xextent = canvas.width;
-		var xorigin = (xextent / 2);
-		var xscale = (xextent / 360);
-		
-		var ximage = tau * xscale;
-		
-		ctx.drawImage(map, ximage, 0);
-		if (ximage < 0) {
-			ctx.drawImage(map, ximage + xextent, 0);
-		}
-		else if (ximage > 0) {
-			ctx.drawImage(map, ximage - xextent, 0);
+	on_updating: function(view, event) {
+		var t = event.time;
+		if (t) {
+			var result = {
+				'declination': this.calculator.declination(t),
+				'hour_angle': this.calculator.hour_angle(t)
+			};
+			view.updated(result);
 		}
 	}
-}
+});
 
-function draw_gridlines(ctx) {
-	var canvas = ctx.canvas;
-
-	// equator
-	ctx.lineWidth = 1;
-	ctx.strokeStyle = 'rgba(255, 255, 255, 0.33)';
-
-	ctx.beginPath();
-	ctx.moveTo(0, (canvas.height / 2) - 1);
-	ctx.lineTo(canvas.width, (canvas.height / 2) - 1);
-	ctx.stroke();
-}
-
-function draw_sun(ctx, center, dec, tau) {
-	var canvas = ctx.canvas;
-	var radius = 4 * (canvas.height / 240);
-
-	ctx.lineWidth = 2;
-	ctx.fillStyle = 'rgba(255, 255, 100, 0.8)';
-	ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-
-	var x = 1;
-	var y = (dec * (canvas.height / 180)) + 1;
+SunlightMap = Class.create(SunlightView, {
+	IMAGE_FILE: 'map-surface.jpg',
 	
-	if (center != 'sun') {
-		x = (tau * (canvas.width / 360)) + 1;
-	}
+	initialize: function($super) {
+		$super();
+		this.options = { 'center': 'map' };
+		this._presenter = new SunlightPresenter(this, new SunlightCalculator());
 
-	ctx.beginPath();
-	ctx.arc(
-		(canvas.width / 2) - x,
-		(canvas.height / 2) - y,
-		radius,
-		0,
-		Math.PI * 2,
-		false
-	);
-	ctx.stroke();
-	ctx.fill();
-}
-
-function draw_terminator(ctx, center, dec, tau) {
-	draw_terminator_path(ctx, center, dec, tau, 1, 'rgba(0, 0, 60, 0.25)');
-	draw_terminator_path(ctx, center, dec, tau, 0, 'rgba(0, 0, 0, 0.25)');
-	draw_terminator_path(ctx, center, dec, tau, -1, 'rgba(0, 0, 0, 0.25)');
-}
-
-function draw_terminator_path(ctx, center, dec, tau, path_offset, fillStyle) {
-	var canvas = ctx.canvas;
-	
-	var xextent = canvas.width;
-	var yextent = canvas.height;
-	var xorigin = (xextent / 2);
-	var yorigin = (yextent / 2);
-	var xscale = (xextent / 360);
-	var yscale = (yextent / 180);
-	
-	ctx.fillStyle = fillStyle;
-	ctx.beginPath();
-	path_offset = path_offset * 0.25;
-
-	var offset = center != 'sun'
-		? 180 : 180 - tau;
-
-	for (var i = 0; i <= 360; i++) {
+		this.canvas = $('canvas');
+		this.canvas.observe('click',
+			this.on_canvas_click.bind(this));
 		
-		var x = (i - 180) * xscale + xorigin;
-		var lng = i + tau + offset;
-		var tl = -Math.cos(lng * Math.K) / Math.tan(dec * Math.K);
-		var al = Math.atan(tl + path_offset) / Math.K + (path_offset * 16);
-		//var al = Math.atan(tl) / Math.K;
-		var y = yorigin - (yscale * al);
+		this.dec = 0;
+		this.tau = 0;
+		this.draw();
+	},
+	
+	draw: function() {
+		var self = this;
+		var img = new Image();
+		var on_ready = function() {
+			self.draw_daynight(img);
+		}
 
-		if (i == 0) ctx.moveTo(x, y);
+		img.onload = on_ready;
+		img.src = this.IMAGE_FILE;
+	},
+	
+	draw_daynight: function(map) {
+		var ctx = this.canvas.getContext('2d');
+		
+		this.draw_map(ctx, map);
+		this.draw_sun(ctx);
+		this.draw_terminator(ctx);
+		this.draw_gridlines(ctx);
+	},
+
+	draw_map: function(ctx, map) {
+		if (this.center() != 'sun') {
+			ctx.drawImage(map, 0, 0);
+		}
 		else {
-			ctx.lineTo(x, y);
+			var xextent = this.canvas.width;
+			var xorigin = (xextent / 2);
+			var xscale = (xextent / 360);
+			
+			var ximage = this.tau * xscale;
+			
+			ctx.drawImage(map, ximage, 0);
+			if (ximage < 0) {
+				ctx.drawImage(map, ximage + xextent, 0);
+			}
+			else if (ximage > 0) {
+				ctx.drawImage(map, ximage - xextent, 0);
+			}
 		}
+	},
+
+	draw_terminator: function(ctx) {
+		this.draw_terminator_path(ctx, 1, 'rgba(0, 0, 60, 0.25)');
+		this.draw_terminator_path(ctx, 0, 'rgba(0, 0, 0, 0.25)');
+		this.draw_terminator_path(ctx, -1, 'rgba(0, 0, 0, 0.25)');
+	},
+	
+	draw_terminator_path: function(ctx, path_offset, fillStyle) {
+		var xextent = this.canvas.width;
+		var yextent = this.canvas.height;
+		var xorigin = (xextent / 2);
+		var yorigin = (yextent / 2);
+		var xscale = (xextent / 360);
+		var yscale = (yextent / 180);
+		
+		ctx.fillStyle = fillStyle;
+		ctx.beginPath();
+		path_offset = path_offset * 0.25;
+
+		var offset = this.center() != 'sun'
+			? 180 : 180 - this.tau;
+
+		for (var i = 0; i <= 360; i++) {
+			
+			var x = (i - 180) * xscale + xorigin;
+			var lng = i + this.tau + offset;
+			var tl = -Math.cos(lng * Math.K) / Math.tan(this.dec * Math.K);
+			var al = Math.atan(tl + path_offset) / Math.K + (path_offset * 16);
+			//var al = Math.atan(tl) / Math.K;
+			var y = yorigin - (yscale * al);
+
+			if (i == 0) ctx.moveTo(x, y);
+			else {
+				ctx.lineTo(x, y);
+			}
+		}
+		
+		var ypole = this.dec < 0 ? 0 : yextent;
+		ctx.lineTo(xextent, ypole);
+		ctx.lineTo(0, ypole);
+		
+		ctx.fill();
+	},
+	
+	draw_sun: function(ctx) {
+		var radius = 4 * (this.canvas.height / 240);
+
+		ctx.lineWidth = 2;
+		ctx.fillStyle = 'rgba(255, 255, 100, 0.8)';
+		ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+
+		var x = 1;
+		var y = (this.dec * (this.canvas.height / 180)) + 1;
+		
+		if (this.center() != 'sun') {
+			x = (this.tau * (this.canvas.width / 360)) + 1;
+		}
+
+		ctx.beginPath();
+		ctx.arc(
+			(this.canvas.width / 2) - x,
+			(this.canvas.height / 2) - y,
+			radius,
+			0,
+			Math.PI * 2,
+			false
+		);
+		ctx.stroke();
+		ctx.fill();
+	},
+	
+	draw_gridlines: function(ctx) {
+		// equator
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'rgba(255, 255, 255, 0.33)';
+
+		ctx.beginPath();
+		ctx.moveTo(0, (this.canvas.height / 2) - 1);
+		ctx.lineTo(this.canvas.width, (this.canvas.height / 2) - 1);
+		ctx.stroke();
+	},
+	
+	draw_x: function(ctx, x, y) {
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+		
+		ctx.beginPath();
+		
+		ctx.moveTo(x - 5, y - 5);
+		ctx.lineTo(x + 5, y + 5);
+		
+		ctx.moveTo(x - 5, y + 5);
+		ctx.lineTo(x + 5, y - 5);
+
+		ctx.stroke();
+	},
+	
+	on_canvas_click: function(event) {
+//		$.trace('canvas', event.pointerX(), event.pointerY());
+		/*
+		var x = event.pointerX();
+		var xscale = canvas.width / 360;
+		var xorigin = canvas.width / 2;
+		
+		if (document.center != 'sun') {
+			document.tau = (xorigin - x) / xscale;
+		}
+		else {
+			var xoffset = xorigin - x;
+			document.tau += xoffset / xscale;
+		}
+		
+		this.fire(':click', {
+			latitude: 0,
+			longitude: tau
+		});
+		*/
+	},
+	
+	update: function(time) {
+		this.fire(':updating', { 'time': time });
+	},
+	
+	updated: function(event) {
+		var values = { 'declination': this.dec, 'hour_angle': this.tau };
+		Object.extend(values, event);
+		this.dec = values.declination;
+		this.tau = values.hour_angle;
+		this.draw();
+		this.fire(':updated', values);
+	},
+	
+	center: function(v) {
+		if (v !== undefined) {
+			this.options['center'] = v;
+			this.draw();
+		}
+		return this.options['center'];
 	}
-	
-	var ypole = dec < 0 ? 0 : yextent;
-	ctx.lineTo(xextent, ypole);
-	ctx.lineTo(0, ypole);
-	
-	ctx.fill();
-}
-
-function draw_point(ctx, x, y) {
-	draw_x(ctx, x, y, 0);
-}
-
-function draw_anchor(ctx, x, y) {
-	draw_x(ctx, x, y, 1);
-}
-
-function draw_x(ctx, x, y, i) {
-	var color = ['rgba(255, 0, 0, 0.8)', 'rgba(200, 0, 255, 0.8)'][i || 0];
-	ctx.lineWidth = 1;
-	ctx.strokeStyle = color;
-	
-	ctx.beginPath();
-	
-	ctx.moveTo(x - 5, y - 5);
-	ctx.lineTo(x + 5, y + 5);
-	
-	ctx.moveTo(x - 5, y + 5);
-	ctx.lineTo(x + 5, y - 5);
-
-	ctx.stroke();
-}
-
+});
 
 	</script>
 	<link href="flex-box.css" media="screen" rel="stylesheet" type="text/css" />
@@ -336,7 +387,7 @@ ul.selection li.emph {
 </head>
 <body>
 
-<canvas id="canvas" width="1040" height="520" onclick="on_map_click(event);"></canvas>
+<canvas id="canvas" width="1040" height="520"></canvas>
 
 <div class="hbox" style="width:1040px">
 	<div>
