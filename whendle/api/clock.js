@@ -47,8 +47,8 @@ with (Whendle.Clock.prototype) {
 	__defineGetter__('longitude', function() { return this._location.longitude; });
 }
 
-Whendle.Clock.Format_place = function(location, district, country) {
-	return  district + ', ' + country;
+Whendle.Clock.Format_place = function(name, district, country) {
+	return new Whendle.Location(name, district, country).area;
 }
 
 Whendle.Clock.Format_day = function(today, other_day) {
