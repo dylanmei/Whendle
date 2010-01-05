@@ -68,13 +68,14 @@ document.observe('dom:loaded', function() {
 	startup.run = function() {
 		this.fire(Whendle.Event.status, { 'ready': true });
 	}
-	var timekeeper = new Whendle.TimekeeperService(document.system);
+	var timekeeper = new Whendle.TimekeeperService(document.system,
+		new Whendle.Timezone_Repository(new Whendle.TzLoader(new Whendle.AjaxService(), document.tzpath)));
+
 	timekeeper.setup(function() {
 		document.gallery = new Gallery(
 			startup,
 			timekeeper,
 			new Timezone_Locator(),
-			new Whendle.Timezone_Repository(new Whendle.TzLoader(new Whendle.AjaxService(), document.tzpath)),
 			new Whendle.Clock_Repository(new DatabaseService())
 		);
 	});

@@ -1,20 +1,17 @@
 
 describe 'Spotlight'
 	clock_repository = new Object
-	timezone_repository = {
-		get_timezone: function(tz, on_complete) {
-			on_complete(new Whendle.Timezone());
-		} 
-	}
 
-	timekeeper = new Whendle.Observable
-	timekeeper.format = function() { return ''; }
-	timekeeper.time = function() { return Time.now(); }
-	timekeeper.offset = function() { return 0; }
+	timekeeper = new (Class.create(Whendle.Observable, {
+		initialize: function($super) { $super(); },
+		time: Time.now(),
+		format: '',
+		offset_time: function(s, f) { f(this.time); }
+	}))();
 
 	startup = new Whendle.Observable;
 	view = new Whendle.Spotlight.View
-	presenter = new Whendle.Spotlight.Presenter(view, timekeeper, timezone_repository, clock_repository)
+	presenter = new Whendle.Spotlight.Presenter(view, timekeeper, clock_repository)
 	
 	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
 

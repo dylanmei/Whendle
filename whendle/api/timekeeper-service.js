@@ -61,19 +61,20 @@ Whendle.Timer = Class.create(Whendle.Observable, {
 });
 
 Whendle.TimekeeperService = Class.create(Whendle.Observable, {
-	initialize: function($super, system) {
+	initialize: function($super, system, timezone_repository) {
 		$super();
-		this._system = system || new Whendle.PalmService();
-		this._offset = 0;
-		this._time = new Time();
-		this._timer = null;
-		this._subscriptions;
-		this._format;
-		this._timezone;
+		this.system = system || Whendle.system();
+		this.timezone_repository = timezone_repository || Whendle.timezone_repository();
+		this.timer = null;
+		this.subscriptions;
+		this.offset = 0;
+		this.timezone = '';
+		this.time = new Time();
+		this.format = '';
 	},
 	
 	setup: function(on_complete, on_error) {
-		this._subscriptions = {
+		this.subscriptions = {
 			preferences: false,
 			system_time: false,
 			on_ready: on_complete || Prototype.emptyFunction
@@ -98,9 +99,9 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 	},
 	
 	_on_preferences: function(response) {
-		var first_time = Object.isUndefined(this._format);
-		if (first_time || response.timeFormat != this._format) {
-			this._format = response.timeFormat;
+		var first_time = this.format.empty();
+		if (first_time || response.timeFormat != this.format) {
+			this.format = response.timeFormat;
 			if (!first_time)
 				this.fire(Whendle.Event.system, 'timeformat');
 		}
@@ -111,17 +112,17 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 	
 	_on_system_time: function(response) {
 		var lt = response.localtime;
-		this._time
+		this.time
 			.year(lt.year)
 			.month(lt.month)
 			.day(lt.day)
 			.hour(lt.hour)
 			.minute(lt.minute);
 		
-		var first_time = Object.isUndefined(this._timezone);
-		if (first_time || response.timezone != this._timezone) {
-			this._timezone = response.timezone;
-			this._offset = response.offset;
+		var first_time = this.timezone.empty();
+		if (first_time || response.timezone != this.timezone) {
+			this.timezone = response.timezone;
+			this.offset = response.offset;
 			if (!first_time)
 				this.fire(Whendle.Event.system, 'timezone');
 		}
@@ -131,7 +132,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 	},
 	
 	_make_preferences_request: function(callback) {
-		this._system.request('palm://com.palm.systemservice', {
+		this.system.request('palm://com.palm.systemservice', {
 			method: 'getPreferences',
 			parameters: { 'subscribe': true, 'keys': [ 'timeFormat' ] },
 			onSuccess: callback
@@ -139,7 +140,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 	},
 	
 	_make_system_time_request: function(callback) {
-		this._system.request('palm://com.palm.systemservice/time', {
+		this.system.request('palm://com.palm.systemservice/time', {
 			method: 'getSystemTime',
 			parameters: { 'subscribe': true },
 			onSuccess: callback
@@ -148,37 +149,35 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 	
 	on_subscribed: function(which) {
 
-		if (this._subscriptions[which]) return;
-		this._subscriptions[which] = 1;
+		if (this.subscriptions[which]) return;
+		this.subscriptions[which] = 1;
 		
-		if (this._subscriptions.preferences &&
-			this._subscriptions.system_time) {
+		if (this.subscriptions.preferences &&
+			this.subscriptions.system_time) {
 
-			this._subscriptions.on_ready();
+			this.subscriptions.on_ready();
 		}
 	},
 	
 	on_timer_tick: function(now) {
 		now.second(0);
-		if (now.compare(this._time) != 0) {
-			this._time = now.clone();
+		if (now.compare(this.time) != 0) {
+			this.time = now.clone();
 			this.fire(Whendle.Event.timer, now);
 		}
 	},
 	
-	time: function() {
-		return this._time;
-	},
-	
-	offset: function() {
-		return this._offset;
-	},
-	
-	zone: function() {
-		return this._timezone;
-	},
-	
-	format: function() {
-		return this._format;
+	offset_time: function(timezone_name, on_complete) {
+		var now = this.time.clone();
+		var offset = this.offset;
+
+		var on_timezone = function(timezone) {
+			now.subtract(Time.minutes, offset);
+			now.add(Time.minutes, timezone.offset(now.date()));
+
+			on_complete(now);
+		}
+		
+		this.timezone_repository.get_timezone(timezone_name, on_timezone);
 	}
 });

@@ -2,13 +2,14 @@
 describe 'Gallery'
 	
 	clock_repository = new Object
-	timezone_repository = new Object
 	timezone_locator = new Object
 	
-	timekeeper = new Whendle.Observable
-	timekeeper.format = function() { return ''; }
-	timekeeper.time = function() { return Time.now(); }
-	timekeeper.offset = function() { return 0; }
+	timekeeper = new (Class.create(Whendle.Observable, {
+		initialize: function($super) { $super(); },
+		time: Time.now(),
+		format: '',
+		offset_time: function(s, f) { f(this.time); }
+	}))();
 	
 	startup = new Whendle.Observable;
 	view = new Whendle.Observable
@@ -16,7 +17,6 @@ describe 'Gallery'
 		startup,
 		timekeeper,
 		timezone_locator,
-		timezone_repository,
 		clock_repository
 	)
 	
@@ -29,7 +29,6 @@ describe 'Gallery'
 			a = null
 			e = null
 			timezone_locator.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z')); }
-			timezone_repository.get_timezone = function(tz, callback) { callback(new Whendle.Timezone()); }
 			clock_repository.put_clock = function(t, l, on_result) { on_result(123); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding,

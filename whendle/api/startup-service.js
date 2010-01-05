@@ -31,6 +31,7 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 	},
 	
 	on_setup_complete: function() {
+		$.trace('setup timekeeper done');
 
 		var notice = { ready: true };
 		if (this.is_installing()) {

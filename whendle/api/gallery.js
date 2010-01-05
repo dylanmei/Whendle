@@ -72,11 +72,10 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 Whendle.Gallery.Presenter = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(view, startup, timekeeper, timezone_locator, timezone_repository, clock_repository) {
+	initialize: function(view, startup, timekeeper, timezone_locator, clock_repository) {
 		this._startup = startup || Whendle.startup();
-		this._timekeeper = timekeeper || Whendle.timekeeper();
+		this.timekeeper = timekeeper || Whendle.timekeeper();
 		this.timezone_locator = timezone_locator || Whendle.timezone_locator();
-		this.timezone_repository = timezone_repository || Whendle.timezone_repository();
 		this.clock_repository = clock_repository || Whendle.clock_repository();
 		
 		view.observe(Whendle.Event.loading,
@@ -86,9 +85,9 @@ Whendle.Gallery.Presenter = Class.create({
 		view.observe(Whendle.Event.removing,
 			this._on_remove_clock.bind(this, view));
 
-		this._timekeeper.observe(Whendle.Event.system,
+		this.timekeeper.observe(Whendle.Event.system,
 			this._on_timekeeping_change.bind(this, view));
-		this._timekeeper.observe(Whendle.Event.timer,
+		this.timekeeper.observe(Whendle.Event.timer,
 			this._on_timekeeping_tick.bind(this, view));
 	},
 
@@ -149,12 +148,14 @@ Whendle.Gallery.Presenter = Class.create({
 	
 	on_clocks_loaded: function(view, timer, clocks) {
 		var self = this;
-		var wait = new Whendle.Wait(function() {
+		
+		var on_ready = function() {
 			view.loaded({ 'clocks': clocks });
 			if (timer)
-				self._timekeeper.start(timer);
-		});
+				self.timekeeper.start(timer);
+		}
 		
+		var wait = new Whendle.Wait(on_ready);
 		clocks.each(function(clock) {
 			self.adjust_clock(clock, wait.on());
 		});
@@ -162,25 +163,16 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	adjust_clock: function(clock, on_complete) {
-		var now = this._timekeeper.time();
-		var offset = this._timekeeper.offset();
-		var format = this._timekeeper.format();
+		var now = this.timekeeper.time;
+		var format = this.timekeeper.format;
 		
-		var self = this;
-		var on_timezone = function(timezone) {
-			var when = self.offset_time(now, offset, timezone);
-			clock.time = Whendle.Clock.Format_time(when, format);
-			clock.day = Whendle.Clock.Format_day(now, when);
-			on_complete();
-		};
-		this.timezone_repository.get_timezone(clock.timezone, on_timezone);
-	},
-	
-	offset_time: function(local_time, local_offset, timezone) {
-		var time = local_time.clone()
-			.subtract(Time.minutes, local_offset);
-		return time
-			.add(Time.minutes, timezone.offset(time.date()));
+		this.timekeeper.offset_time(clock.timezone,
+			function(time) {
+				clock.time = Whendle.Clock.Format_time(time, format);
+				clock.day = Whendle.Clock.Format_day(now, time);
+				on_complete(clock);
+			}
+		);
 	},
 
 	_on_add_clock: function(view, event) {

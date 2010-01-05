@@ -6,7 +6,6 @@ describe 'Gallery'
 		new Whendle.Observable,
 		new Whendle.Observable,
 		new Object,
-		new Object,
 		repository
 	)
 	

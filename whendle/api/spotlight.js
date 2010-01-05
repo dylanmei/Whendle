@@ -56,9 +56,8 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Spotlight.Presenter = Class.create({
-	initialize: function(view, timekeeper, timezone_repository, clock_repository) {
-		this._timekeeper = timekeeper || Whendle.timekeeper();
-		this.timezone_repository = timezone_repository || Whendle.timezone_repository();
+	initialize: function(view, timekeeper, clock_repository) {
+		this.timekeeper = timekeeper || Whendle.timekeeper();
 		this.clock_repository = clock_repository || Whendle.clock_repository();
 
 		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
@@ -66,13 +65,13 @@ Whendle.Spotlight.Presenter = Class.create({
 
 		this.tick_handler = this.on_timekeeping_tick.bind(this, view);
 		this.system_handler = this.on_timekeeping_change.bind(this, view);
-		this._timekeeper.observe(Whendle.Event.timer, this.tick_handler);
-		this._timekeeper.observe(Whendle.Event.system, this.system_handler);
+		this.timekeeper.observe(Whendle.Event.timer, this.tick_handler);
+		this.timekeeper.observe(Whendle.Event.system, this.system_handler);
 	},
 	
 	on_unloading: function(view) {
-		this._timekeeper.ignore(Whendle.Event.timer, this.tick_handler);
-		this._timekeeper.ignore(Whendle.Event.system, this.system_handler);
+		this.timekeeper.ignore(Whendle.Event.timer, this.tick_handler);
+		this.timekeeper.ignore(Whendle.Event.system, this.system_handler);
 		view.clock_unloaded();
 	},
 
@@ -86,35 +85,34 @@ Whendle.Spotlight.Presenter = Class.create({
 	
 	on_timekeeping_change: function(view, reason) {
 		var self = this;
-		var on_complete = function(clock) {
-			self.adjust_clock(clock, function() {
-				view.clock_changed({ 'clock': clock, 'reason': reason })
-			});
+
+		var on_ready = function(clock) {
+			view.clock_changed({ 'clock': clock, 'reason': reason })
+		};
+
+		var on_load = function(clock) {
+			self.adjust_clock(clock, on_ready);
 		}
-		var on_error = function(e) { $.trace(e.message); }
-		this.load_clock(view.id(), on_complete, on_error);
+
+		var on_error = function(e) {
+			$.trace(e.message);
+		}
+		
+		this.load_clock(view.id(), on_load, on_error);
 	},
 	
 	adjust_clock: function(clock, on_complete) {
-		var now = this._timekeeper.time();
-		var offset = this._timekeeper.offset();
-		var format = this._timekeeper.format();
+
+		var now = this.timekeeper.time;
+		var format = this.timekeeper.format;
 		
-		var self = this;
-		var on_timezone = function(timezone) {
-			var when = self.offset_time(now, offset, timezone);
-			clock.time = Whendle.Clock.Format_time(when, format);
-			clock.day = Whendle.Clock.Format_day(now, when);
-			on_complete();
-		};
-		this.timezone_repository.get_timezone(clock.timezone, on_timezone);
-	},
-	
-	offset_time: function(local_time, local_offset, timezone) {
-		var time = local_time.clone()
-			.subtract(Time.minutes, local_offset);
-		return time
-			.add(Time.minutes, timezone.offset(time.date()));
+		this.timekeeper.offset_time(clock.timezone,
+			function(time) {
+				clock.time = Whendle.Clock.Format_time(time, format);
+				clock.day = Whendle.Clock.Format_day(now, time);
+				on_complete(clock);
+			}
+		);
 	},
 
 	load_clock: function(id, on_complete, on_error) {
