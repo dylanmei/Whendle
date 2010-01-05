@@ -96,6 +96,27 @@
 	text-align: right;
 }
 
+#spotlight-name, #spotlight-time  {
+  left: 0px;
+  right: 0px;
+  padding: 13px 16px 13px 16px;
+  font-size: 20px;
+  color: #444;
+  text-shadow: #f2f2f2 0px 1px 0px;
+  -webkit-palm-mouse-target: ignore;
+}
+#spotlight-place, #spotlight-day {
+  margin-top: -14px;
+  padding: 0 16px 16px 16px;
+  font-size: 14px;
+  color: #555;
+  text-shadow: none;
+}
+
+#spotlight-time, #spotlight-day {
+  text-align: right;
+}
+
 .hbox {
 	display: -webkit-box;
 	-webkit-box-orient: horizontal;

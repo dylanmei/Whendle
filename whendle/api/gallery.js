@@ -77,14 +77,15 @@ Whendle.Gallery.Presenter = Class.create({
 		this._timezones = timezones || Whendle.timezones();
 		this._database = database || Whendle.database();
 		this._startup = startup || Whendle.startup();
-
+		this.clock_repository = new Whendle.Clock_Repository(this._database);
+		
 		view.observe(Whendle.Event.loading,
 			this.on_loading.bind(this, view));
 		view.observe(Whendle.Event.adding,
 			this._on_add_clock.bind(this, view));
 		view.observe(Whendle.Event.removing,
 			this._on_remove_clock.bind(this, view));
-			
+
 		this._timekeeper.observe(Whendle.Event.system,
 			this._on_timekeeping_change.bind(this, view));
 		this._timekeeper.observe(Whendle.Event.timer,
@@ -143,26 +144,7 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	load_clocks: function(view, on_complete, on_error) {
-		var mapper = this.map_records_to_clocks.bind(this);
-		this._database.rowset('select * from clocks', [],
-			function(results) {
-				on_complete(
-					results ? results.collect(mapper) : []
-				);
-			},
-			on_error
-		);
-	},
-	
-	map_records_to_clocks: function(r) {
-		return {
-			'id': r.id,
-			'name': r.location,
-			'timezone': r.timezone,
-			'place': this.format_place(r.location, r.district, r.country),
-			'latitude': r.latitude,
-			'longitude': r.longitude
-		}
+		this.clock_repository.get_clocks(on_complete, on_error);
 	},
 	
 	on_clocks_loaded: function(view, timer, clocks) {
@@ -186,8 +168,8 @@ Whendle.Gallery.Presenter = Class.create({
 		var self = this;
 		var on_timezone = function(timezone) {
 			var when = self.offset_time(now, offset, timezone);
-			clock.time = self.format_time(when);
-			clock.day = self.format_day(now, when);
+			clock.time = Whendle.Clock.Format_time(when);
+			clock.day = Whendle.Clock.Format_day(now, when);
 			on_complete();
 		};
 		this._timezones.load(clock.timezone, on_timezone);
@@ -198,32 +180,6 @@ Whendle.Gallery.Presenter = Class.create({
 			.subtract(Time.minutes, local_offset);
 		return time
 			.add(Time.minutes, timezone.offset(time.date()));
-	},
-	
-	format_place: function(location, district, country) {
-		return  district + ', ' + country;
-	},
-
-	format_time: function(t) {
-		var hour = t.hour()
-		var minute = t.minute().toPaddedString(2);
-		
-		var pattern = this._timekeeper.format();
-		if (pattern == 'HH12') {
-			var template = hour < 12 ? $.string('time_HH12am', '#{hours}:#{minutes} am') : $.string('time_HH12pm', '#{hours}:#{minutes} pm');
-			return template.interpolate({ 'hours': (hour % 12 || 12), 'minutes': minute });
-		}
-		
-		return $.string('time_HH24', '#{hours}:#{minutes}')
-			.interpolate({ 'hours': hour, 'minutes': minute });
-	},
-	
-	format_day: function(here, there) {
-		var here = here.clone().hour(0).minute(0).second(0);
-		var there = there.clone().hour(0).minute(0).second(0);
-		return there.compare(here) < 0
-			? $.string('day_Yesterday', 'Yesterday') : there.compare(here) > 0
-				? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
 	},
 
 	_on_add_clock: function(view, event) {
@@ -244,18 +200,8 @@ Whendle.Gallery.Presenter = Class.create({
 			timezone.offset,
 			location
 		);
-		
-		this._database.insert(
-			'insert into clocks (location,district,country,latitude,longitude,timezone,offset) values (?,?,?,?,?,?,?)',
-			[
-				location.name,
-				location.district,
-				location.country,
-				location.latitude,
-				location.longitude,
-				clock.timezone,
-				clock.offset
-			],
+
+		this.clock_repository.put_clock(timezone, location,
 			this._on_clock_added.bind(this, view, clock),
 			function(error) { view.added({ 'clocks': [], 'error': error }) }
 		);
@@ -266,7 +212,7 @@ Whendle.Gallery.Presenter = Class.create({
 			'id': identity,
 			'name': clock.location,
 			'timezone': clock.timezone,
-			'place': this.format_place(clock.location, clock.district, clock.country),
+			'place': Whendle.Clock.Format_place(clock.location, clock.district, clock.country),
 			'latitude': clock.latitude,
 			'longitude': clock.longitude
 		}];
@@ -277,17 +223,11 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	_on_remove_clock: function(view, event) {
-		if (!event) return;
-		var id = event.id;
-		
-		if (id) {
-			this._database.remove(
-				'delete from clocks where id=?',
-				[id],
-				this._on_clock_removed.bind(this, view, id),
-				function(error) { view.removed({ 'clocks': [], 'error': error }) }
-			);
-		}
+		if (!event || !event.id) return;
+		this.clock_repository.delete_clock(event.id,
+			this._on_clock_removed.bind(this, view, event.id),
+			function(error) { view.removed({ 'clocks': [], 'error': error }) }
+		);
 	},
 	
 	_on_clock_removed: function(view, id) {

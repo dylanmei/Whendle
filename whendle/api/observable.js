@@ -31,7 +31,7 @@ Whendle.Observable = Class.create({
 	
 	observe: function(name, handler) {
 		var handlers = this.handlers(name);
-		if (handlers) {
+		if (handlers.length) {
 			handlers.push(handler);
 		}
 		else {
@@ -39,12 +39,22 @@ Whendle.Observable = Class.create({
 		}
 	},
 	
+	ignore: function(name, handler) {
+		if (!name) return;
+		if (!handler) this._hash.unset(name);
+		else {
+			var handlers = this.handlers(name)
+				.without(handler);
+			this._hash.set(name, handlers);
+		}
+	},
+	
 	handlers: function(name) {
-		return this._hash.get(name);
+		return this._hash.get(name) || [];
 	},
 	
 	fire: function(name, data) {
-		(this.handlers(name) || [])
+		this.handlers(name)
 			.each(function(f) { f(data); });
 	}
 });

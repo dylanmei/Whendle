@@ -46,3 +46,28 @@ with (Whendle.Clock.prototype) {
 	__defineGetter__('latitude', function() { return this._location.latitude; });
 	__defineGetter__('longitude', function() { return this._location.longitude; });
 }
+
+Whendle.Clock.Format_place = function(location, district, country) {
+	return  district + ', ' + country;
+}
+
+Whendle.Clock.Format_day = function(today, other_day) {
+	var here = today.clone().hour(0).minute(0).second(0);
+	var there = other_day.clone().hour(0).minute(0).second(0);
+	return there.compare(here) < 0
+		? $.string('day_Yesterday', 'Yesterday') : there.compare(here) > 0
+			? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
+}
+
+Whendle.Clock.Format_time = function(time, pattern) {
+	var hour = time.hour()
+	var minute = time.minute().toPaddedString(2);
+	
+	if (pattern == 'HH12') {
+		var template = hour < 12 ? $.string('time_HH12am', '#{hours}:#{minutes} am') : $.string('time_HH12pm', '#{hours}:#{minutes} pm');
+		return template.interpolate({ 'hours': (hour % 12 || 12), 'minutes': minute });
+	}
+	
+	return $.string('time_HH24', '#{hours}:#{minutes}')
+		.interpolate({ 'hours': hour, 'minutes': minute });
+}

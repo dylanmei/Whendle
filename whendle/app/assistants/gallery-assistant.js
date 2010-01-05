@@ -46,6 +46,8 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 			this.list.add_handler = this.on_find_tapped.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listDelete,
 			this.list.delete_handler = this.on_remove_clock.bind(this));
+		this.controller.listen(this.list.id, Mojo.Event.listTap,
+			this.list.tap_handler = this.on_clock_tapped.bind(this));
 	},
 	
 	on_growler_tapped: function() {
@@ -58,6 +60,11 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_find_tapped: function() {
 		Mojo.Controller.stageController.pushScene({ name: 'finder' });
+	},
+	
+	on_clock_tapped: function(event) {
+		var clock = event.item;
+		Mojo.Controller.stageController.pushScene({ name: 'spotlight' }, clock);
 	},
 	
 	on_remove_clock: function(event) {
@@ -184,5 +191,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.controller.stopListening(this.splash, Mojo.Event.tap, this.splash.tap_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listAdd, this.list.add_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listDelete, this.list.delete_handler);
+		this.controller.stopListening(this.list, Mojo.Event.listTap, this.list.tap_handler);
 	}
 });

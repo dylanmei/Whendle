@@ -7,6 +7,10 @@
 		"source": "app\/assistants\/gallery-assistant.js"
 	},
 	{
+		"scenes": "spotlight",
+		"source": "app\/assistants\/spotlight-assistant.js"
+	},
+	{
 		"scenes": "finder",
 		"source": "app\/assistants\/finder-assistant.js"
 	},
@@ -26,9 +30,11 @@
 	{ "source": "api\/migrators.js" },
 	{ "source": "api\/ajax-service.js" },
 	{ "source": "api\/gallery.js" },
+	{ "source": "api\/spotlight.js" },
 	{ "source": "api\/finder.js" },
 	{ "source": "api\/location.js" },
 	{ "source": "api\/clock.js" },
+	{ "source": "api\/clock-repository.js" },
 	
 	{ "source": "app\/widgets\/search-text.js" },
 	{ "source": "app\/widgets\/search-status.js" },

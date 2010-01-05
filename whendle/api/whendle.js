@@ -36,6 +36,7 @@ Whendle = {
 		system: ':system',
 		starting: ':starting',
 		loading: ':loading',
+		unloading: ':unloading',
 		searching: ':searching',
 		adding: ':adding',
 		removing: ':removing',
@@ -80,6 +81,10 @@ Whendle = {
 	
 	timekeeper: function() {
 		return Whendle.services('Whendle.timekeeper');
+	},
+	
+	clock_repository: function() {
+		return Whendle.services('Whendle.clock-repository');
 	}
 };
 
