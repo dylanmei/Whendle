@@ -1,6 +1,6 @@
 
 describe 'Gallery'
-	database = new Object
+	repository = new Object
 	timezones = new Object
 	timekeeper = new Whendle.Observable
 	startup = new Whendle.Observable;
@@ -12,7 +12,7 @@ describe 'Gallery'
 			a = null
 			b = null
 			e = null
-			database.remove = function(s, p, on_result) {
+			database.delete_clock = function(id, on_result) {
 				on_result(b = true)
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
@@ -37,7 +37,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			database.remove = function(s, p, on_result, on_error) {
+			database.delete_clock = function(id, on_result, on_error) {
 				on_error({})
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }

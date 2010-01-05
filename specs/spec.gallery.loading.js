@@ -1,6 +1,6 @@
 
 describe 'Gallery'
-	database = new Object
+	repository = new Object
 	timezones = new Object
 	timezones.load = function(tz, on_complete) { on_complete(new Whendle.Timezone()); }
 
@@ -12,7 +12,7 @@ describe 'Gallery'
 	startup = new Whendle.Observable;
 	startup.run = -{ this.fire(Whendle.Event.status, { ready: true }); }
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
+	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, repository)
 	
 	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
 	
@@ -20,8 +20,8 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			database.rowset = function(s, f, on_result) {
-				on_result([])
+			repository.get_clocks = function(on_result) {
+				on_result([]);
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.loading)
@@ -40,7 +40,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			database.rowset = function(s, f, on_result) {
+			repository.get_clocks = function(on_result) {
 				on_result([ new_clock_record(1), new_clock_record(2) ])
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
@@ -56,11 +56,11 @@ describe 'Gallery'
 		end
 	end
 
-	describe 'loading a set of clocks causes a database error'
+	describe 'loading a set of clocks causes a repository error'
 		before
 			a = null
 			e = null
-			database.rowset = function(s, f, on_result, on_error) {
+			repository.get_clocks = function(on_result, on_error) {
 				on_error({})
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
@@ -79,7 +79,7 @@ describe 'Gallery'
 	describe 'loading with a timer'
 		before
 			a = false
-			database.rowset = function(s, f, on_result) { on_result([]) }
+			repository.get_clocks = function(on_result) { on_result([]) }
 			timekeeper.start = function() { a = true }
 			view.loaded = -{}
 			view.fire(Whendle.Event.loading, { 'timer': {} })

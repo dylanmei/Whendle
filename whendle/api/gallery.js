@@ -72,12 +72,11 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 Whendle.Gallery.Presenter = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(view, startup, timekeeper, timezones, database) {
+	initialize: function(view, startup, timekeeper, timezones, clock_repository) {
 		this._timekeeper = timekeeper || Whendle.timekeeper();
 		this._timezones = timezones || Whendle.timezones();
-		this._database = database || Whendle.database();
 		this._startup = startup || Whendle.startup();
-		this.clock_repository = new Whendle.Clock_Repository(this._database);
+		this.clock_repository = clock_repository || Whendle.clock_repository();
 		
 		view.observe(Whendle.Event.loading,
 			this.on_loading.bind(this, view));

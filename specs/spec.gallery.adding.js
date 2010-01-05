@@ -1,7 +1,7 @@
 
 describe 'Gallery'
 	
-	database = new Object
+	repository = new Object
 	timezones = new Object
 	
 	timekeeper = new Whendle.Observable
@@ -11,7 +11,7 @@ describe 'Gallery'
 	
 	startup = new Whendle.Observable;
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
+	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, repository)
 	
 	mock_tzlookup_result = function(name, offset) {
 		return { 'offset': 0, 'name': name }
@@ -23,7 +23,7 @@ describe 'Gallery'
 			e = null
 			timezones.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z')); }
 			timezones.load = function(tz, callback) { callback(new Whendle.Timezone()); }
-			database.insert = function(s, p, on_result) { on_result(123); }
+			repository.put_clock = function(t, l, on_result) { on_result(123); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding,
 				{ 'location': new Whendle.Location('A', 'B', 'C', 1, 23) });
@@ -73,7 +73,7 @@ describe 'Gallery'
 			a = null
 			e = null
 			timezones.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z', 1)); }
-			database.insert = function(s, p, on_result, on_error) { on_error({}); }
+			repository.put_clock = function(t, l, on_result, on_error) { on_error({}); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding, { 'location': new Whendle.Location() })
 		end
