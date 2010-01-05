@@ -1,18 +1,21 @@
 
 describe 'Gallery'
 	repository = new Object
-	timezones = new Object
-	timekeeper = new Whendle.Observable
-	startup = new Whendle.Observable;
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, database)
+	presenter = new Whendle.Gallery.Presenter(view,
+		new Whendle.Observable,
+		new Whendle.Observable,
+		new Object,
+		new Object,
+		repository
+	)
 	
 	describe 'removing a clock'
 		before
 			a = null
 			b = null
 			e = null
-			database.delete_clock = function(id, on_result) {
+			repository.delete_clock = function(id, on_result) {
 				on_result(b = true)
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
@@ -24,7 +27,7 @@ describe 'Gallery'
 			a[0].id.should.be 987
 		end
 		
-		it 'should delete the clock from the database'
+		it 'should delete the clock from the repository'
 			b.should.be_true
 		end
 		
@@ -33,11 +36,11 @@ describe 'Gallery'
 		end
 	end
 	
-	describe 'removing a clock causes a database error'
+	describe 'removing a clock causes a repository error'
 		before
 			a = null
 			e = null
-			database.delete_clock = function(id, on_result, on_error) {
+			repository.delete_clock = function(id, on_result, on_error) {
 				on_error({})
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }

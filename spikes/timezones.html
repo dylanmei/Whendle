@@ -10,7 +10,7 @@
 	<script src="../whendle/api/timezone.js"></script>
 	<script src="../whendle/api/tzdata.js"></script>
 	<script src="../whendle/api/ajax-service.js"></script>
-	<script src="../whendle/api/timezone-service.js"></script>
+	<script src="../whendle/api/timezone-repository.js"></script>
 	<script>
 
 document.tzpath = '../whendle/tzdata'; // firefox set ~ security.fileuri.strict_origin_policy = false
@@ -140,6 +140,7 @@ function apply_date(date) {
 }
 
 function display_date(element, date) {
+	$.trace('fixme: no date.Local');
 	var now = /(\d+)-(\d+)-(\d+)\s(\S+)/.exec(date.Local);
 	element.down('.year').update(now[1]);
 	element.down('.month').update(now[2]);
@@ -159,7 +160,7 @@ function load_zone(name) {
 			el.remove();
 	});
 	
-	new Whendle.TimezoneService(ajax, loader).load(
+	new Whendle.Timezone_Repository(loader).get_timezone(
 		name,
 		function(timezone) {
 			$.timezone = timezone;

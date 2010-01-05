@@ -72,10 +72,11 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 Whendle.Gallery.Presenter = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(view, startup, timekeeper, timezones, clock_repository) {
-		this._timekeeper = timekeeper || Whendle.timekeeper();
-		this._timezones = timezones || Whendle.timezones();
+	initialize: function(view, startup, timekeeper, timezone_locator, timezone_repository, clock_repository) {
 		this._startup = startup || Whendle.startup();
+		this._timekeeper = timekeeper || Whendle.timekeeper();
+		this.timezone_locator = timezone_locator || Whendle.timezone_locator();
+		this.timezone_repository = timezone_repository || Whendle.timezone_repository();
 		this.clock_repository = clock_repository || Whendle.clock_repository();
 		
 		view.observe(Whendle.Event.loading,
@@ -163,15 +164,16 @@ Whendle.Gallery.Presenter = Class.create({
 	adjust_clock: function(clock, on_complete) {
 		var now = this._timekeeper.time();
 		var offset = this._timekeeper.offset();
+		var format = this._timekeeper.format();
 		
 		var self = this;
 		var on_timezone = function(timezone) {
 			var when = self.offset_time(now, offset, timezone);
-			clock.time = Whendle.Clock.Format_time(when);
+			clock.time = Whendle.Clock.Format_time(when, format);
 			clock.day = Whendle.Clock.Format_day(now, when);
 			on_complete();
 		};
-		this._timezones.load(clock.timezone, on_timezone);
+		this.timezone_repository.get_timezone(clock.timezone, on_timezone);
 	},
 	
 	offset_time: function(local_time, local_offset, timezone) {
@@ -185,7 +187,7 @@ Whendle.Gallery.Presenter = Class.create({
 		if (!event) return;
 		var location = event.location;
 
-		this._timezones.lookup(
+		this.timezone_locator.lookup(
 			location.latitude, location.longitude,
 			this._on_timezone_result.bind(this, view, location),
 			function(error) { view.added({ 'clocks': [], 'error': error }) }

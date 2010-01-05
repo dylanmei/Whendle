@@ -1,8 +1,9 @@
 
 describe 'Gallery'
 	
-	repository = new Object
-	timezones = new Object
+	clock_repository = new Object
+	timezone_repository = new Object
+	timezone_locator = new Object
 	
 	timekeeper = new Whendle.Observable
 	timekeeper.format = function() { return ''; }
@@ -11,7 +12,13 @@ describe 'Gallery'
 	
 	startup = new Whendle.Observable;
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, repository)
+	presenter = new Whendle.Gallery.Presenter(view,
+		startup,
+		timekeeper,
+		timezone_locator,
+		timezone_repository,
+		clock_repository
+	)
 	
 	mock_tzlookup_result = function(name, offset) {
 		return { 'offset': 0, 'name': name }
@@ -21,9 +28,9 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			timezones.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z')); }
-			timezones.load = function(tz, callback) { callback(new Whendle.Timezone()); }
-			repository.put_clock = function(t, l, on_result) { on_result(123); }
+			timezone_locator.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z')); }
+			timezone_repository.get_timezone = function(tz, callback) { callback(new Whendle.Timezone()); }
+			clock_repository.put_clock = function(t, l, on_result) { on_result(123); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding,
 				{ 'location': new Whendle.Location('A', 'B', 'C', 1, 23) });
@@ -54,7 +61,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			timezones.lookup = function(x, y, on_success, on_error) { on_error({}); }
+			timezone_locator.lookup = function(x, y, on_success, on_error) { on_error({}); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding, { 'location': new Whendle.Location() })
 		end
@@ -72,8 +79,8 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			timezones.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z', 1)); }
-			repository.put_clock = function(t, l, on_result, on_error) { on_error({}); }
+			timezone_locator.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z', 1)); }
+			clock_repository.put_clock = function(t, l, on_result, on_error) { on_error({}); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding, { 'location': new Whendle.Location() })
 		end

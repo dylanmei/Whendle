@@ -56,9 +56,9 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Spotlight.Presenter = Class.create({
-	initialize: function(view, timekeeper, timezones, clock_repository) {
+	initialize: function(view, timekeeper, timezone_repository, clock_repository) {
 		this._timekeeper = timekeeper || Whendle.timekeeper();
-		this._timezones = timezones || Whendle.timezones();
+		this.timezone_repository = timezone_repository || Whendle.timezone_repository();
 		this.clock_repository = clock_repository || Whendle.clock_repository();
 
 		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
@@ -98,15 +98,16 @@ Whendle.Spotlight.Presenter = Class.create({
 	adjust_clock: function(clock, on_complete) {
 		var now = this._timekeeper.time();
 		var offset = this._timekeeper.offset();
+		var format = this._timekeeper.format();
 		
 		var self = this;
 		var on_timezone = function(timezone) {
 			var when = self.offset_time(now, offset, timezone);
-			clock.time = Whendle.Clock.Format_time(when);
+			clock.time = Whendle.Clock.Format_time(when, format);
 			clock.day = Whendle.Clock.Format_day(now, when);
 			on_complete();
 		};
-		this._timezones.load(clock.timezone, on_timezone);
+		this.timezone_repository.get_timezone(clock.timezone, on_timezone);
 	},
 	
 	offset_time: function(local_time, local_offset, timezone) {

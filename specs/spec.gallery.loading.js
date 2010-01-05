@@ -2,7 +2,7 @@
 describe 'Gallery'
 	repository = new Object
 	timezones = new Object
-	timezones.load = function(tz, on_complete) { on_complete(new Whendle.Timezone()); }
+	timezones.get_timezone = function(tz, on_complete) { on_complete(new Whendle.Timezone()); }
 
 	timekeeper = new Whendle.Observable
 	timekeeper.format = function() { return ''; }
@@ -12,7 +12,7 @@ describe 'Gallery'
 	startup = new Whendle.Observable;
 	startup.run = -{ this.fire(Whendle.Event.status, { ready: true }); }
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, repository)
+	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, new Object, timezones, repository)
 	
 	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
 	

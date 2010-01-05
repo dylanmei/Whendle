@@ -1,8 +1,8 @@
 
 describe 'Gallery'
-	repository = new Object
-	timezones = new Object
-	timezones.load = function(tz, on_complete) { on_complete(new Whendle.Timezone()); }
+	clock_repository = new Object
+	timezone_repository = new Object
+	timezone_repository.get_timezone = function(tz, on_complete) { on_complete(new Whendle.Timezone()); }
 
 	timekeeper = new Whendle.Observable
 	timekeeper.format = function() { return ''; }
@@ -11,7 +11,13 @@ describe 'Gallery'
 
 	startup = new Whendle.Observable
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, timezones, repository)
+	presenter = new Whendle.Gallery.Presenter(view,
+		startup,
+		timekeeper,
+		new Object,
+		timezone_repository,
+		clock_repository
+	)
 	
 	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
 	
@@ -20,7 +26,7 @@ describe 'Gallery'
 			a = null
 			b = null
 			e = null
-			repository.get_clocks = function(on_result) {
+			clock_repository.get_clocks = function(on_result) {
 				on_result([ new_clock_record(1), new_clock_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }
@@ -45,7 +51,7 @@ describe 'Gallery'
 			a = null
 			b = null
 			e = null
-			repository.get_clocks = function(on_result) {
+			clock_repository.get_clocks = function(on_result) {
 				on_result([ new_clock_record(1), new_clock_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }

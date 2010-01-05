@@ -75,8 +75,12 @@ Whendle = {
 		return Whendle.services('Whendle.schema');
 	},
 	
-	timezones: function() {
-		return Whendle.services('Whendle.timezones');
+	timezone_repository: function() {
+		return Whendle.services('Whendle.timezone-repository');
+	},
+	
+	timezone_locator: function() {
+		return Whendle.services('Whendle.timezone-locator');
 	},
 	
 	timekeeper: function() {

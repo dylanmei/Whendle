@@ -1,8 +1,11 @@
 
 describe 'Spotlight'
-	repository = new Object
-	timezones = new Object
-	timezones.load = function(tz, on_complete) { on_complete(new Whendle.Timezone()); }
+	clock_repository = new Object
+	timezone_repository = {
+		get_timezone: function(tz, on_complete) {
+			on_complete(new Whendle.Timezone());
+		} 
+	}
 
 	timekeeper = new Whendle.Observable
 	timekeeper.format = function() { return ''; }
@@ -11,7 +14,7 @@ describe 'Spotlight'
 
 	startup = new Whendle.Observable;
 	view = new Whendle.Spotlight.View
-	presenter = new Whendle.Spotlight.Presenter(view, timekeeper, timezones, repository)
+	presenter = new Whendle.Spotlight.Presenter(view, timekeeper, timezone_repository, clock_repository)
 	
 	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
 
@@ -20,7 +23,7 @@ describe 'Spotlight'
 			a = null
 			b = null
 			e = null
-			repository.get_clock = function(id, on_result) {
+			clock_repository.get_clock = function(id, on_result) {
 				on_result(new_clock_record(1))
 			}
 			view.clock_changed = function(event) { a = event.clock; b = event.reason; e = event.error; }
@@ -45,7 +48,7 @@ describe 'Spotlight'
 			a = null
 			b = null
 			e = null
-			repository.get_clock = function(id, on_result) {
+			clock_repository.get_clock = function(id, on_result) {
 				on_result(new_clock_record(1))
 			}
 			view.clock_changed = function(event) { a = event.clock; b = event.reason; e = event.error; }

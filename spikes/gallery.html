@@ -15,12 +15,12 @@
 	<script src="../whendle/api/clock.js" type="text/javascript"></script>
 	<script src="../whendle/api/ajax-service.js" type="text/javascript"></script>
 	<script src="../whendle/api/timekeeper-service.js" type="text/javascript"></script>
-	<script src="../whendle/api/timezone-service.js" type="text/javascript"></script>
+	<script src="../whendle/api/timezone-locator.js" type="text/javascript"></script>
+	<script src="../whendle/api/timezone-repository.js" type="text/javascript"></script>
 	<script src="../whendle/api/clock-repository.js" type="text/javascript"></script>
 	<script src="../whendle/api/gallery.js" type="text/javascript"></script>
 	<script src="database-service.js" type="text/javascript"></script>
 	<script src="system-service.js" type="text/javascript"></script>
-	<script src="timezone-service.js" type="text/javascript"></script>
 	<script>
 
 $.trace = function() { console.log($A(arguments).join(' ')); }
@@ -73,10 +73,32 @@ document.observe('dom:loaded', function() {
 		document.gallery = new Gallery(
 			startup,
 			timekeeper,
-			new TimezoneService(),
+			new Timezone_Locator(),
+			new Whendle.Timezone_Repository(new Whendle.TzLoader(new Whendle.AjaxService(), document.tzpath)),
 			new Whendle.Clock_Repository(new DatabaseService())
 		);
 	});
+});
+
+Timezone_Locator = Class.create(Whendle.Timezone_Locator, {
+	initialize: function($super) {
+		$super(null, new Whendle.AjaxService());
+	},
+	
+	lookup: function(latitude, longitude, on_complete, on_error) {
+		var location = document.locations.find(function(l) {
+			return l.latitude == latitude && l.longitude == longitude;
+		});
+
+		zone = null;
+		if (location) zone = document.zones[location.name];
+		if (zone) {
+			on_complete({ name: zone, offset: 0 });
+		}
+		else {
+			$.trace('missing zone during lookup');
+		}
+	}
 });
 
 //
@@ -84,9 +106,15 @@ document.observe('dom:loaded', function() {
 //
 
 Gallery = Class.create(Whendle.Gallery.View, {
-	initialize: function($super, startup, timekeeper, tzservice, repository) {
+	initialize: function($super, startup, timekeeper, timezone_locator, timezone_repository, clock_repository) {
 		$super();
-		this.presenter = new Whendle.Gallery.Presenter(this, startup, timekeeper, tzservice, repository);
+		this.presenter = new Whendle.Gallery.Presenter(this,
+			startup,
+			timekeeper,
+			timezone_locator,
+			timezone_repository,
+			clock_repository
+		);
 
 		this.setup();
 		this.fire(Whendle.Event.loading, { 'timer': new Whendle.Timer(window) });
@@ -350,7 +378,6 @@ List = Class.create(Whendle.Observable, {
 	
 	remove_location_from_finder: function(name) {
 		$('finder').select('li').each(function(li) {
-			$.trace(li.innerHTML, name);
 			if (li.innerHTML == name) li.remove();
 		});	
 	},
