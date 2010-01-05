@@ -117,6 +117,27 @@
   text-align: right;
 }
 
+.spotlight-icon {
+	width: 32px;
+	height: 32px;
+}
+
+.spotlight-icon.pictures {
+	background:url(spotlight-pictures-icon.png) center center no-repeat;
+}
+
+.spotlight-icon.twitter {
+	background:url(spotlight-twitter-icon.png) center center no-repeat;
+}
+
+.spotlight-icon.maps {
+	background:url(spotlight-maps-icon.png) center center no-repeat;
+}
+
+.spotlight-icon.weather {
+	background:url(spotlight-weather-icon.png) center center no-repeat;
+}
+
 .hbox {
 	display: -webkit-box;
 	-webkit-box-orient: horizontal;
