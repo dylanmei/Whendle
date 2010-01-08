@@ -16,7 +16,6 @@ $.trace = function() { console.log($A(arguments).join(' ')); }
 
 document.observe('dom:loaded', function() {
 	$.view = new View();
-	
 });
 
 View = Class.create(Whendle.Gallery.View, {
@@ -31,10 +30,11 @@ View = Class.create(Whendle.Gallery.View, {
 			this.location_to_coordinate(Places.sydney)
 		);
 		
-		// NOTE THIS DOESNT WORK BECAUSE THE MAP ISNT LOADED YET.
-		this._map.mark(
-			this.location_to_coordinate(Places.sydney)
-		);
+		for (var x in Places) {
+			this._map.mark(
+				this.location_to_coordinate(Places[x])
+			);
+		}
 	},
 	
 	flip: function() {
@@ -116,7 +116,6 @@ Map = Class.create(Whendle.Observable, {
 	},
 	
 	go: function(coordinate) {
-
 		this.longitude = coordinate.x;
 		this.latitude = coordinate.y;
 		this.redraw();
@@ -354,7 +353,6 @@ Map = Class.create(Whendle.Observable, {
 	document_on_mouseup: function(event) {
 		
 		if (this.drag_handler) {
-			$.trace('stop drag');
 			document.stopObserving('mousemove', this.drag_handler);
 			this.drag_handler = null;
 		}
@@ -377,10 +375,19 @@ Map = Class.create(Whendle.Observable, {
 			, y: current_offset.y / scale.y
 		};
 		
-		this.go({
+		var go = {
 			  x: drag_start_location.x - coordinate_offset.x
 			, y: drag_start_location.y + coordinate_offset.y
-		});
+		}
+		
+		if (go.x < -180) {
+			go.x = 180 + go.x % 180;
+		}
+		else if (go.x > 180) {
+			go.x = -180 + go.x % 180;
+		}
+		
+		this.go(go);
 	},
 	
 	global_to_canvas_point: function(p) {
