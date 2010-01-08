@@ -14,7 +14,9 @@
 	<script src="../whendle/api/clock.js" type="text/javascript"></script>
 	<script>
 
-// SPIKE DOES NOT WORK IN FIREFOX (violates same-origin policy)
+// USE SAFARI
+// DOES NOT WORK IN FIREFOX (violates same-origin policy)
+// HAS STOPPED WORKING IN CHROME AS WELL (Refused to get unsafe header "X-JSON")
 //URL_SEARCH_BY_NAME = 'http://ws.geonames.org/searchJSON';
 URL_TIMEZONE_BY_LOCATION = 'http://ws.geonames.org/timezoneJSON';
 
@@ -28,8 +30,7 @@ View = Class.create(Whendle.Finder.View, {
 	initialize: function($super) {
 		$super();
 		new Whendle.Finder.Presenter(this, 
-			new Whendle.AjaxService(),
-			{ 'scalar': function(statement, parameters, on_result, on_error) { on_result(); }}
+			new Whendle.AjaxService()
 		);
 			
 		this.setup();
@@ -38,6 +39,7 @@ View = Class.create(Whendle.Finder.View, {
 	setup: function() {
 		this._list = this.new_list();
 		this._input = this.new_input();
+//		this._map = this.new_map();
 	},
 	
 	new_list: function() {
@@ -104,6 +106,11 @@ View = Class.create(Whendle.Finder.View, {
 				self.fetch_locations(value);
 			}
 		).delay(1, value);
+	},
+	
+	new_map: function() {
+		var map = new Map();
+		return map;
 	},
 	
 	found: function(event) {
@@ -204,42 +211,286 @@ List = Class.create(Whendle.Observable, {
 	}
 });
 
-
 /*
-function fetch_timezone(lat, lng) {
-	$.trace('fetching time for: ' + lat + ',' + lng);
-	
-	var url = URL_TIMEZONE_BY_LOCATION + '?' +
-		Object.toQueryString({'lat': lat, 'lng': lng});
-	
-	new Whendle.AjaxService().load(
-		url,
-		on_timezone_fetched
-	);
-}
 
-function encode_time_query(lat, lng) {
-	return Object.toQueryString({
-		lat: lat,
-		lng: lng
-	});
-}
+var seattle = new Whendle.Location('Seattle', 'Washington', 'United States', 47.6, -122.3),
+var sao_paulo = new Whendle.Location('Sao Paulo', 'Sao Paulo', 'Brazil', -23.5, -46.6),
+var london = new Whendle.Location('London', 'England', 'United Kingdom', 51.5, -0.12),
+var berlin = new Whendle.Location('Berlin', 'Berlin', 'Germany', 52.51, 13.4),
+var shanghai = new Whendle.Location('Shanghai', 'Shanghai', 'China', 31.2, 121.4),
+var sydney = new Whendle.Location('Sydney', 'New South Wales', 'Australia', -33.8, 151.2),
+var ottawa = new Whendle.Location('Ottawa', 'Ontario', 'Canada', 45.25, -75.43),
+var johannesburg = new Whendle.Location('Johannesburg', 'Gauteng', 'South Africa', -26.08, 27.54),
+var tokyo = new Whendle.Location('Tokyo', 'Tokyo', 'Japan', 35.41, 139.44)
 
-function on_timezone_fetched(response) {
-	$.trace(Object.toJSON(response));
-}
+
+Map = Class.create({
+	IMAGE_FILE: 'map-surface.jpg',
+	initialize: function() {
+
+		this.canvas = $('canvas');
+		this.container = this.canvas.up();
+		
+		this.canvas.observe('click',
+			this.on_canvas_click.bind(this));
+		
+		this.img = null;
+		this.load(this.draw.bind(this));
+		this.location(london.longitude, london.latitude);
+	},
+
+	load: function(on_ready) {
+		this.img = new Image();
+		this.img.onload = on_ready;
+		this.img.src = this.IMAGE_FILE;
+	},
+	
+	location: function(longitude, latitude) {
+
+		// do our best to center this without the
+		// y-component pushing us past the bounds
+		// of the map
+
+		this.latitude = latitude;
+		this.longitude = longitude;
+
+		var offset = this.map_offset();
+		$.trace('latitude/y', this.latitude, offset.y);
+		$.trace('longitude/x', this.longitude, offset.x);
+
+		if (this.img != null)
+			this.draw();
+	},
+	
+	longitude_to_x: function(longitude) {
+		var x = longitude * this.scale().x;
+		return x + this.origin().x;
+	},
+	
+	latitude_to_y: function(latitude) {
+		var y = latitude * this.scale().x;
+		return this.origin().y - y;
+	},
+	
+	x_to_longitude: function(x) {
+		x = x - this.origin().x;
+		var longitude = x / this.scale().x;
+		return longitude;
+	},
+	
+	y_to_latitude: function(y) {
+		y = this.origin().y - y;
+		var latitude = y / this.scale().y;
+		return latitude;
+	},
+
+	extent: function() {
+		return {
+			x: 520,
+			y: 260
+		}
+	},
+	
+	viewport: function() {
+		return {
+			x: this.canvas.width,
+			y: this.canvas.height
+		}
+	},
+	
+	origin: function() {
+		var extent = this.extent();
+		return {
+			x: extent.x / 2,
+			y: extent.y / 2
+		}
+	},
+	
+	scale: function() {
+		var extent = this.extent();
+		return {
+			x: extent.x / 360,
+			y: extent.y / 180
+		}
+	},
+	
+
+	move: function(x, y) {
+		this.canvas.setStyle({
+			position: 'relative',
+			left: x + 'px',
+			top: y + 'px'
+		});
+	},
+	
+
+	draw: function() {
+		var ctx = this.canvas.getContext('2d');
+		this.draw_background(ctx);
+		this.draw_map(ctx, this.img);
+		this.draw_location(ctx, this.latitude, this.longitude);
+		this.draw_container(ctx);
+	},
+	
+	draw_map: function(ctx, map) {
+		var extent = this.extent();
+		var viewport = this.viewport();
+		var image = this.map_offset();
+		var x = Math.floor(image.x);
+		var y = Math.floor(image.y);
+
+		ctx.drawImage(map, x, y,
+			extent.x,
+			extent.y
+		);
+		
+		if (image.x > 0) {
+			ctx.drawImage(map,
+				x - extent.x,
+				y,
+				extent.x,
+				extent.y
+			);
+		}
+
+		if (image.x + extent.x < viewport.x) {
+			ctx.drawImage(map,
+				x + extent.x,
+				y,
+				extent.x,
+				extent.y
+			);
+		}
+	},
+	
+	map_offset: function() {
+		return this.translate_point(
+			this.location_to_point(this.latitude, this.longitude)
+		);
+	},
+	
+	location_offset: function(latitude, longitude) {
+		return this.point_offset(
+			this.location_to_point(latitude, longitude)
+		);
+	},
+	
+	point_offset: function(point) {
+		var offset = this.map_offset();
+		return {
+			  x: point.x + offset.x
+			, y: point.y + offset.y
+		}
+	},
+	
+	translate_point: function(point) {
+		var viewport = this.viewport();
+		var offset = {
+			  x: 0
+			, y: 0
+		};
+		
+		offset.x -= point.x - (viewport.x / 2);
+		offset.y += viewport.y / 2 - point.y;
+		return offset;	
+	},
+	
+	location_to_point: function(latitude, longitude) {
+		var scale = this.scale();
+		var extent = this.extent();
+		var point = {
+			  x: extent.x / 2
+			, y: extent.y / 2
+		};
+		
+		point.x += longitude * scale.x;
+		point.y -= latitude * scale.y;
+		return point;
+	},
+
+	draw_location: function(ctx, latitude, longitude) {
+		var point = this.location_offset(latitude, longitude);
+		this.draw_x(ctx, point.x, point.y);
+	},
+	
+	draw_background: function(ctx) {
+		// shouldn't see this....
+		var extent = this.viewport();
+		ctx.fillStyle = 'rgba(100,100,100,1)';
+		ctx.fillRect(0, 0, extent.x, extent.y);
+	},
+	
+	draw_container: function(ctx) {
+		var extent = this.viewport();
+		
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+		ctx.beginPath();
+
+		ctx.moveTo(0, 0);
+		ctx.lineTo(extent.x, 0);
+
+		ctx.moveTo(0, extent.y);
+		ctx.lineTo(extent.x, extent.y);
+
+		ctx.stroke();
+	},
+	
+	on_canvas_click: function(event) {
+		var x = event.pointerX();
+		var y = event.pointerY();
+		var offset = this.canvas.viewportOffset();
+		x -= offset.left;
+		y -= offset.top;
+		
+//		$.trace(
+//			this.x_to_longitude(x),
+//			this.y_to_latitude(y)
+//		);
+		
+//		var x = event.pointerX();
+//		var xscale = canvas.width / 360;
+//		var xorigin = canvas.width / 2;
+		
+//		if (document.center != 'sun') {
+//			document.tau = (xorigin - x) / xscale;
+//		}
+//		else {
+//			var xoffset = xorigin - x;
+//			document.tau += xoffset / xscale;
+//		}
+		
+//		this.fire(':click', {
+//			latitude: 0,
+//			longitude: tau
+//		});
+	},
+	
+	draw_x: function(ctx, x, y) {
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+		
+		ctx.beginPath();
+		
+		ctx.moveTo(x - 5, y - 5);
+		ctx.lineTo(x + 5, y + 5);
+		
+		ctx.moveTo(x - 5, y + 5);
+		ctx.lineTo(x + 5, y - 5);
+
+		ctx.stroke();
+	}	
+});
 */
 
 	</script>
 	
 	<style>
 .app {
-	width: 400px;
+	width: 320px;
 	min-height: 400px;
 	margin: 40px auto;
 	border: 1px solid black;
-	-webkit-border-radius: 6px;
-	-webkit-box-shadow: 3px 3px 3px rgba(0,0,0,0.2);	
 }
 .finder-row, .finder-appender {
 	padding: 10px;
@@ -266,7 +517,7 @@ function on_timezone_fetched(response) {
 }
 
 hr, form {
-	margin: 0;
+	margin: 1px 0px;
 	padding: 0;
 }
 input[type=text] {
@@ -281,6 +532,7 @@ input[type=text].active {
 	color: black;
 	font-style: normal;
 }
+
 	</style>
 </head>
 <body>
@@ -288,15 +540,12 @@ input[type=text].active {
 <form onsubmit="return false;">
 	<input id="input" type="text" value="Find a location..." />
 	<hr />
+	<!--
+	<canvas id="canvas" width="320" height="180"></canvas>
+	-->
 </form>
 <div id="list">
-<!--
-	<div class="location">
-		<span class="location-name">Seattle</span>
-		<span class="location-info">Washington, United States</span>
-		<span class="location-time">time?</span>
-	</div>
--->
+
 </div>
 </div>
 <tt id="trace">
