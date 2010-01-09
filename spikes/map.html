@@ -18,6 +18,77 @@ document.observe('dom:loaded', function() {
 	$.view = new View();
 });
 
+Mark = Class.create({
+	PIXEL_SIZE: 9,
+	
+	initialize: function(name, longitude, latitude) {
+		this.name = name;
+		this.longitude = longitude;
+		this.latitude = latitude;
+		this.time = '12:35 am';
+	},
+	
+	location: function() {
+		return {
+			  x: this.longitude
+			, y: this.latitude
+		}
+	},
+	
+	draw: function(ctx, point) {
+//		this.draw_circle(ctx, point.x, point.y, 2);
+		this.prepare_font(ctx);
+
+		var h = this.PIXEL_SIZE * 2 + 10;
+		var w1 = ctx.measureText(this.name).width + 8;
+		var w2 = ctx.measureText(this.time).width + 8;
+		
+		this.draw_sign(ctx, point.x, point.y, Math.max(w1, w2), h);
+		this.draw_text(ctx, this.name, point.x - w1 / 2, point.y - 4 - h + 5);
+		
+//		ctx.fillText(this.name, point.x, point.y);
+//		$.trace(this.name, Object.toJSON(ctx.measureText(this.name)));
+	},
+	
+	draw_sign: function(ctx, x, y, w, h) {
+		ctx.strokeStyle = 'rgba(0,0,0,1)';
+		ctx.fillStyle = 'rgba(255,255,255,1)';
+		x = Math.floor(x);
+		y = Math.floor(y);
+		
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+		ctx.lineTo(x + 4, y - 4);
+		ctx.lineTo(x + w / 2, y - 4);
+		ctx.lineTo(x + w / 2, y - 4 - h);
+		ctx.lineTo(x - w / 2, y - 4 - h);
+		ctx.lineTo(x - w / 2, y - 4);
+		ctx.lineTo(x - 4, y - 4);
+		ctx.lineTo(x, y);
+		
+		ctx.fill();
+		ctx.stroke();
+	},
+	
+	draw_text: function(ctx, text, x, y) {
+		ctx.fillStyle = 'black';
+		ctx.textBaseline = 'top';
+		ctx.fillText(text, x, y);
+	},
+	
+	draw_circle: function(ctx, x, y, r) {
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'rgba(255, 0, 0, 0.75)';
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, Math.PI*2, true);
+		ctx.stroke();
+	},	
+	
+	prepare_font: function(ctx) {
+		ctx.font = this.PIXEL_SIZE + 'px sans-serif';
+	}
+});
+
 View = Class.create(Whendle.Gallery.View, {
 	initialize: function($super) {
 		$super();
@@ -27,16 +98,40 @@ View = Class.create(Whendle.Gallery.View, {
 	setup: function() {
 		this._map = this.new_map();
 		this._map.go(
-			this.location_to_coordinate(Places.sydney)
+			this.location_to_coordinate(Places.london)
 		);
-		
+
 		for (var x in Places) {
-			this._map.mark(
-				this.location_to_coordinate(Places[x])
-			);
+			this._map.mark(new Mark(Places[x].name, Places[x].longitude, Places[x].latitude));
 		}
+		
+		this.attach_events();
 	},
 	
+	attach_events: function() {
+//		var self = this;
+//		this._map.observe(':interactive', function() {
+//			self.create_clocks();
+//		});
+	},
+	
+	create_clocks: function() {
+//		var el = this.new_div('map-clock', Places.london.name);
+//		$('app').insert({'after':el});
+	},
+
+	new_div: function(classes, content) {
+		if (!classes) classes = '';
+		if (Object.isArray(classes))
+			classes = classes.join(' ');
+		
+		var element = new Element('div',
+			classes.length ? { 'class': classes } : null);
+		if (content)
+			element.innerHTML = content;
+		return element;
+	},
+
 	flip: function() {
 		var app = $('app');
 		var w = app.getHeight();
@@ -66,25 +161,39 @@ var Places = {
 	, shanghai: new Whendle.Location('Shanghai', 'Shanghai', 'China', 31.2, 121.4)
 	, sydney: new Whendle.Location('Sydney', 'New South Wales', 'Australia', -33.8, 151.2)
 	, ottawa: new Whendle.Location('Ottawa', 'Ontario', 'Canada', 45.25, -75.43)
-	, johannesburg: new Whendle.Location('Johannesburg', 'Gauteng', 'South Africa', -26.08, 27.54)
+	, johannesburg: new Whendle.Location('Johannesburg', 'Gauteng', 'South Africa', -26.204444, 28.045556)
 	, tokyo: new Whendle.Location('Tokyo', 'Tokyo', 'Japan', 35.41, 139.44)
+	, abu_dhabi: new Whendle.Location('Abu Dhabi', 'Abu Dhabi', 'United Arab Emirates', 24.466667, 54.366667)
 }
 
+// events
+// :interactive
+// :orientate
+// :spinstart
+// :spin
+// :spinend
+// :tap
 
 Map = Class.create(Whendle.Observable, {
-	IMAGE_FILE: 'map-surface.jpg',
+	SURFACE_FILE: 'map-surface.jpg',
+	BUBBLE_FILE: 'map-bubble.png',
+	
 	initialize: function($super) {
 		$super();
 
 		this.canvas = $('canvas');
 		this.container = this.canvas.up();
 		
-		this.img = null;
 		this.marks = [];
+		this.surface = new Image();
+		this.bubble = new Image();
 		this.longitude = this.latitude = 0;
 
-		this.load(this.draw.bind(this));
-		
+		this.load();
+		this.attach_events();
+	},
+	
+	attach_events: function() {
 		document.observe('mousedown',
 			this.down_handler = this.document_on_mousedown.bind(this));
 		document.observe('mouseup',
@@ -93,10 +202,23 @@ Map = Class.create(Whendle.Observable, {
 			this.click_handler = this.on_canvas_click.bind(this));
 	},
 
-	load: function(on_ready) {
-		this.img = new Image();
-		this.img.onload = on_ready;
-		this.img.src = this.IMAGE_FILE;
+	load: function() {
+		this.surface = new Image();
+		this.surface.onload = this.surface_ready.bind(this);
+		this.surface.src = this.SURFACE_FILE;
+	},
+	
+	surface_ready: function() {
+		this.surface.ready = true;
+		this.draw();
+		this.fire(':interactive');
+		
+		this.bubble.onload = this.bubble_ready.bind(this);
+		this.bubble.src = this.BUBBLE_FILE;
+	},
+	
+	bubble_ready: function() {
+		this.bubble.ready = true;
 	},
 	
 	flip: function() {
@@ -122,7 +244,7 @@ Map = Class.create(Whendle.Observable, {
 	},
 	
 	redraw: function() {
-		if (this.img != null)
+		if (this.surface.ready)
 			this.draw();
 	},
 	
@@ -185,7 +307,7 @@ Map = Class.create(Whendle.Observable, {
 	draw: function() {
 		var ctx = this.canvas.getContext('2d');
 		this.draw_background(ctx);
-		this.draw_map(ctx, this.img);
+		this.draw_map(ctx, this.surface);
 		this.draw_marks(ctx);
 	},
 	
@@ -290,14 +412,23 @@ Map = Class.create(Whendle.Observable, {
 	
 	draw_marks: function(ctx) {
 		var self = this;
-		this.marks.each(function(m) {
-			self.draw_coordinate(ctx, m);
+		this.marks.each(function(mark) {
+			self.draw_mark(ctx, mark);
 		});
 	},
 	
-	draw_coordinate: function(ctx, coordinate) {
-		var point = this.coordinate_offset(coordinate);
-		this.draw_x(ctx, point.x, point.y);
+	draw_mark: function(ctx, mark) {
+		var point = this.coordinate_offset(mark.location());
+//		this.draw_circle(ctx, point.x, point.y, 3);
+		this.draw_bubble(ctx, point, mark.name);
+	},
+
+	draw_text: function(ctx, x, y, text) {
+		
+		ctx.textBaseline = 'bottom';
+		ctx.font = '0.7em sans-serif';
+		ctx.fillStyle = 'rgba(255, 0, 0, 0.8)'
+		ctx.fillText(text, x, y);
 	},
 	
 	draw_background: function(ctx) {
@@ -308,7 +439,7 @@ Map = Class.create(Whendle.Observable, {
 	},
 	
 	draw_x: function(ctx, x, y) {
-		ctx.lineWidth = 1;
+		ctx.lineWidth = 2;
 		ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
 		
 		ctx.beginPath();
@@ -322,6 +453,134 @@ Map = Class.create(Whendle.Observable, {
 		ctx.stroke();
 	},
 	
+	draw_bubble: function(ctx, point, text) {
+		if (!this.bubble.ready) return;
+
+		var BUBBLE_HEIGHT = 45;
+		var BUBBLE_WIDTH = 208;
+		var BUBBLE_EDGE_WIDTH = 12;
+		var BUBBLE_CORE_WIDTH = 28; // width of the triangle
+		var BUBBLE_NAME_BASE = 8; // where to start drawing the first line of text
+		var BUBBLE_TIME_BASE = 24; // where to start drawing the second line of text
+		var BUBBLE_ELEVATION = 5; // distance to account for drop shadow
+		var CLOCK_WIDTH = 18;
+		
+		ctx.font = '10pt sans-serif';
+		var width = Math.max(BUBBLE_CORE_WIDTH, ctx.measureText(text).width + CLOCK_WIDTH);
+
+		var x = Math.floor(point.x - (width + BUBBLE_EDGE_WIDTH * 2) / 2);
+		var y = Math.floor(point.y - BUBBLE_HEIGHT + BUBBLE_ELEVATION);
+
+		// left border
+		var source_x = 0;
+		var source_y = 0;
+		var source_w = 12;
+		var destination_x = x;
+		var destination_y = y;
+		
+		ctx.drawImage(this.bubble,
+			source_x, source_y,
+			source_w, BUBBLE_HEIGHT,
+			destination_x, destination_y,
+			source_w, BUBBLE_HEIGHT
+		);
+		
+		// center
+		source_x = BUBBLE_WIDTH / 2 - width / 2;
+		source_y = 0;
+		source_w = width;
+		destination_x = x + BUBBLE_EDGE_WIDTH;
+		destination_y = y;
+		
+		ctx.drawImage(this.bubble,
+			source_x, source_y,
+			source_w, BUBBLE_HEIGHT,
+			destination_x, destination_y,
+			source_w, BUBBLE_HEIGHT
+		);
+		
+		// right border
+		source_x = BUBBLE_WIDTH - BUBBLE_EDGE_WIDTH;
+		source_y = 0;
+		source_w = 12;
+		destination_x = x + BUBBLE_EDGE_WIDTH + width;
+		destination_y = y;
+		
+		ctx.drawImage(this.bubble,
+			source_x, source_y,
+			source_w, BUBBLE_HEIGHT,
+			destination_x, destination_y,
+			source_w, BUBBLE_HEIGHT
+		);
+		
+		destination_x = x + BUBBLE_EDGE_WIDTH;
+		destination_y = y + BUBBLE_NAME_BASE;
+		
+		this.draw_clock(ctx,
+			'rgba(255,255,255,1)', {
+				  x: destination_x + 7
+				, y: destination_y + 10
+			}
+		);
+		this.draw_clock(ctx,
+			'rgba(0,0,0,1)', {
+				  x: destination_x + 7
+				, y: destination_y + 9
+			}
+		);
+
+		destination_x += CLOCK_WIDTH;
+		destination_y += 1;
+
+		ctx.textBaseline = 'top';
+		
+		ctx.fillStyle = 'white';
+		ctx.fillText(text, destination_x, destination_y + 1);
+		ctx.fillStyle = 'black';
+		ctx.fillText(text, destination_x, destination_y);
+
+
+//		x = destination_x + 7;
+//		y = destination_y + 9;
+		
+	},
+	
+	draw_clock: function(ctx, style, point) {
+
+		this.draw_circle(ctx, point.x, point.y, 7, style);
+
+		var hour = 12;
+		var minute = 36;
+
+		var DEGS_PER_MIN = 6.0;
+		var DEGS_PER_HOUR = 30.0;
+		var MIN_PER_HOUR = 60.0;
+		
+		var min_length = 6;
+		var hour_length = 4;
+		var m_angle = minute * DEGS_PER_MIN;
+		var h_angle = (hour % 12 * DEGS_PER_HOUR) + (minute * (DEGS_PER_HOUR / MIN_PER_HOUR));
+		
+		m_angle = m_angle * Math.PI / 180;
+		h_angle = h_angle * Math.PI / 180;
+		
+		ctx.lineWidth = 0.75;
+		ctx.beginPath();
+		ctx.moveTo(point.x, point.y);
+		ctx.lineTo(point.x + hour_length * Math.sin(h_angle), point.y - hour_length * Math.cos(h_angle));
+		ctx.moveTo(point.x, point.y);
+		ctx.lineTo(point.x + min_length * Math.sin(m_angle), point.y - min_length * Math.cos(m_angle));
+		ctx.stroke();		
+	},
+	
+	draw_circle: function(ctx, x, y, r, s) {
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = s;
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, Math.PI * 2, true);
+		ctx.stroke();
+	},	
+
 	on_canvas_click: function(event) {
 		var coordinate = this.point_to_coordinate(
 			this.global_to_canvas_point({
@@ -345,8 +604,8 @@ Map = Class.create(Whendle.Observable, {
 				, y: event.pointerY()
 			});
 
-			document.observe('mousemove',
-				this.drag_handler = this.on_drag.bind(this, drag_start_location, drag_start_point));
+			document.observe('mousemove', this.drag_handler =
+				this.on_drag.bind(this, drag_start_location, drag_start_point));
 		}
 	},
 	
@@ -407,14 +666,18 @@ Map = Class.create(Whendle.Observable, {
 	height: 480px;
 	margin: 40px auto;
 	padding: 0;
+	overflow: hidden;
 }
 
 	</style>
 </head>
 <body>
+
 <div id="app">
 	<canvas id="canvas" width="320" height="480"></canvas>
 </div>
+
+
 <input type="button" value="flip" onclick="$.view.flip();" />
 </body>
 </html>
