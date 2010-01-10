@@ -6,10 +6,9 @@
 	<title>Whendle - map</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
 	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
+	<script src="../whendle/api/time.js" type="text/javascript"></script>
 	<script src="../whendle/api/observable.js" type="text/javascript"></script>
 	<script src="../whendle/api/gallery.js" type="text/javascript"></script>
-	<script src="../whendle/api/location.js" type="text/javascript"></script>
-	<script src="../whendle/api/clock.js" type="text/javascript"></script>
 	<script>
 
 $.trace = function() { console.log($A(arguments).join(' ')); }
@@ -18,14 +17,16 @@ document.observe('dom:loaded', function() {
 	$.view = new View();
 });
 
-Mark = Class.create({
-	PIXEL_SIZE: 9,
-	
-	initialize: function(name, longitude, latitude) {
+Place = Class.create({
+	initialize: function(id, name, longitude, latitude) {
+		this.id = id;
 		this.name = name;
 		this.longitude = longitude;
 		this.latitude = latitude;
-		this.time = '12:35 am';
+		this.time = Time.now();
+		
+		this.show_title = false;
+		this.show_subtitle = false;
 	},
 	
 	location: function() {
@@ -33,59 +34,330 @@ Mark = Class.create({
 			  x: this.longitude
 			, y: this.latitude
 		}
-	},
-	
-	draw: function(ctx, point) {
-//		this.draw_circle(ctx, point.x, point.y, 2);
-		this.prepare_font(ctx);
+	}
+});
 
-		var h = this.PIXEL_SIZE * 2 + 10;
-		var w1 = ctx.measureText(this.name).width + 8;
-		var w2 = ctx.measureText(this.time).width + 8;
-		
-		this.draw_sign(ctx, point.x, point.y, Math.max(w1, w2), h);
-		this.draw_text(ctx, this.name, point.x - w1 / 2, point.y - 4 - h + 5);
-		
-//		ctx.fillText(this.name, point.x, point.y);
-//		$.trace(this.name, Object.toJSON(ctx.measureText(this.name)));
+var Places = {
+	  seattle: new Place(0, 'Seattle', -122.3, 47.6)
+	, sao_paulo: new Place(1, 'Sao Paulo', -46.6, -23.5)
+	, london: new Place(2, 'London', -0.12, 51.5)
+	, berlin: new Place(3, 'Berlin', 13.4, 52.51)
+	, shanghai: new Place(4, 'Shanghai', 121.4, 31.2)
+	, sydney: new Place(5, 'Sydney', 151.2, -33.8)
+	, ottawa: new Place(6, 'Ottawa', -75.43, 45.25)
+	, johannesburg: new Place(7, 'Johannesburg', 28.045556, -26.204444)
+	, tokyo: new Place(8, 'Tokyo', 139.44, 35.41)
+	, abu_dhabi: new Place(9, 'Abu Dhabi', 54.366667, 24.466667)
+}
+
+Bubble = Class.create({
+	FONT: '10pt sans-serif',
+	TEXT_PADDING: 4,
+	
+	initialize: function(template) {
+		this.template = template;
 	},
 	
-	draw_sign: function(ctx, x, y, w, h) {
-		ctx.strokeStyle = 'rgba(0,0,0,1)';
-		ctx.fillStyle = 'rgba(255,255,255,1)';
-		x = Math.floor(x);
-		y = Math.floor(y);
+	draw: function(ctx, place, position) {
+		this.draw_background(ctx, position);
 		
-		ctx.beginPath();
-		ctx.moveTo(x, y);
-		ctx.lineTo(x + 4, y - 4);
-		ctx.lineTo(x + w / 2, y - 4);
-		ctx.lineTo(x + w / 2, y - 4 - h);
-		ctx.lineTo(x - w / 2, y - 4 - h);
-		ctx.lineTo(x - w / 2, y - 4);
-		ctx.lineTo(x - 4, y - 4);
-		ctx.lineTo(x, y);
+		var clock_position = {
+			x: position.x - 0.5,
+			y: position.y - 26
+		};
 		
-		ctx.fill();
-		ctx.stroke();
+		this.draw_clock(ctx, clock_position, place.time);
 	},
 	
-	draw_text: function(ctx, text, x, y) {
-		ctx.fillStyle = 'black';
-		ctx.textBaseline = 'top';
-		ctx.fillText(text, x, y);
+	draw_background: function(ctx, position) {
+		var BUBBLE_HEIGHT = 45;
+		var BUBBLE_WIDTH = 30;
+		var BUBBLE_ELEVATION = 5; // distance to account for drop shadow
+		
+		var source_x = 0;
+		var source_y = 0;
+		
+		ctx.drawImage(this.template,
+			source_x,
+			source_y,
+			BUBBLE_WIDTH,
+			BUBBLE_HEIGHT,
+			Math.floor(position.x - BUBBLE_WIDTH / 2),
+			Math.floor(position.y - BUBBLE_HEIGHT + BUBBLE_ELEVATION),
+			BUBBLE_WIDTH,
+			BUBBLE_HEIGHT
+		);	
 	},
-	
-	draw_circle: function(ctx, x, y, r) {
+
+	draw_clock: function(ctx, origin, time) {
 		ctx.lineWidth = 1;
-		ctx.strokeStyle = 'rgba(255, 0, 0, 0.75)';
+		ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+		this.draw_circle(ctx, origin.x, origin.y + 1, 6.5);
+
+		ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+		this.draw_circle(ctx, origin.x, origin.y, 6.5);
+
+		var min_length = 6;
+		var hour_length = 4;
+		var angle = Time.angle_converter.convert(time);
+
+		ctx.lineWidth = 0.75;
 		ctx.beginPath();
-		ctx.arc(x, y, r, 0, Math.PI*2, true);
-		ctx.stroke();
-	},	
+		ctx.moveTo(origin.x, origin.y);
+		ctx.lineTo(origin.x + hour_length * Math.sin(angle.hour), origin.y - hour_length * Math.cos(angle.hour));
+		ctx.moveTo(origin.x, origin.y);
+		ctx.lineTo(origin.x + min_length * Math.sin(angle.minute), origin.y - min_length * Math.cos(angle.minute));
+		ctx.stroke();		
+	},
 	
-	prepare_font: function(ctx) {
-		ctx.font = this.PIXEL_SIZE + 'px sans-serif';
+	draw_circle: function(ctx, x, y, r, s) {
+		ctx.lineWidth = 1.25;
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, Math.PI * 2, true);
+		ctx.stroke();
+	},
+	
+	draw_link: function(ctx, x, y) {
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.moveTo(x - 4, y - 4);
+		ctx.lineTo(x, y);
+		ctx.lineTo(x - 4, y + 4);
+		ctx.stroke();
+	},
+	
+	outline_shape: function(ctx, place, position) {
+		ctx.beginPath();
+		var pointer_span = this.pointer_span();
+		var content_span = this.outer_span(ctx, place);
+		var bubble_span = {
+			width: content_span.width,
+			height: pointer_span.height + content_span.height
+		};
+		
+		// starts and the bottom tip of the
+		// pointer and runs clockwise
+		var x = Math.floor(position.x);
+		var y = Math.floor(position.y - 2);
+		ctx.moveTo(x, y);
+		ctx.lineTo(x - pointer_span.width / 2, y - pointer_span.height);
+		ctx.lineTo(x - bubble_span.width / 2, y - pointer_span.height);
+		ctx.lineTo(x - bubble_span.width / 2, y - bubble_span.height);
+		ctx.lineTo(x + bubble_span.width / 2, y - bubble_span.height);
+		ctx.lineTo(x + bubble_span.width / 2, y - pointer_span.height);
+		ctx.lineTo(x + pointer_span.width / 2, y - pointer_span.height);
+		ctx.closePath();
+	},
+	
+	outline_link: function(ctx, place, position) {
+		ctx.beginPath();
+		var pointer_span = this.pointer_span();
+		var content_span = this.outer_span(ctx, place);
+
+		// starts at the top right corner of the
+		// bubble and runs clockwise around the arrow
+		var x = Math.floor(position.x);
+		var y = Math.floor(position.y - 2);
+		ctx.moveTo(x + content_span.width / 2, y - pointer_span.height - content_span.height);
+		ctx.lineTo(x + content_span.width / 2, y - pointer_span.height);
+		ctx.lineTo(x - 20 + content_span.width / 2, y - pointer_span.height);
+		ctx.lineTo(x - 20 + content_span.width / 2, y - pointer_span.height - content_span.height);
+		ctx.closePath();
+	},
+	
+	pointer_span: function() {
+		return { width: 20, height: 10 };
+	},
+
+	inner_span: function(ctx, place) {
+		return {
+			  width: 20
+			, height: 16
+		}
+	},
+	
+	outer_span: function(ctx, place) {
+		return {
+			  width: 20
+			, height: 25
+		};
+	},
+
+	draw_text: function(ctx, x, y, text) {
+		ctx.textBaseline = 'bottom';
+		ctx.font = this.FONT;
+		ctx.fillText(text, x, y);
+	}
+});
+
+Singleline_Bubble = Class.create(Bubble, {
+	initialize: function($super, template) {
+		$super(template);
+	},
+	
+	draw: function(ctx, place, position) {
+		var BUBBLE_HEIGHT = 45;
+		var BUBBLE_WIDTH = 208;
+		var BUBBLE_EDGE_WIDTH = 12;
+		var BUBBLE_CORE_WIDTH = 28; // width of the triangle
+		var BUBBLE_NAME_BASE = 8; // where to start drawing the first line of text
+		var BUBBLE_TIME_BASE = 24; // where to start drawing the second line of text
+		var BUBBLE_ELEVATION = 5; // distance to account for drop shadow
+		
+		var width = Math.max(BUBBLE_CORE_WIDTH, this.text_width(ctx, place.name) + 12 + 12);
+		var x = Math.floor(position.x - (width + BUBBLE_EDGE_WIDTH * 2) / 2);
+		var y = Math.floor(position.y - BUBBLE_HEIGHT + BUBBLE_ELEVATION);
+
+		// left border
+		var source_x = 0;
+		var source_y = 45;
+		var source_w = 12;
+		var destination_x = x;
+		var destination_y = y;
+		
+		ctx.drawImage(this.template,
+			source_x, source_y,
+			source_w, BUBBLE_HEIGHT,
+			destination_x, destination_y,
+			source_w, BUBBLE_HEIGHT
+		);
+		
+		// center
+		source_x = BUBBLE_WIDTH / 2 - width / 2;
+		source_y = 45;
+		source_w = width;
+		destination_x = x + BUBBLE_EDGE_WIDTH;
+		destination_y = y;
+		
+		ctx.drawImage(this.template,
+			source_x, source_y,
+			source_w, BUBBLE_HEIGHT,
+			destination_x, destination_y,
+			source_w, BUBBLE_HEIGHT
+		);
+
+		// right border
+		source_x = BUBBLE_WIDTH - BUBBLE_EDGE_WIDTH;
+		source_y = 45;
+		source_w = 12;
+		destination_x = x + BUBBLE_EDGE_WIDTH + width;
+		destination_y = y;
+		
+		ctx.drawImage(this.template,
+			source_x, source_y,
+			source_w, BUBBLE_HEIGHT,
+			destination_x, destination_y,
+			source_w, BUBBLE_HEIGHT
+		);
+		
+		// Clock
+		this.draw_clock(ctx, { x: x + BUBBLE_EDGE_WIDTH + BUBBLE_EDGE_WIDTH - 8, y: y + 16 }, place.time);
+		
+		// Text
+		ctx.fillStyle = 'rgba(255,255,255,0.8)';
+		this.draw_text(ctx, x + BUBBLE_EDGE_WIDTH + 14, y + 24 + 1, place.name);
+		
+		ctx.fillStyle = 'rgba(0,0,0,0.8)';
+		this.draw_text(ctx, x + BUBBLE_EDGE_WIDTH + 14, y + 24, place.name);
+		
+		// Link
+		ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+		this.draw_link(ctx, x + BUBBLE_EDGE_WIDTH + width, y + 16 + 1);
+		
+		ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+		this.draw_link(ctx, x + BUBBLE_EDGE_WIDTH + width, y + 16);
+	},
+	
+	inner_span: function(ctx, place) {
+		return {
+			  width: this.text_width(ctx, place.name)
+			, height: 16
+		}
+	},
+	
+	outer_span: function(ctx, place) {
+		return {
+			  width: this.text_width(ctx, place.name) + 40
+			, height: 25
+		};
+	},
+	
+	text_width: function(ctx, text) {
+		ctx.font = this.FONT;
+		return ctx.measureText(text).width;
+	}
+});
+
+Multiline_Bubble = Class.create(Bubble, {
+	initialize: function($super, template) {
+		$super(template);
+	}
+});
+
+
+Bubble_Layer = Class.create(Whendle.Observable, {
+	TEMPLATE_FILE: 'map-bubble.png',
+
+	initialize: function($super) {
+		$super();
+
+		this.bubble = null;
+		this.singleline = null;
+		this.multiline = null;
+
+		this.template = new Image();
+		this.template.onload =
+			this.template_loaded.bind(this);
+		this.template.src = this.TEMPLATE_FILE;
+	},
+	
+	template_loaded: function() {
+		this.bubble = new Bubble(this.template);
+		this.singleline = new Singleline_Bubble(this.template);
+		this.multiline = new Multiline_Bubble(this.template);
+		this.fire(':ready');
+	},
+	
+	get_bubble: function(place) {
+		if (place.show_subtitle) {
+			return this.multiline;
+		}
+		else if (place.show_title) {
+			return this.singleline;
+		}
+		else {
+			return this.bubble;
+		}
+	},
+	
+	draw: function(ctx, place, position) {
+		this.get_bubble(place).draw(
+			ctx, place, position
+		);
+		
+//		if (place.show_title) {
+//			this.get_bubble(place).outline_link(
+//				ctx, place, position
+//			);
+//			ctx.lineWidth = 1;
+//			ctx.strokeStyle = 'red';
+//			ctx.stroke();
+//		}
+	},
+	
+	touching: function(ctx, place, position, where) {
+		this.get_bubble(place).outline_shape(
+			ctx, place, position
+		);
+		return ctx.isPointInPath(where.x, where.y);
+	},
+	
+	activating: function(ctx, place, position, where) {
+		if (!place.show_title) return false;
+		this.get_bubble(place).outline_link(
+			ctx, place, position
+		);
+		return ctx.isPointInPath(where.x, where.y);
 	}
 });
 
@@ -96,13 +368,11 @@ View = Class.create(Whendle.Gallery.View, {
 	},
 	
 	setup: function() {
-		this._map = this.new_map();
-		this._map.go(
-			this.location_to_coordinate(Places.london)
-		);
+		this._map = new Map();
+		this._map.go(Places.london.location());
 
 		for (var x in Places) {
-			this._map.mark(new Mark(Places[x].name, Places[x].longitude, Places[x].latitude));
+			this._map.mark(Places[x]);
 		}
 		
 		this.attach_events();
@@ -111,25 +381,7 @@ View = Class.create(Whendle.Gallery.View, {
 	attach_events: function() {
 //		var self = this;
 //		this._map.observe(':interactive', function() {
-//			self.create_clocks();
 //		});
-	},
-	
-	create_clocks: function() {
-//		var el = this.new_div('map-clock', Places.london.name);
-//		$('app').insert({'after':el});
-	},
-
-	new_div: function(classes, content) {
-		if (!classes) classes = '';
-		if (Object.isArray(classes))
-			classes = classes.join(' ');
-		
-		var element = new Element('div',
-			classes.length ? { 'class': classes } : null);
-		if (content)
-			element.innerHTML = content;
-		return element;
 	},
 
 	flip: function() {
@@ -141,30 +393,8 @@ View = Class.create(Whendle.Gallery.View, {
 			, height: app.getWidth() + 'px'
 		});
 		this._map.flip();
-	},
-	
-	location_to_coordinate: function(location) {
-		return { x: location.longitude, y: location.latitude };
-	},
-
-	new_map: function() {
-		var map = new Map();
-		return map;
 	}
 });
-
-var Places = {
-	  seattle: new Whendle.Location('Seattle', 'Washington', 'United States', 47.6, -122.3)
-	, sao_paulo: new Whendle.Location('Sao Paulo', 'Sao Paulo', 'Brazil', -23.5, -46.6)
-	, london: new Whendle.Location('London', 'England', 'United Kingdom', 51.5, -0.12)
-	, berlin: new Whendle.Location('Berlin', 'Berlin', 'Germany', 52.51, 13.4)
-	, shanghai: new Whendle.Location('Shanghai', 'Shanghai', 'China', 31.2, 121.4)
-	, sydney: new Whendle.Location('Sydney', 'New South Wales', 'Australia', -33.8, 151.2)
-	, ottawa: new Whendle.Location('Ottawa', 'Ontario', 'Canada', 45.25, -75.43)
-	, johannesburg: new Whendle.Location('Johannesburg', 'Gauteng', 'South Africa', -26.204444, 28.045556)
-	, tokyo: new Whendle.Location('Tokyo', 'Tokyo', 'Japan', 35.41, 139.44)
-	, abu_dhabi: new Whendle.Location('Abu Dhabi', 'Abu Dhabi', 'United Arab Emirates', 24.466667, 54.366667)
-}
 
 // events
 // :interactive
@@ -185,8 +415,8 @@ Map = Class.create(Whendle.Observable, {
 		this.container = this.canvas.up();
 		
 		this.marks = [];
+		this.bubbler = null;
 		this.surface = new Image();
-		this.bubble = new Image();
 		this.longitude = this.latitude = 0;
 
 		this.load();
@@ -210,15 +440,14 @@ Map = Class.create(Whendle.Observable, {
 	
 	surface_ready: function() {
 		this.surface.ready = true;
-		this.draw();
+		this.redraw();
 		this.fire(':interactive');
 		
-		this.bubble.onload = this.bubble_ready.bind(this);
-		this.bubble.src = this.BUBBLE_FILE;
-	},
-	
-	bubble_ready: function() {
-		this.bubble.ready = true;
+		var self = this;
+		this.bubbler = new Bubble_Layer();
+		this.bubbler.observe(':ready', function() {
+			self.redraw();
+		});
 	},
 	
 	flip: function() {
@@ -232,8 +461,8 @@ Map = Class.create(Whendle.Observable, {
 		});
 	},
 	
-	mark: function(coordinate) {
-		this.marks.push(coordinate);
+	mark: function(clock) {
+		this.marks.push(clock);
 		this.redraw();
 	},
 	
@@ -307,24 +536,24 @@ Map = Class.create(Whendle.Observable, {
 	draw: function() {
 		var ctx = this.canvas.getContext('2d');
 		this.draw_background(ctx);
-		this.draw_map(ctx, this.surface);
-		this.draw_marks(ctx);
+		this.draw_map(ctx);
+		this.draw_places(ctx);
 	},
 	
-	draw_map: function(ctx, map) {
+	draw_map: function(ctx) {
 		var extent = this.extent();
 		var viewport = this.viewport();
 		var image = this.map_offset();
 		var x = Math.floor(image.x);
 		var y = Math.floor(image.y);
 
-		ctx.drawImage(map, x, y,
+		ctx.drawImage(this.surface, x, y,
 			extent.x,
 			extent.y
 		);
 		
 		if (image.x > 0) {
-			ctx.drawImage(map,
+			ctx.drawImage(this.surface,
 				x - extent.x,
 				y,
 				extent.x,
@@ -333,7 +562,7 @@ Map = Class.create(Whendle.Observable, {
 		}
 
 		if (image.x + extent.x < viewport.x) {
-			ctx.drawImage(map,
+			ctx.drawImage(this.surface,
 				x + extent.x,
 				y,
 				extent.x,
@@ -410,27 +639,20 @@ Map = Class.create(Whendle.Observable, {
 		return coordinate;
 	},
 	
-	draw_marks: function(ctx) {
+	draw_places: function(ctx) {
 		var self = this;
-		this.marks.each(function(mark) {
-			self.draw_mark(ctx, mark);
+		this.marks.each(function(place) {
+			self.draw_place(ctx, place);
 		});
 	},
 	
-	draw_mark: function(ctx, mark) {
-		var point = this.coordinate_offset(mark.location());
-//		this.draw_circle(ctx, point.x, point.y, 3);
-		this.draw_bubble(ctx, point, mark.name);
+	draw_place: function(ctx, place) {
+		if (this.bubbler) {
+			var point = this.coordinate_offset(place.location());
+			this.bubbler.draw(ctx, place, point);
+		}
 	},
 
-	draw_text: function(ctx, x, y, text) {
-		
-		ctx.textBaseline = 'bottom';
-		ctx.font = '0.7em sans-serif';
-		ctx.fillStyle = 'rgba(255, 0, 0, 0.8)'
-		ctx.fillText(text, x, y);
-	},
-	
 	draw_background: function(ctx) {
 		// shouldn't see this....
 		var extent = this.viewport();
@@ -438,158 +660,42 @@ Map = Class.create(Whendle.Observable, {
 		ctx.fillRect(0, 0, extent.x, extent.y);
 	},
 	
-	draw_x: function(ctx, x, y) {
-		ctx.lineWidth = 2;
-		ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-		
-		ctx.beginPath();
-		
-		ctx.moveTo(x - 5, y - 5);
-		ctx.lineTo(x + 5, y + 5);
-		
-		ctx.moveTo(x - 5, y + 5);
-		ctx.lineTo(x + 5, y - 5);
-
-		ctx.stroke();
-	},
-	
-	draw_bubble: function(ctx, point, text) {
-		if (!this.bubble.ready) return;
-
-		var BUBBLE_HEIGHT = 45;
-		var BUBBLE_WIDTH = 208;
-		var BUBBLE_EDGE_WIDTH = 12;
-		var BUBBLE_CORE_WIDTH = 28; // width of the triangle
-		var BUBBLE_NAME_BASE = 8; // where to start drawing the first line of text
-		var BUBBLE_TIME_BASE = 24; // where to start drawing the second line of text
-		var BUBBLE_ELEVATION = 5; // distance to account for drop shadow
-		var CLOCK_WIDTH = 18;
-		
-		ctx.font = '10pt sans-serif';
-		var width = Math.max(BUBBLE_CORE_WIDTH, ctx.measureText(text).width + CLOCK_WIDTH);
-
-		var x = Math.floor(point.x - (width + BUBBLE_EDGE_WIDTH * 2) / 2);
-		var y = Math.floor(point.y - BUBBLE_HEIGHT + BUBBLE_ELEVATION);
-
-		// left border
-		var source_x = 0;
-		var source_y = 0;
-		var source_w = 12;
-		var destination_x = x;
-		var destination_y = y;
-		
-		ctx.drawImage(this.bubble,
-			source_x, source_y,
-			source_w, BUBBLE_HEIGHT,
-			destination_x, destination_y,
-			source_w, BUBBLE_HEIGHT
-		);
-		
-		// center
-		source_x = BUBBLE_WIDTH / 2 - width / 2;
-		source_y = 0;
-		source_w = width;
-		destination_x = x + BUBBLE_EDGE_WIDTH;
-		destination_y = y;
-		
-		ctx.drawImage(this.bubble,
-			source_x, source_y,
-			source_w, BUBBLE_HEIGHT,
-			destination_x, destination_y,
-			source_w, BUBBLE_HEIGHT
-		);
-		
-		// right border
-		source_x = BUBBLE_WIDTH - BUBBLE_EDGE_WIDTH;
-		source_y = 0;
-		source_w = 12;
-		destination_x = x + BUBBLE_EDGE_WIDTH + width;
-		destination_y = y;
-		
-		ctx.drawImage(this.bubble,
-			source_x, source_y,
-			source_w, BUBBLE_HEIGHT,
-			destination_x, destination_y,
-			source_w, BUBBLE_HEIGHT
-		);
-		
-		destination_x = x + BUBBLE_EDGE_WIDTH;
-		destination_y = y + BUBBLE_NAME_BASE;
-		
-		this.draw_clock(ctx,
-			'rgba(255,255,255,1)', {
-				  x: destination_x + 7
-				, y: destination_y + 10
-			}
-		);
-		this.draw_clock(ctx,
-			'rgba(0,0,0,1)', {
-				  x: destination_x + 7
-				, y: destination_y + 9
-			}
-		);
-
-		destination_x += CLOCK_WIDTH;
-		destination_y += 1;
-
-		ctx.textBaseline = 'top';
-		
-		ctx.fillStyle = 'white';
-		ctx.fillText(text, destination_x, destination_y + 1);
-		ctx.fillStyle = 'black';
-		ctx.fillText(text, destination_x, destination_y);
-
-
-//		x = destination_x + 7;
-//		y = destination_y + 9;
-		
-	},
-	
-	draw_clock: function(ctx, style, point) {
-
-		this.draw_circle(ctx, point.x, point.y, 7, style);
-
-		var hour = 12;
-		var minute = 36;
-
-		var DEGS_PER_MIN = 6.0;
-		var DEGS_PER_HOUR = 30.0;
-		var MIN_PER_HOUR = 60.0;
-		
-		var min_length = 6;
-		var hour_length = 4;
-		var m_angle = minute * DEGS_PER_MIN;
-		var h_angle = (hour % 12 * DEGS_PER_HOUR) + (minute * (DEGS_PER_HOUR / MIN_PER_HOUR));
-		
-		m_angle = m_angle * Math.PI / 180;
-		h_angle = h_angle * Math.PI / 180;
-		
-		ctx.lineWidth = 0.75;
-		ctx.beginPath();
-		ctx.moveTo(point.x, point.y);
-		ctx.lineTo(point.x + hour_length * Math.sin(h_angle), point.y - hour_length * Math.cos(h_angle));
-		ctx.moveTo(point.x, point.y);
-		ctx.lineTo(point.x + min_length * Math.sin(m_angle), point.y - min_length * Math.cos(m_angle));
-		ctx.stroke();		
-	},
-	
-	draw_circle: function(ctx, x, y, r, s) {
-		ctx.lineWidth = 1;
-		ctx.strokeStyle = s;
-		ctx.beginPath();
-		ctx.arc(x, y, r, 0, Math.PI * 2, true);
-		ctx.stroke();
-	},	
-
 	on_canvas_click: function(event) {
-		var coordinate = this.point_to_coordinate(
-			this.global_to_canvas_point({
-				  x: event.pointerX()
-				, y: event.pointerY()
-			})
-		);
+		var position = this.global_to_canvas_point({
+			  x: event.pointerX()
+			, y: event.pointerY()
+		});
+		
+		var id = undefined;
+		var bubbler = this.bubbler;
+		if (bubbler) {
+			var ctx = this.canvas.getContext('2d');
+			var self = this;
+			var hit = false;
+			
+			this.marks.each(function(clock) {
+				var clock_position = self.coordinate_offset(clock.location());
+				if (bubbler.touching(ctx, clock, clock_position, position)) {
+					if (bubbler.activating(ctx, clock, clock_position, position)) {
+						$.trace('link', clock.name);
+					}
+					else {
+						$.trace('touch', clock.name);
+					}
 
+					hit = true;
+					clock.show_title = !clock.show_title;
+				}
+			});			
+			
+			if (hit) {
+				this.redraw();
+			}
+		}
+		
+		var coordinate = this.point_to_coordinate(position);
 		this.fire(':click', {
+			clock_id: id,
 			latitude: coordinate.y,
 			longitude: coordinate.x
 		});

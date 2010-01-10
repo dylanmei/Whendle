@@ -176,3 +176,24 @@ Date.prototype.addMinutes = function(n) {
 Date.prototype.addSeconds = function(n) {
 	this.setSeconds(this.getSeconds() + n, this.getMilliseconds());
 }
+
+Time.angle_converter = new (
+	Class.create({
+		convert: function(time) {
+			var DEGS_PER_MIN = 6.0;
+			var DEGS_PER_HOUR = 30.0;
+			var MIN_PER_HOUR = 60.0;
+
+			var hour = time.hour();
+			var minute = time.minute();
+
+			var m_angle = minute * DEGS_PER_MIN;
+			var h_angle = (hour % 12 * DEGS_PER_HOUR) + (minute * (DEGS_PER_HOUR / MIN_PER_HOUR));
+
+			return {
+				hour: h_angle * Math.PI / 180,
+				minute: m_angle * Math.PI / 180
+			}
+		}
+	})
+)();
