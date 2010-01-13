@@ -12,26 +12,7 @@ Mojo.Widget.Splash = Class.create({
 		if (!force && !this.interactive()) return;
 		
 		this.text.hide();
-		var page = this.controller.element;
-		var size = page.getDimensions();
-		
-		var speed = 1;
-		var accelerate = 1.2;
-		
-		new PeriodicalExecuter(function(pe) {
-			var offset = page.viewportOffset();
-			if (offset.top + size.height < 0) {
-				pe.stop();
-				page.hide();
-			}
-			else {
-				speed *= accelerate;
-				page.setStyle({
-					top: (offset.top - Math.round(speed)) + 'px',
-				});
-			}
-			
-		}, 0.01, this.controller.window);	
+		this.controller.element.addClassName('dismiss');
 	},
 	
 	interactive: function(b) {

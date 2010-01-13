@@ -8,6 +8,14 @@
 	background-color:#fff;
 	background: url(splash-background.png) left bottom repeat-x;
 	-webkit-border-radius: 24px;
+	
+	-webkit-transition-property: top;
+	-webkit-transition-duration: .6s;
+	-webkit-transition-timing-function: ease-in;
+}
+
+.splash-page.dismiss {
+	top: -480px;
 }
 
 .splash-image {
