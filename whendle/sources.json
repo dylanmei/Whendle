@@ -11,6 +11,10 @@
 		"source": "app\/assistants\/list-assistant.js"
 	},
 	{
+		"scenes": "map",
+		"source": "app\/assistants\/map-assistant.js"
+	},
+	{
 		"scenes": "spotlight",
 		"source": "app\/assistants\/spotlight-assistant.js"
 	},

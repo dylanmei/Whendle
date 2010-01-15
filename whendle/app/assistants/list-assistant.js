@@ -1,5 +1,9 @@
 
 ListAssistant = Class.create(Whendle.Gallery.View, {
+	name: function() {
+		return 'list';
+	},
+
 	initialize: function($super) {
 		$super();
 		this._presenter = new Whendle.Gallery.Presenter(this);
@@ -13,14 +17,14 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		this.menus = {
 			visible: false,
 			items: [
-//			{
-//				label: $L('View'),
-//				toggleCmd: 'list',
-//				items: [
-//					{ label: $L('Map'), icon: 'refresh', command: 'map' },
-//					{ label: $L('List'), icon: 'search', command: 'list' }
-//				]
-//			},
+			{
+				label: $L('View'),
+				toggleCmd: 'list',
+				items: [
+					{ label: $L('Map'), icon: 'refresh', command: 'map' },
+					{ label: $L('List'), icon: 'search', command: 'list' }
+				]
+			},
 			{ label: $.string('tip_find_a_location'), icon: 'new', command: 'add' }
 		]};
 		
@@ -73,7 +77,6 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	loaded: function(event) {
-		$.trace('loaded');
 		if (this.report_error(event.error)) return;
 
 		this.model.items = event.clocks;
