@@ -4,7 +4,7 @@ function StageAssistant() {
 
 StageAssistant.prototype.setup = function() {
 	this.bind_services();
-	this.controller.pushScene('gallery');
+	this.controller.pushScene('startup');
 }
 
 StageAssistant.prototype.bind_services = function() {

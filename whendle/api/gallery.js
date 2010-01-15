@@ -32,13 +32,6 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 		$super();
 	},
 
-	//	event = {
-	//		status: #,
-	//		text: ''
-	//	}
-	notify: function(event) {
-	},
-	
 	// 	event = {
 	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
 	//		error: { message:'' }
@@ -72,8 +65,7 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 Whendle.Gallery.Presenter = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(view, startup, timekeeper, timezone_locator, clock_repository) {
-		this._startup = startup || Whendle.startup();
+	initialize: function(view, timekeeper, timezone_locator, clock_repository) {
 		this.timekeeper = timekeeper || Whendle.timekeeper();
 		this.timezone_locator = timezone_locator || Whendle.timezone_locator();
 		this.clock_repository = clock_repository || Whendle.clock_repository();
@@ -91,71 +83,25 @@ Whendle.Gallery.Presenter = Class.create({
 			this._on_timekeeping_tick.bind(this, view));
 	},
 
-	on_loading: function(view, event) {
-		var self = this;
-		var timer = (event || {}).timer;
-
-		this._startup.observe(
-			':status',
-			this.on_startup_status.bind(this, view, timer)
-		);
-		this._startup.run();
-	},
-
-	on_startup_status: function(view, timer, event) {
-		if (event.ready) {
-			this.on_load_ready(view, timer);
-		}
-		else {
-			var needs_install = event.installing;
-			var needs_upgrade = event.upgrading;
-			
-			if (needs_install || needs_upgrade) {
-				var feedback = needs_install ?
-					$.string('splash_message_installing') :
-					$.string('splash_message_updating');
-				var status = needs_install ?
-					Whendle.Status.installing :
-					Whendle.Status.updating;
-
-				this.notify_status(view, status, feedback);
-			}
-		}
+	on_loading: function(view) {
+		this.load(this.on_clocks_loaded.bind(this, view));
 	},
 	
-	on_load_ready: function(view, timer) {
-		this.notify_status(view, Whendle.Status.loading,
-			$.string('splash_message_starting')
-		);
-		
-		this.load_clocks(view,
-			this.on_clocks_loaded.bind(this, view, timer),
+	load: function(on_complete) {
+		this.clock_repository.get_clocks(
+			on_complete,
 			function(error) { view.loaded({ 'clocks': [], 'error': error }); });
 	},
-	
-	notify_status: function(view, status, text) {
-		if (view && view.notify) {
-			view.notify({
-				'status': status,
-				'text': text
-			});
-		}
-	},
-	
-	load_clocks: function(view, on_complete, on_error) {
-		this.clock_repository.get_clocks(on_complete, on_error);
-	},
-	
-	on_clocks_loaded: function(view, timer, clocks) {
-		var self = this;
+
+	on_clocks_loaded: function(view, clocks) {
 		
 		var on_ready = function() {
 			view.loaded({ 'clocks': clocks });
-			if (timer)
-				self.timekeeper.start(timer);
 		}
 		
 		var wait = new Whendle.Wait(on_ready);
+		var self = this;
+
 		clocks.each(function(clock) {
 			self.adjust_clock(clock, wait.on());
 		});
@@ -228,9 +174,7 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	_on_timekeeping_change: function(view, reason) {
-		this.load_clocks(view,
-			this.on_clocks_changed.bind(this, view, reason),
-			function(error) { view.changed({ 'clocks': [], 'reason': reason, 'error': error }) });
+		this.load(this.on_clocks_changed.bind(this, view, reason));
 	},
 	
 	_on_timekeeping_tick: function(view, time) {

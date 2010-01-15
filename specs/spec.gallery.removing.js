@@ -4,7 +4,6 @@ describe 'Gallery'
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view,
 		new Whendle.Observable,
-		new Whendle.Observable,
 		new Object,
 		repository
 	)

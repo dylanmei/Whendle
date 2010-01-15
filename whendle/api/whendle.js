@@ -29,7 +29,7 @@ Whendle = {
 	schema_version: '0.1',
 	tzpath: 'tzdata/',
 
-	show_splash: false,
+	show_splash: true,
 	reset_schema: false,
 	
 	Event: {

@@ -8,10 +8,8 @@ describe 'Gallery'
 		offset_time: function(s, f) { f(this.time); }
 	}))();
 
-	startup = new Whendle.Observable;
-	startup.run = -{ this.fire(Whendle.Event.status, { ready: true }); }
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, startup, timekeeper, new Object, repository)
+	presenter = new Whendle.Gallery.Presenter(view, timekeeper, new Object, repository)
 	
 	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
 	
@@ -73,19 +71,5 @@ describe 'Gallery'
 		it 'should return an error'
 			e.should_not.be_undefined
 		end		
-	end
-	
-	describe 'loading with a timer'
-		before
-			a = false
-			repository.get_clocks = function(on_result) { on_result([]) }
-			timekeeper.start = function() { a = true }
-			view.loaded = -{}
-			view.fire(Whendle.Event.loading, { 'timer': {} })
-		end
-		
-		it 'should start the timekeeper'
-			a.should.be_true
-		end
 	end
 end

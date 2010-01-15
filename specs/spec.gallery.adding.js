@@ -11,10 +11,8 @@ describe 'Gallery'
 		offset_time: function(s, f) { f(this.time); }
 	}))();
 	
-	startup = new Whendle.Observable;
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view,
-		startup,
 		timekeeper,
 		timezone_locator,
 		clock_repository

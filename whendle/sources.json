@@ -7,6 +7,10 @@
 		"source": "app\/assistants\/gallery-assistant.js"
 	},
 	{
+		"scenes": "startup",
+		"source": "app\/assistants\/startup-assistant.js"
+	},
+	{
 		"scenes": "spotlight",
 		"source": "app\/assistants\/spotlight-assistant.js"
 	},
@@ -30,6 +34,7 @@
 	{ "source": "api\/startup-service.js" },
 	{ "source": "api\/migrators.js" },
 	{ "source": "api\/ajax-service.js" },
+	{ "source": "api\/startup.js" },
 	{ "source": "api\/gallery.js" },
 	{ "source": "api\/spotlight.js" },
 	{ "source": "api\/finder.js" },

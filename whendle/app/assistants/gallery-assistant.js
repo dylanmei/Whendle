@@ -12,17 +12,14 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.setup_widgets();
 		this.attach_events();
 		
-		this.fire(Whendle.Event.loading,
-			{ 'timer': new Whendle.Timer(this.controller.window) });
+		this.fire(Whendle.Event.loading);
 	},
 	
 	setup_widgets: function() {
-		this.splash = this.controller.get('splash');
 		this.growler = this.controller.get('growler');
 		this.list = this.controller.get('list');
 
 		this.controller.setupWidget(this.growler.id, {});
-		this.controller.setupWidget(this.splash.id, {});
 		this.controller.setupWidget(this.list.id, {
 				itemTemplate: 'gallery/list-item',
 				listTemplate: 'gallery/list',
@@ -40,8 +37,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	attach_events: function() {
 		this.controller.listen(this.growler.id, Mojo.Event.tap,
 			this.growler.tap_handler = this.on_growler_tapped.bind(this));
-		this.controller.listen(this.splash.id, Mojo.Event.tap,
-			this.splash.tap_handler = this.on_splash_tapped.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listAdd,
 			this.list.add_handler = this.on_find_tapped.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listDelete,
@@ -52,10 +47,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_growler_tapped: function() {
 		this.growler.mojo.dismiss();
-	},
-	
-	on_splash_tapped: function() {
-		this.splash.mojo.dismiss();
 	},
 	
 	on_find_tapped: function() {
@@ -72,53 +63,9 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.fire(Whendle.Event.removing, { 'id': clock.id });
 	},
 	
-	ready: function() {
-		if (this.notice) {
-			this.splash.mojo.message(this.notice.text);
-		}
-	},
-	
-	notify: function(event) {
-		if (this.splash.visible()) {
-			this.splash_notify(event);
-		}
-		else {
-			// todo: growl
-		}
-	},
-	
-	splash_notify: function(event) {
-		if (!this.notice || event.status == Whendle.Status.exception) {
-			// only use the first notice unless there's an issue
-			this.notice = Object.clone(event);
-			if (this.splash.mojo) {
-				this.splash.mojo.message(this.notice.text);
-			}
-		}
-	},
-	
 	loaded: function(event) {
+		$.trace('loaded');
 		if (this.report_error(event.error)) return;
-		
-		var show_splash = Whendle.show_splash ||
-			this.notice.status == Whendle.Status.installing ||
-			this.notice.status == Whendle.Status.updating;
-			
-		if (show_splash) {
-			this.splash.mojo.interactive(true);
-			if (this.notice.status == Whendle.Status.installing) {
-				this.splash.mojo.message($.string('splash_message_install_continue'));
-			}
-			else if (this.notice.status == Whendle.Status.updating) {
-				this.splash.mojo.message($.string('splash_message_update_continue'));
-			}
-			else {
-				this.splash.mojo.message($.string('splash_message_continue'));
-			}
-		}
-		else {
-			this.splash.mojo.dismiss(true);
-		}
 
 		this.model.items = event.clocks;
 		this.controller.modelChanged(this.model, this);
@@ -188,7 +135,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	detach_events: function() {
 		this.controller.stopListening(this.growler, Mojo.Event.tap, this.growler.tap_handler);
-		this.controller.stopListening(this.splash, Mojo.Event.tap, this.splash.tap_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listAdd, this.list.add_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listDelete, this.list.delete_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listTap, this.list.tap_handler);

@@ -1,9 +1,8 @@
 
 describe 'Startup Service'
 
-	timekeeper = new Object
-	schema = new Object
-	schema.max_version = -{return 'xyz'}
+	timekeeper = { start: -{} }
+	schema = { max_version: -{return 'xyz'} }
 	service = new Whendle.StartupService(schema, timekeeper);
 
 	describe 'while setting up services'
