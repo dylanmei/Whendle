@@ -2,7 +2,7 @@
 // http://github.com/dylanmei/Whendle
 
 //
-// Copyright (C) 2009 Dylan Meissner (dylanmei@gmail.com)
+// Copyright (C) 2009-2010 Dylan Meissner (dylanmei@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person otaining
 // a copy of this software and associated documentation files (the
