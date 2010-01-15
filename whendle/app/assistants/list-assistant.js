@@ -1,5 +1,5 @@
 
-GalleryAssistant = Class.create(Whendle.Gallery.View, {
+ListAssistant = Class.create(Whendle.Gallery.View, {
 	initialize: function($super) {
 		$super();
 		this._presenter = new Whendle.Gallery.Presenter(this);

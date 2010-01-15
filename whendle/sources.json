@@ -3,12 +3,12 @@
 		"source": "app\/assistants\/stage-assistant.js"
 	},
 	{
-		"scenes": "gallery",
-		"source": "app\/assistants\/gallery-assistant.js"
-	},
-	{
 		"scenes": "startup",
 		"source": "app\/assistants\/startup-assistant.js"
+	},
+	{
+		"scenes": "list",
+		"source": "app\/assistants\/list-assistant.js"
 	},
 	{
 		"scenes": "spotlight",
