@@ -3,11 +3,11 @@ function StageAssistant() {
 }
 
 StageAssistant.prototype.setup = function() {
-	this.bind_services();
+	this.setup_services();
 	this.controller.pushScene('startup');
 }
 
-StageAssistant.prototype.bind_services = function() {
+StageAssistant.prototype.setup_services = function() {
 	var ajax = new Whendle.AjaxService();
 	var tzloader = new Whendle.TzLoader(ajax, Whendle.tzpath);
 	var database = new Whendle.DatabaseService();
@@ -21,3 +21,9 @@ StageAssistant.prototype.bind_services = function() {
 	Whendle.services('Whendle.timekeeper', new Whendle.TimekeeperService(Whendle.system(), Whendle.timezone_repository()));
 	Whendle.services('Whendle.startup', new Whendle.StartupService(Whendle.schema(), Whendle.timekeeper()));
 };
+
+StageAssistant.prototype.handleCommand = function(event) {
+	if (event.command == 'add') {
+		this.controller.pushScene({ name: 'finder' });
+	}
+}

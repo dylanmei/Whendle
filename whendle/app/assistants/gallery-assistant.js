@@ -9,6 +9,21 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		this.model = {
 			'items': []
 		};
+		
+		this.menus = {
+			visible: false,
+			items: [
+//			{
+//				label: $L('View'),
+//				toggleCmd: 'list',
+//				items: [
+//					{ label: $L('Map'), icon: 'refresh', command: 'map' },
+//					{ label: $L('List'), icon: 'search', command: 'list' }
+//				]
+//			},
+			{ label: $.string('tip_find_a_location'), icon: 'new', command: 'add' }
+		]};
+		
 		this.setup_widgets();
 		this.attach_events();
 		
@@ -18,12 +33,12 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	setup_widgets: function() {
 		this.growler = this.controller.get('growler');
 		this.list = this.controller.get('list');
-
+		
+		this.controller.setupWidget(Mojo.Menu.commandMenu, {}, this.menus);
 		this.controller.setupWidget(this.growler.id, {});
 		this.controller.setupWidget(this.list.id, {
 				itemTemplate: 'gallery/list-item',
 				listTemplate: 'gallery/list',
-				addItemLabel: $.string('gallery_find_location'), 
 				uniquenessProperty: 'id',
 				swipeToDelete: true,
 				autoconfirmDelete: true,
@@ -37,8 +52,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	attach_events: function() {
 		this.controller.listen(this.growler.id, Mojo.Event.tap,
 			this.growler.tap_handler = this.on_growler_tapped.bind(this));
-		this.controller.listen(this.list.id, Mojo.Event.listAdd,
-			this.list.add_handler = this.on_find_tapped.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listDelete,
 			this.list.delete_handler = this.on_remove_clock.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listTap,
@@ -47,10 +60,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_growler_tapped: function() {
 		this.growler.mojo.dismiss();
-	},
-	
-	on_find_tapped: function() {
-		Mojo.Controller.stageController.pushScene({ name: 'finder' });
 	},
 	
 	on_clock_tapped: function(event) {
@@ -69,6 +78,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 
 		this.model.items = event.clocks;
 		this.controller.modelChanged(this.model, this);
+		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
 	},
 
 	added: function(event) {
@@ -116,7 +126,7 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 		$.trace('error ' + error.message);
 		return true;
 	},
-	
+
 	activate: function(location) {
 		if (location && location.name) {
 			this.growler.mojo.spin('Adding ' + location.name + '...');
@@ -135,7 +145,6 @@ GalleryAssistant = Class.create(Whendle.Gallery.View, {
 	
 	detach_events: function() {
 		this.controller.stopListening(this.growler, Mojo.Event.tap, this.growler.tap_handler);
-		this.controller.stopListening(this.list, Mojo.Event.listAdd, this.list.add_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listDelete, this.list.delete_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listTap, this.list.tap_handler);
 	}
