@@ -30,11 +30,11 @@ MapAssistant = Class.create({
 	
 	setup_widgets: function() {
 		this.growler = this.controller.get('growler');
-//		this.map = this.controller.get('map');
+		this.map = this.controller.get('map');
 
-		this.controller.setupWidget(Mojo.Menu.commandMenu, {}, this.menus);
+		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.menus);
 		this.controller.setupWidget(this.growler.id, {});
-//		this.controller.setupWidget(this.map.id, {}, this.model);
+		this.controller.setupWidget(this.map.id, {}, this.model);
 	},
 	
 	attach_events: function() {
@@ -48,7 +48,6 @@ MapAssistant = Class.create({
 	
 	activate: function() {
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
-		this.growler.mojo.info('Map assistant');
 	},
 	
 	deactivate: function() {
