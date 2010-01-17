@@ -9,8 +9,9 @@
 	<script src="../whendle/api/time.js" type="text/javascript"></script>
 	<script src="../whendle/api/observable.js" type="text/javascript"></script>
 	<script>
-$.trace = function() { console.log($A(arguments).join(' ')); }
+MAP_SURFACE = 'map-surface.jpg';
 Math.K = Math.PI/180.0;
+$.trace = function() { console.log($A(arguments).join(' ')); }
 
 document.observe('dom:loaded', function() {
 	wire_adjuster($('link1'), $('declination'),
@@ -66,7 +67,8 @@ function wire_adjuster(source, target, format_value) {
 
 SunlightCalculator = Class.create({
 	declination: function(time) {
-		return -23.5;
+		//return -23.5;
+		return -8;
 	},
 	
 	hour_angle: function(time) {
@@ -109,7 +111,7 @@ SunlightPresenter = Class.create({
 });
 
 SunlightMap = Class.create(SunlightView, {
-	IMAGE_FILE: 'map-surface.jpg',
+	IMAGE_FILE: MAP_SURFACE,
 	
 	initialize: function($super) {
 		$super();
@@ -139,7 +141,8 @@ SunlightMap = Class.create(SunlightView, {
 	draw_daynight: function(map) {
 		var ctx = this.canvas.getContext('2d');
 		
-		this.draw_map(ctx, map);
+		//this.draw_map(ctx, map);
+		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.draw_sun(ctx);
 		this.draw_terminator(ctx);
 		this.draw_gridlines(ctx);
@@ -167,12 +170,12 @@ SunlightMap = Class.create(SunlightView, {
 	},
 
 	draw_terminator: function(ctx) {
-		this.draw_terminator_path(ctx, 1, 'rgba(0, 0, 60, 0.25)');
+		this.draw_terminator_path(ctx, 1, 'rgba(0, 0, 0, 0.25)');
 		this.draw_terminator_path(ctx, 0, 'rgba(0, 0, 0, 0.25)');
-		this.draw_terminator_path(ctx, -1, 'rgba(0, 0, 0, 0.25)');
+		this.draw_terminator_path(ctx, -1, 'rgba(0, 0, 60, 0.25)');
 	},
 	
-	draw_terminator_path: function(ctx, path_offset, fillStyle) {
+	draw_terminator_path: function(ctx, offset, fillStyle) {
 		var xextent = this.canvas.width;
 		var yextent = this.canvas.height;
 		var xorigin = (xextent / 2);
@@ -180,21 +183,28 @@ SunlightMap = Class.create(SunlightView, {
 		var xscale = (xextent / 360);
 		var yscale = (yextent / 180);
 		
+		var har = this.tau;
+		var dec = this.dec > 0 ?
+			Math.max(0.05, this.dec) : this.dec < 0 ?
+				Math.min(this.dec, -0.05) : 0.5;
+		var sunpos = this.center() != 'sun' ? 180 : 180 - har;
+
+		var xoffset = offset * (xscale / 10);
+		var yoffset = offset * (xscale / 10);
+		var xfx = xoffset * (23.5 / Math.abs(dec));
+		var yfx = yoffset * 20;
+
 		ctx.fillStyle = fillStyle;
 		ctx.beginPath();
-		path_offset = path_offset * 0.25;
-
-		var offset = this.center() != 'sun'
-			? 180 : 180 - this.tau;
 
 		for (var i = 0; i <= 360; i++) {
 			
-			var x = (i - 180) * xscale + xorigin;
-			var lng = i + this.tau + offset;
-			var tl = -Math.cos(lng * Math.K) / Math.tan(this.dec * Math.K);
-			var al = Math.atan(tl + path_offset) / Math.K + (path_offset * 16);
-			//var al = Math.atan(tl) / Math.K;
+			var lng = i + har + sunpos;
+			var tl = -Math.cos(lng * Math.K) / Math.tan(dec * Math.K) + xfx;
+			var al = Math.atan(tl) / Math.K + yfx;
 			var y = yorigin - (yscale * al);
+			
+			var x = (i - 180) * xscale + xorigin;
 
 			if (i == 0) ctx.moveTo(x, y);
 			else {
@@ -202,7 +212,7 @@ SunlightMap = Class.create(SunlightView, {
 			}
 		}
 		
-		var ypole = this.dec < 0 ? 0 : yextent;
+		var ypole = dec < 0 ? 0 : yextent;
 		ctx.lineTo(xextent, ypole);
 		ctx.lineTo(0, ypole);
 		
