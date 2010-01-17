@@ -34,9 +34,9 @@ Map_Sunlight = Class.create({
 		var yorigin = (extent.y / 2);
 
 		var har = this.tau();
-		var dec = this.dec() > 0 ?
-			Math.max(0.05, this.dec()) : this.dec() < 0 ?
-				Math.min(this.dec(), -0.05) : 0.5;
+		var dec = this.dec > 0 ?
+			Math.max(0.1, this.dec) : this.dec < 0 ?
+				Math.min(this.dec, -0.1) : 0.1;
 
 		var xoffset = offset * (scale.x / 10);
 		var yoffset = offset * (scale.y / 10);
