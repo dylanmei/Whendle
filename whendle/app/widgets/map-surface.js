@@ -1,5 +1,5 @@
 
-MapSurface = Class.create(Whendle.Observable, {
+Map_Surface = Class.create(Whendle.Observable, {
 	IMAGE_FILE: 'resources/map-surface.jpg',
 	
 	initialize: function($super) {

@@ -39,6 +39,7 @@ Mojo.Widget.Map = Class.create({
 		this.controller.instantiateChildWidgets();
 		
 		this.prepare_canvas();
+		this.sunlight = new Map_Sunlight();
 	},
 	
 	prepare_canvas: function() {
@@ -65,7 +66,7 @@ Mojo.Widget.Map = Class.create({
 	},
 	
 	load_resources: function() {
-		this.surface = new MapSurface();
+		this.surface = new Map_Surface();
 		this.surface.observe(':ready', this.draw.bind(this));
 	},
 
@@ -161,14 +162,14 @@ Mojo.Widget.Map = Class.create({
 
 	draw: function() {
 		var ctx = this.core.getContext('2d');
-		this.surface.draw(ctx, this.extent());
-			
-//		this.draw_terminator(ctx);
+		var extent = this.extent();
+		var scale = this.scale();
+		
+		this.surface.draw(ctx, extent);
+		this.sunlight.draw(ctx, extent, scale);
+		
 //		this.draw_places(ctx);
 
-//		this.draw_seam_canvas(ctx.canvas,
-//			this.seam.getContext('2d'));
-		
 		ctx = this.seam.getContext('2d');
 		ctx.drawImage(this.core, 0, 0);
 	},
