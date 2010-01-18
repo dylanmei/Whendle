@@ -4,12 +4,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 	<title>Whendle spikes - day and night</title>
-	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
+	<script src="prototype.js" type="text/javascript"></script>
 	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
 	<script src="../whendle/api/time.js" type="text/javascript"></script>
 	<script src="../whendle/api/observable.js" type="text/javascript"></script>
+	<script src="../whendle/api/sunlight-calculator.js" type="text/javascript"></script>
 	<script>
-MAP_SURFACE = 'map-surface.jpg';
 Math.K = Math.PI/180.0;
 $.trace = function() { console.log($A(arguments).join(' ')); }
 
@@ -65,19 +65,6 @@ function wire_adjuster(source, target, format_value) {
 	});
 }
 
-SunlightCalculator = Class.create({
-	declination: function(time) {
-		//return -23.5;
-		return -8;
-	},
-	
-	hour_angle: function(time) {
-		var hour = time.hour();
-		var minute = time.minute();
-		var t = hour * 60 + minute;
-		return (t - 720) / 4;
-	}
-});
 
 SunlightView = Class.create(Whendle.Observable, {
 	initialize: function($super) {
@@ -111,12 +98,12 @@ SunlightPresenter = Class.create({
 });
 
 SunlightMap = Class.create(SunlightView, {
-	IMAGE_FILE: MAP_SURFACE,
+	IMAGE_FILE: 'map-surface.jpg',
 	
 	initialize: function($super) {
 		$super();
 		this.options = { 'center': 'map' };
-		this._presenter = new SunlightPresenter(this, new SunlightCalculator());
+		this._presenter = new SunlightPresenter(this, new Whendle.Sunlight_Calculator());
 
 		this.canvas = $('canvas');
 		this.canvas.observe('click',
@@ -141,8 +128,7 @@ SunlightMap = Class.create(SunlightView, {
 	draw_daynight: function(map) {
 		var ctx = this.canvas.getContext('2d');
 		
-		//this.draw_map(ctx, map);
-		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.draw_map(ctx, map);
 		this.draw_sun(ctx);
 		this.draw_terminator(ctx);
 		this.draw_gridlines(ctx);
@@ -170,9 +156,9 @@ SunlightMap = Class.create(SunlightView, {
 	},
 
 	draw_terminator: function(ctx) {
-		this.draw_terminator_path(ctx, 1, 'rgba(0, 0, 0, 0.25)');
-		this.draw_terminator_path(ctx, 0, 'rgba(0, 0, 0, 0.25)');
-		this.draw_terminator_path(ctx, -1, 'rgba(0, 0, 60, 0.25)');
+		this.draw_terminator_path(ctx, 1, 'rgba(0, 0, 40, 0.25)');
+		this.draw_terminator_path(ctx, 0, 'rgba(0, 0, 40, 0.25)');
+		this.draw_terminator_path(ctx, -1, 'rgba(0, 0, 40, 0.25)');
 	},
 	
 	draw_terminator_path: function(ctx, offset, fillStyle) {
