@@ -21,8 +21,8 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 				label: $L('View'),
 				toggleCmd: 'list',
 				items: [
-					{ label: $L('Map'), icon: 'refresh', command: 'map' },
-					{ label: $L('List'), icon: 'search', command: 'list' }
+					{ label: $L('Map'), iconPath: 'resources/menu-icon-map.png', command: 'map' },
+					{ label: $L('List'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
 				]
 			},
 			{ label: $.string('tip_find_a_location'), icon: 'new', command: 'add' }

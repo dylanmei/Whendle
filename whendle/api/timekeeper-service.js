@@ -70,6 +70,7 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		this.offset = 0;
 		this.timezone = '';
 		this.time = new Time();
+		this.utc = new Time();
 		this.format = '';
 	},
 	
@@ -118,6 +119,10 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 			.day(lt.day)
 			.hour(lt.hour)
 			.minute(lt.minute);
+		
+		this.utc = this.time
+			.clone()
+			.subtract(Time.minutes, response.offset);
 		
 		var first_time = this.timezone.empty();
 		if (first_time || response.timezone != this.timezone) {

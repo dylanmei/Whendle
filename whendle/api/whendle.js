@@ -87,6 +87,10 @@ Whendle = {
 		return Whendle.services('Whendle.timekeeper');
 	},
 	
+	sunlight_calculator: function() {
+		return Whendle.services('Whendle.sunlight-calculator');
+	},
+	
 	clock_repository: function() {
 		return Whendle.services('Whendle.clock-repository');
 	}

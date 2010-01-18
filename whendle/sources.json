@@ -35,6 +35,7 @@
 	{ "source": "api\/timezone-locator.js" },
 	{ "source": "api\/timezone-repository.js" },
 	{ "source": "api\/timekeeper-service.js" },
+	{ "source": "api\/sunlight-calculator.js" },
 	{ "source": "api\/startup-service.js" },
 	{ "source": "api\/migrators.js" },
 	{ "source": "api\/ajax-service.js" },

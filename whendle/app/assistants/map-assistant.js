@@ -1,6 +1,35 @@
 
-MapAssistant = Class.create({
-	initialize: function() {
+MapAssistant = Class.create(Whendle.Gallery.View, {
+	initialize: function($super) {
+		$super();
+		new Whendle.Gallery.Presenter(this);
+	},
+	
+	// 	event = {
+	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
+	//		error: { message:'' }
+	//	}
+	loaded: function(event) {
+		var now = event.now;
+		this.map.mojo.sun(now.declination, now.hour_angle);
+		this.map.mojo.draw();
+	},
+	
+	added: function(event) {
+	},
+	
+	removed: function(event) {
+	},
+	
+	// 	event = {
+	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
+	//		reason: '',
+	//		error: { message:'' }
+	//	}
+	changed: function(event) {
+		var now = event.now;
+		this.map.mojo.sun(now.declination, now.hour_angle);
+		this.map.mojo.draw();
 	},
 	
 	setup: function() {
@@ -15,8 +44,8 @@ MapAssistant = Class.create({
 				label: $L('View'),
 				toggleCmd: 'map',
 				items: [
-					{ label: $L('Map'), icon: 'refresh', command: 'map' },
-					{ label: $L('List'), icon: 'search', command: 'list' }
+					{ label: $L('Map'), iconPath: 'resources/menu-icon-map.png', command: 'map' },
+					{ label: $L('List'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
 				]
 			},
 			{ label: $.string('tip_find_a_location'), icon: 'new', command: 'add' }
@@ -25,7 +54,7 @@ MapAssistant = Class.create({
 		this.setup_widgets();
 		this.attach_events();
 		
-//		this.fire(Whendle.Event.loading);
+		this.fire(Whendle.Event.loading);
 	},
 	
 	setup_widgets: function() {

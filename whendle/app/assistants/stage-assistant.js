@@ -20,6 +20,7 @@ StageAssistant.prototype.setup_services = function() {
 	Whendle.services('Whendle.timezone-repository', new Whendle.Timezone_Repository(tzloader));
 	Whendle.services('Whendle.timekeeper', new Whendle.TimekeeperService(Whendle.system(), Whendle.timezone_repository()));
 	Whendle.services('Whendle.startup', new Whendle.StartupService(Whendle.schema(), Whendle.timekeeper()));
+	Whendle.services('Whendle.sunlight-calculator', new Whendle.Sunlight_Calculator());
 };
 
 StageAssistant.prototype.handleCommand = function(event) {

@@ -10,7 +10,7 @@ Mojo.Widget.Map = Class.create({
 		this.setup_children(id);
 		this.attach_events();
 		this.load_resources();
-		this.controller.exposeMethods([]);
+		this.controller.exposeMethods(['sun', 'draw']);
 		
 		this.go({ x: 0, y: 0 });
 	},
@@ -128,6 +128,11 @@ Mojo.Widget.Map = Class.create({
 		point.x += coordinate.x * scale.x;
 		point.y -= coordinate.y * scale.y;
 		return point;	
+	},
+	
+	sun: function(dec, har) {
+		this.sunlight.dec(dec);
+		this.sunlight.har(har);
 	},
 
 	go: function(coordinate) {
