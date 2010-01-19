@@ -168,6 +168,8 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 		now.second(0);
 		if (now.compare(this.time) != 0) {
 			this.time = now.clone();
+			this.utc = now.clone()
+				.subtract(Time.minutes, this.offset);
 			this.fire(Whendle.Event.timer, now);
 		}
 	},
