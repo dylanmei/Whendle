@@ -27,7 +27,7 @@
 Whendle.Wait = Class.create({
 	initialize: function(callback) {
 		this._activities = [];
-		this._callback = callback;
+		this._set_callback(callback);
 	},
 	
 	on: function(activity) {
@@ -44,9 +44,17 @@ Whendle.Wait = Class.create({
 		return this._activities.length == 0;
 	},
 	
-	ready: function() {
+	ready: function(callback) {
 		this._ready = true;
+		this._set_callback(callback);
 		this._try_callback();
+	},
+	
+	_set_callback: function(callback) {
+		if (callback && typeof(callback) == 'function') {
+			if (this._callback === undefined)
+				this._callback = callback;
+		}
 	},
 	
 	_try_callback: function() {

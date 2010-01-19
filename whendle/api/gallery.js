@@ -99,19 +99,19 @@ Whendle.Gallery.Presenter = Class.create({
 	on_clocks_loaded: function(view, clocks) {
 
 		var self = this;
-		var timekeeper = this.timekeeper;
-
-		var on_ready = function() {
-			var result = self.pack_clocks_for_view(clocks, timekeeper.time, timekeeper.utc);
-			view.loaded(result);
-		}
-		
-		var wait = new Whendle.Wait(on_ready);
+		var wait = new Whendle.Wait();
 
 		clocks.each(function(clock) {
 			self.adjust_clock(clock, wait.on());
 		});
-		wait.ready();
+		
+		var now = this.timekeeper.time;
+		var utc = this.timekeeper.utc;
+
+		wait.ready(function() {
+			var result = self.pack_clocks_for_view(clocks, now, utc);
+			view.loaded(result);
+		});
 	},
 	
 	pack_clocks_for_view: function(clocks, time, utc) {
@@ -205,17 +205,21 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	on_clocks_changed: function(view, reason, clocks) {
+
 		var self = this;
-		var timekeeper = this.timekeeper;
-		var wait = new Whendle.Wait(function() {
-			var result = self.pack_clocks_for_view(clocks, timekeeper.time, timekeeper.utc);
-			result.reason = reason;
-			view.changed(result);
-		});
+		var wait = new Whendle.Wait();
 
 		clocks.each(function(clock) {
 			self.adjust_clock(clock, wait.on());
 		});
-		wait.ready();	
+		
+		var now = this.timekeeper.time;
+		var utc = this.timekeeper.utc;
+
+		wait.ready(function() {
+			var result = self.pack_clocks_for_view(clocks, now, utc);
+			result.reason = reason;
+			view.changed(result);
+		});	
 	}
 });
