@@ -235,29 +235,22 @@ Mojo.Widget.Map = Class.create({
 		
 		var scale = this.scale();
 		var location = this.location();
-		var position = {
-			x: location.x * scale.x,
-			y: location.y * scale.y
-		}
 
-		var target = {
-			x: position.x + (velocity.x * 0.2),
-			y: position.y + (velocity.y * 0.2)
-		};
-		
 		var step = 0;
-		var steps = 20;
+		var steps = 24;
 		var self = this;
 
 		if (this.animator) this.animator.stop();
+
 		this.animator = new PeriodicalExecuter(function(pe) {
 			if (++step == steps) pe.stop();
 
-			var x = self.flick_decay(position.x, target.x, step, steps) / -scale.x;
-			var y = self.flick_decay(position.y, target.y, step, steps) / scale.y;
+			var x = location.x + self.flick_decay(0, velocity.x * 0.2, step, steps) / -scale.x;
+			var y = location.y + self.flick_decay(0, velocity.y * 0.2, step, steps) / scale.y;
 			
 			if (x < -180) x = 180 + x % 180;
 			if (x > 180) x = -180 + x % 180;
+			
 			self.go({ x: x, y: y });
 
 		}, 0.04, this.controller.window);
