@@ -1,6 +1,7 @@
 
 Mojo.Widget.Map = Class.create({
 	initialize: function() {
+		this.orientation = 'up';
 		this.longitude = this.latitude = 0;
 	},
 	
@@ -10,7 +11,7 @@ Mojo.Widget.Map = Class.create({
 		this.setup_children(id);
 		this.attach_events();
 		this.load_resources();
-		this.controller.exposeMethods(['sun', 'draw']);
+		this.controller.exposeMethods(['sun', 'draw', 'orientate']);
 		
 		this.go({ x: 0, y: 0 });
 	},
@@ -37,7 +38,7 @@ Mojo.Widget.Map = Class.create({
 		this.core = this.controller.get(prefix + '-core');
 		this.seam = this.controller.get(prefix + '-seam');
 		this.controller.instantiateChildWidgets();
-		
+	
 		this.prepare_canvas();
 		this.sunlight = new Map_Sunlight();
 	},
@@ -91,11 +92,29 @@ Mojo.Widget.Map = Class.create({
 			, y: window.innerHeight
 		}
 	},
+	
+	orientate: function(v) {
+		switch (v) {
+			case 'up':
+			case 'left':
+			case 'right':
+				this.orientation = v;
+				break;
+			case 'down':
+			default:
+				this.orientation = 'up';
+				break;
+		}
+		this.go({
+			x: this.longitude,
+			y: this.latitude
+		});
+	},
 
 	location: function() {
 		return {
-			  x: this.longitude
-			, y: this.constrain_latitude_to_viewport(this.latitude)
+			x: this.longitude,
+			y: this.constrain_latitude_to_viewport(this.latitude)
 		}
 	},
 	
@@ -139,12 +158,13 @@ Mojo.Widget.Map = Class.create({
 		this.longitude = coordinate.x;
 		this.latitude = coordinate.y;
 		
-		var position = this.coordinate_to_point(coordinate);
+		var position = this.coordinate_to_point(this.location());
 		var extent = this.extent();
 		var viewport = this.viewport();
 		
 		var seam_x = extent.x;
 		var core_x = (viewport.x / 2) - position.x;
+		var y = (viewport.y / 2) - position.y;
 		
 		if (core_x > 0) {
 			seam_x = core_x - extent.x;
@@ -154,8 +174,8 @@ Mojo.Widget.Map = Class.create({
 			seam_x = core_x + extent.x;
 		}
 		
-		this.move_canvas(this.core, core_x, 0);
-		this.move_canvas(this.seam, seam_x, 0);
+		this.move_canvas(this.core, core_x, y);
+		this.move_canvas(this.seam, seam_x, y);
 	},
 
 	move_canvas: function(canvas, x, y) {
