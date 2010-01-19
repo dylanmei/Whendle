@@ -48,7 +48,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 					{ label: $L('List'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
 				]
 			},
-			{ label: $.string('tip_find_a_location'), icon: 'new', command: 'add' }
+			{ label: $.string('tip_find_a_location'), iconPath: 'resources/menu-icon-pin.png', command: 'add' }
 		]};
 
 		this.setup_widgets();
