@@ -24,8 +24,36 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+
+Whendle.Place = Class.create({
+	initialize: function(woeid) {
+		this.woeid = woeid;
+		this.name = '';
+		this.district = '';
+		this.country = '';
+		this.latitude = 0;
+		this.longitude = 0;
+	}
+});
+
+Whendle.Place.Format_area = function(place) {
+	var format = '';
+	var has_district = place.district.length > 0;
+	var has_country = place.country.length > 0;
+	if (has_district && has_country) {
+		format = $.string('location_area_district_country', '#{district}, #{country}')
+	}
+	else if (has_district) {
+		format = $.string('location_area_district', '#{district}');
+	}
+	else if (has_country) {
+		format = $.string('location_area_country', '#{country}');
+	}
+	return format.interpolate(place);
+}
+
 Whendle.Place_Locator = Class.create({
-	GEONAMES_SEARCH_BY_NAME: 'http://ws.geonames.org/searchJSON',
+	SEARCH_BY_NAME: 'http://where.yahooapis.com/v1/places',
 
 	initialize: function(ajax) {
 		this.ajax = ajax || new Whendle.AjaxService();
@@ -38,9 +66,9 @@ Whendle.Place_Locator = Class.create({
 		query = (query || '').strip();	
 		if (this.is_sensible_query(query)) {
 			this.ajax.load(
-				this.geonames_search_url(query, index, size),
-				this.on_geonames_results.bind(this, index, on_complete),
-				this.on_search_error.bind(this, on_error));
+				this.lookup_search_url(query, index, size),
+				this.on_lookup_results.bind(this, index, on_complete),
+				this.on_lookup_error.bind(this, on_error));
 		}
 	},
 	
@@ -48,39 +76,38 @@ Whendle.Place_Locator = Class.create({
 		return (query.length > 3);
 	},
 	
-	geonames_search_url: function(text, index, rows) {
-		var s = this.GEONAMES_SEARCH_BY_NAME + '?';
-		return s + Object.toQueryString({
-			'startRow': index,
-			'name': text + '*',
-			'maxRows': rows,
-			'featureClass': ['A', 'P']
-		});	
+	lookup_search_url: function(text, index, rows) {
+		return this.SEARCH_BY_NAME + '.q(#{text});start=#{start};count=#{count}?format=json&appid=#{app}'
+			.interpolate({ text: text, start: index, count: rows, app: Yahoo.APPID });
 	},
 	
-	on_geonames_results: function(index, on_complete, results) {
-		var locations = [];
-		var total = results.totalResultsCount || 0;
+	on_lookup_results: function(index, on_complete, results) {
+		
+		var data = results.places;
+		var start = data.start;
+		var total = data.total;
 
-		if (total) {
-			var mapper = function(gn) { return this.geoname_to_place(gn); }
-			locations = results.geonames.collect(mapper.bind(this));
+		var places = [];
+		if (data.count) {
+			places = data.place.collect(this.map_place);
 		}
 		
-		on_complete({ 'places': locations, 'index': index, 'total': total });
+		on_complete({ 'places': places, 'index': start, 'total': total });
 	},
 
-	geoname_to_place: function(geoname) {
-		return new Whendle.Location(
-			geoname.name,
-			geoname.adminName1,
-			geoname.countryName,
-			geoname.lat,
-			geoname.lng
-		);
+	map_place: function(p) {
+		var place = new Whendle.Place(p.woeid);
+		place.name = p.name;
+		place.latitude = p.centroid.latitude;
+		place.longitude = p.centroid.longitude;
+		place.district = p.admin1;
+		place.country = p.country;
+		
+		return place;
 	},
 
-	on_search_error: function(on_error, error) {
+	on_lookup_error: function(on_error, error) {
 		on_error({ 'error': error });
 	}
 });
+

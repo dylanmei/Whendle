@@ -1,3 +1,4 @@
 docs/*
 whendle/*.ipk
 whendle/tzdata/*
+whendle/api/yahoo.js

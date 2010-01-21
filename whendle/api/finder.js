@@ -33,7 +33,7 @@ Whendle.Finder.View = Class.create(Whendle.Observable, {
 	},
 	
 	// 	event = {
-	//		locations: [ {Whendle.Location} ],
+	//		results: [{}],
 	//		index: #,
 	//		total: #
 	//		error: { message:'' }
@@ -64,11 +64,15 @@ Whendle.Finder.Presenter = Class.create({
 		var places = results.places;
 		var index = results.index;
 		var total = results.total;
+		
+		places = places.collect(function(p) {
+			return { 'title': p.name, 'subtitle': Whendle.Place.Format_area(p), place: p };
+		});
 	
-		view.found({ 'locations': places, 'index': index, 'total': total });
+		view.found({ 'results': places, 'index': index, 'total': total });
 	},
 	
 	on_search_error: function(view, error) {
-		view.found({ 'locations': [], 'index': 0, 'total': 0, 'error': error });
+		view.found({ 'results': [], 'index': 0, 'total': 0, 'error': error });
 	}
 });

@@ -24,6 +24,7 @@
 	},
 	
 	{ "source": "api\/whendle.js" },
+	{ "source": "api\/yahoo.js" },
 	{ "source": "api\/time.js" },
 	{ "source": "api\/tzdata.js" },
 	{ "source": "api\/timezone.js" },

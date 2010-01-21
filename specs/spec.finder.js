@@ -17,7 +17,7 @@ describe 'Finder'
 			locator.lookup = function(q, i, s, on_success) {
 				on_success(mock_results([]));
 			}
-			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
+			view.found = function(event) { a = event.results; b = event.index; c = event.total; e = event.error; }
 			view.fire(Whendle.Event.searching, { query: 'abcxyz' });
 		end
 		
@@ -45,9 +45,9 @@ describe 'Finder'
 			c = null
 			e = null
 			locator.lookup = function(q, i, s, on_success) {
-				on_success(mock_results([{}, {}, {}]));
+				on_success(mock_results([new Whendle.Place, new Whendle.Place, new Whendle.Place]));
 			}
-			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
+			view.found = function(event) { a = event.results; b = event.index; c = event.total; e = event.error; }
 			view.fire(Whendle.Event.searching, { query: 'abcxyz' });
 		end		
 		
@@ -77,7 +77,7 @@ describe 'Finder'
 			locator.lookup = function(q, i, s, on_success, on_error) {
 				on_error({});
 			}
-			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
+			view.found = function(event) { a = event.results; b = event.index; c = event.total; e = event.error; }
 			view.fire(Whendle.Event.searching, { query: 'abcxyz' });
 		end		
 		
