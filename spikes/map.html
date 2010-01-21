@@ -4,21 +4,33 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 	<title>Whendle - map</title>
+<!--
 	<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js" type="text/javascript"></script>
+-->
+	<script src="prototype.js" type="text/javascript"></script>
 	<script>
 $.trace = function() { console.log($A(arguments).join(' ')); }
 
 Resources = {
-	SURFACE_FILE: 'map-surface.jpg',
-	BUBBLES_FILE: 'map-bubble.png',
+	SURFACE_FILE: 'map-surface.jpg'
 };
 
 Math.K = Math.PI/180.0;
 
 Time = {
 	angle_converter: {
-		convert: function() {
-			return { hour: 6, minute: 1 };
+		convert: function(time) {
+			var DEGS_PER_MIN = 6.0;
+			var DEGS_PER_HOUR = 30.0;
+			var MIN_PER_HOUR = 60.0;
+
+			var hour = time.hour;
+			var minute = time.minute;
+
+			return {
+				hour: (hour % 12 * DEGS_PER_HOUR) + (minute * (DEGS_PER_HOUR / MIN_PER_HOUR)),
+				minute: minute * DEGS_PER_MIN
+			}
 		}
 	}
 }
@@ -37,7 +49,7 @@ View = Class.create({
 		this._map.go(Places.london.location());
 
 		for (var x in Places)
-			this._map.mark(Places[x]);
+			this._map.mark(Places[x].id, Places[x].name, { hour: 7, minute: 22 }, { x: Places[x].latitude, y: Places[x].longitude });
 	}
 });
 
@@ -72,305 +84,8 @@ var Places = {
 	, wellington: new Place(10, 'Wellington', 174.777222, -41.288889)
 }
 
-Bubble = Class.create({
-	FONT: '10pt sans-serif',
-	TEXT_PADDING: 4,
-	
-	initialize: function(template) {
-		this.template = template;
-	},
-	
-	draw: function(ctx, place, position) {
-		this.draw_background(ctx, position);
-		
-		var clock_position = {
-			x: position.x - 0.5,
-			y: position.y - 26
-		};
-		
-		this.draw_clock(ctx, clock_position, place.time);
-	},
-	
-	draw_background: function(ctx, position) {
-		var BUBBLE_HEIGHT = 45;
-		var BUBBLE_WIDTH = 30;
-		var BUBBLE_ELEVATION = 5; // distance to account for drop shadow
-		
-		var source_x = 0;
-		var source_y = 0;
-		
-		ctx.drawImage(this.template,
-			source_x,
-			source_y,
-			BUBBLE_WIDTH,
-			BUBBLE_HEIGHT,
-			position.x - BUBBLE_WIDTH / 2,
-			position.y - BUBBLE_HEIGHT + BUBBLE_ELEVATION,
-			BUBBLE_WIDTH,
-			BUBBLE_HEIGHT
-		);	
-	},
-
-	draw_clock: function(ctx, origin, time) {
-		ctx.lineWidth = 1;
-		ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-		this.draw_circle(ctx, origin.x, origin.y + 1, 6.5);
-
-		ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-		this.draw_circle(ctx, origin.x, origin.y, 6.5);
-
-		var min_length = 6;
-		var hour_length = 4;
-		var angle = Time.angle_converter.convert(time);
-
-		ctx.lineWidth = 0.75;
-		ctx.beginPath();
-		ctx.moveTo(origin.x, origin.y);
-		ctx.lineTo(origin.x + hour_length * Math.sin(angle.hour), origin.y - hour_length * Math.cos(angle.hour));
-		ctx.moveTo(origin.x, origin.y);
-		ctx.lineTo(origin.x + min_length * Math.sin(angle.minute), origin.y - min_length * Math.cos(angle.minute));
-		ctx.stroke();		
-	},
-	
-	draw_circle: function(ctx, x, y, r, s) {
-		ctx.lineWidth = 1.25;
-		ctx.beginPath();
-		ctx.arc(x, y, r, 0, Math.PI * 2, true);
-		ctx.stroke();
-	},
-	
-	draw_link: function(ctx, x, y) {
-		ctx.lineWidth = 2;
-		ctx.beginPath();
-		ctx.moveTo(x - 4, y - 4);
-		ctx.lineTo(x, y);
-		ctx.lineTo(x - 4, y + 4);
-		ctx.stroke();
-	},
-	
-	outline_shape: function(ctx, place, position) {
-		ctx.beginPath();
-		var pointer_span = this.pointer_span();
-		var content_span = this.outer_span(ctx, place);
-		var bubble_span = {
-			width: content_span.width,
-			height: pointer_span.height + content_span.height
-		};
-		
-		// starts and the bottom tip of the
-		// pointer and runs clockwise
-		var x = Math.floor(position.x);
-		var y = Math.floor(position.y - 2);
-		ctx.moveTo(x, y);
-		ctx.lineTo(x - pointer_span.width / 2, y - pointer_span.height);
-		ctx.lineTo(x - bubble_span.width / 2, y - pointer_span.height);
-		ctx.lineTo(x - bubble_span.width / 2, y - bubble_span.height);
-		ctx.lineTo(x + bubble_span.width / 2, y - bubble_span.height);
-		ctx.lineTo(x + bubble_span.width / 2, y - pointer_span.height);
-		ctx.lineTo(x + pointer_span.width / 2, y - pointer_span.height);
-		ctx.closePath();
-	},
-	
-	outline_link: function(ctx, place, position) {
-		ctx.beginPath();
-		var pointer_span = this.pointer_span();
-		var content_span = this.outer_span(ctx, place);
-
-		// starts at the top right corner of the
-		// bubble and runs clockwise around the arrow
-		var x = Math.floor(position.x);
-		var y = Math.floor(position.y - 2);
-		ctx.moveTo(x + content_span.width / 2, y - pointer_span.height - content_span.height);
-		ctx.lineTo(x + content_span.width / 2, y - pointer_span.height);
-		ctx.lineTo(x - 20 + content_span.width / 2, y - pointer_span.height);
-		ctx.lineTo(x - 20 + content_span.width / 2, y - pointer_span.height - content_span.height);
-		ctx.closePath();
-	},
-	
-	pointer_span: function() {
-		return { width: 20, height: 10 };
-	},
-
-	inner_span: function(ctx, place) {
-		return {
-			  width: 20
-			, height: 16
-		}
-	},
-	
-	outer_span: function(ctx, place) {
-		return {
-			  width: 20
-			, height: 25
-		};
-	},
-
-	draw_text: function(ctx, x, y, text) {
-		ctx.textBaseline = 'bottom';
-		ctx.font = this.FONT;
-		ctx.fillText(text, x, y);
-	}
-});
-
-Singleline_Bubble = Class.create(Bubble, {
-	initialize: function($super, template) {
-		$super(template);
-	},
-	
-	draw: function(ctx, place, position) {
-		var BUBBLE_HEIGHT = 45;
-		var BUBBLE_WIDTH = 208;
-		var BUBBLE_EDGE_WIDTH = 12;
-		var BUBBLE_CORE_WIDTH = 28; // width of the triangle
-		var BUBBLE_NAME_BASE = 8; // where to start drawing the first line of text
-		var BUBBLE_TIME_BASE = 24; // where to start drawing the second line of text
-		var BUBBLE_ELEVATION = 5; // distance to account for drop shadow
-		
-		var width = Math.max(BUBBLE_CORE_WIDTH, this.text_width(ctx, place.name) + 12 + 12);
-		var x = Math.floor(position.x - (width + BUBBLE_EDGE_WIDTH * 2) / 2);
-		var y = Math.floor(position.y - BUBBLE_HEIGHT + BUBBLE_ELEVATION);
-
-		// left border
-		var source_x = 0;
-		var source_y = 45;
-		var source_w = 12;
-		var destination_x = x;
-		var destination_y = y;
-		
-		ctx.drawImage(this.template,
-			source_x, source_y,
-			source_w, BUBBLE_HEIGHT,
-			destination_x, destination_y,
-			source_w, BUBBLE_HEIGHT
-		);
-		
-		// center
-		source_x = BUBBLE_WIDTH / 2 - width / 2;
-		source_y = 45;
-		source_w = width;
-		destination_x = x + BUBBLE_EDGE_WIDTH;
-		destination_y = y;
-		
-		ctx.drawImage(this.template,
-			source_x, source_y,
-			source_w, BUBBLE_HEIGHT,
-			destination_x, destination_y,
-			source_w, BUBBLE_HEIGHT
-		);
-
-		// right border
-		source_x = BUBBLE_WIDTH - BUBBLE_EDGE_WIDTH;
-		source_y = 45;
-		source_w = 12;
-		destination_x = x + BUBBLE_EDGE_WIDTH + width;
-		destination_y = y;
-		
-		ctx.drawImage(this.template,
-			source_x, source_y,
-			source_w, BUBBLE_HEIGHT,
-			destination_x, destination_y,
-			source_w, BUBBLE_HEIGHT
-		);
-		
-		// Clock
-		this.draw_clock(ctx, { x: x + BUBBLE_EDGE_WIDTH + BUBBLE_EDGE_WIDTH - 8, y: y + 16 }, place.time);
-		
-		// Text
-		ctx.fillStyle = 'rgba(255,255,255,0.8)';
-		this.draw_text(ctx, x + BUBBLE_EDGE_WIDTH + 14, y + 24 + 1, place.name);
-		
-		ctx.fillStyle = 'rgba(0,0,0,0.8)';
-		this.draw_text(ctx, x + BUBBLE_EDGE_WIDTH + 14, y + 24, place.name);
-		
-		// Link
-		ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-		this.draw_link(ctx, x + BUBBLE_EDGE_WIDTH + width, y + 16 + 1);
-		
-		ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-		this.draw_link(ctx, x + BUBBLE_EDGE_WIDTH + width, y + 16);
-	},
-	
-	inner_span: function(ctx, place) {
-		return {
-			  width: this.text_width(ctx, place.name)
-			, height: 16
-		}
-	},
-	
-	outer_span: function(ctx, place) {
-		return {
-			  width: this.text_width(ctx, place.name) + 40
-			, height: 25
-		};
-	},
-	
-	text_width: function(ctx, text) {
-		ctx.font = this.FONT;
-		return ctx.measureText(text).width;
-	}
-});
-
-Multiline_Bubble = Class.create(Bubble, {
-	initialize: function($super, template) {
-		$super(template);
-	}
-});
-
-
-Bubble_Layer = Class.create({
-
-	initialize: function(template) {
-		this.bubble = new Bubble(template);
-		this.singleline = new Singleline_Bubble(template);
-		this.multiline = new Multiline_Bubble(template);
-	},
-	
-	get_bubble: function(place) {
-		if (place.show_subtitle) {
-			return this.multiline;
-		}
-		else if (place.show_title) {
-			return this.singleline;
-		}
-		else {
-			return this.bubble;
-		}
-	},
-	
-	draw: function(ctx, place, position) {
-		this.get_bubble(place).draw(
-			ctx, place, position
-		);
-		
-//		if (place.show_title) {
-//			this.get_bubble(place).outline_link(
-//				ctx, place, position
-//			);
-//			ctx.lineWidth = 1;
-//			ctx.strokeStyle = 'red';
-//			ctx.stroke();
-//		}
-	},
-	
-	touching: function(ctx, place, position, where) {
-		this.get_bubble(place).outline_shape(
-			ctx, place, position
-		);
-		return ctx.isPointInPath(where.x, where.y);
-	},
-	
-	activating: function(ctx, place, position, where) {
-		if (!place.show_title) return false;
-		this.get_bubble(place).outline_link(
-			ctx, place, position
-		);
-		return ctx.isPointInPath(where.x, where.y);
-	}
-});
-
 Map = Class.create({
 	SURFACE_FILE: Resources.SURFACE_FILE,
-	BUBBLES_FILE: Resources.BUBBLES_FILE,
 	
 	initialize: function() {
 		this.marks = [];
@@ -427,20 +142,27 @@ Map = Class.create({
 			self.surface = surface;
 			self.redraw();
 		};
-		
-		var bubbles = new Image();
-		bubbles.onload = function() {
-			self.bubbler = new Bubble_Layer(bubbles);
-			self.redraw();
-		}
 
 		surface.src = this.SURFACE_FILE;
-		bubbles.src = this.BUBBLES_FILE;
 	},
 
-	mark: function(clock) {
-		this.marks.push(clock);
-		this.redraw();
+	mark: function(key, text, time, location) {
+		var sprite = this.marks.find(function(s) {
+			return s.key == key;
+		});
+		
+		if (!sprite) {
+			sprite = new Map_Sprite(key);
+			this.marks.push(sprite);
+		}
+		
+		sprite
+			.text(text)
+			.time(time)
+			.location(location);
+		
+		//this.redraw();
+		this.move_sprites();
 	},
 	
 	go: function(coordinate) {
@@ -463,12 +185,38 @@ Map = Class.create({
 		
 		this.move_canvas(this.canvas, canvas_x, 0);
 		this.move_canvas(this.seam, seam_x, 0);
+		this.move_sprites();
 	},
 	
 	move_canvas: function(canvas, x, y) {
 		canvas.setStyle({
 			  left: x + 'px'
 			, top: y + 'px'
+		});
+	},
+	
+	move_sprites: function() {
+		var scale = this.scale();
+		var extent = this.extent();
+		var viewport = this.viewport();
+		var offset = this.map_offset();
+		
+//		$.trace('offset', Object.toJSON(this.map_offset()));
+		this.marks.each(function(s) {
+			var where = {
+				  x: offset.x + (extent.x / 2) + (s.longitude * scale.x)
+				, y: offset.y + (extent.y / 2) + (s.latitude * -scale.y)
+			}		
+			
+			var size = s.size();
+			if (where.x + (size.x / 2) < 0) {
+				where.x += extent.x;
+			}
+			else if (where.x - size.x / 2 > viewport.x) {
+				where.x -= extent.x;
+			}
+
+			s.move(where);
 		});
 	},
 	
@@ -575,8 +323,6 @@ Map = Class.create({
 	},
 	
 	draw_places: function(ctx) {
-		if (!this.bubbler) return;
-		
 		var self = this;
 		var origin = {
 			  x: this.extent().x / 2
@@ -601,16 +347,11 @@ Map = Class.create({
 			, y: place.latitude * -scale.y
 		};
 		
-		if (this.bubbler) {
-			this.bubbler.draw(ctx, place, origin);
-		}
-		else {
-			ctx.strokeStyle = 'red';
-			ctx.lineWidth = 2;
-			ctx.beginPath();
-			ctx.arc(origin.x, origin.y, 4, 0, Math.PI*2, true);
-			ctx.stroke();
-		}
+		ctx.strokeStyle = 'red';
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.arc(origin.x, origin.y, 4, 0, Math.PI * 2, true);
+		ctx.stroke();
 	},
 
 	draw_seam_canvas: function(canvas, ctx) {
@@ -738,41 +479,96 @@ Map = Class.create({
 			, y: event.pointerY()
 		};
 		
-		var id = undefined;
-		var bubbler = this.bubbler;
-		if (bubbler) {
-			var ctx = this.canvas.getContext('2d');
-			var self = this;
-			var hit = false;
-			
-			var place = this.marks.find(function(p) {
-				var position = self.coordinate_offset(p.location());
-				return bubbler.touching(ctx, p, position, click);
-			});
-			
-			if (place) {
-				var position = this.coordinate_offset(place.location());
-				$.trace(bubbler.activating(ctx, place, position, click)
-					? 'activate' : 'touch', place.name
-				);
-				
-				place.show_title = !place.show_title;
-				this.marks = this.marks.without(place);
-				this.marks.push(place);
-				
-				this.redraw();
-			}
-		}
-		
-//		var coordinate = this.point_to_coordinate(position);
+		var coordinate = this.point_to_coordinate(click);
+		$.trace('click', Object.toJSON(coordinate));
 //		this.fire(':click', {
-//			clock_id: id,
 //			latitude: coordinate.y,
 //			longitude: coordinate.x
 //		});
 	},
+});
+
+Map_Sprite = Class.create({
+	DROP_PADDING: 6,
+
+	initialize: function(key) {
+		this.key = key;
+		this.longitude = 0;
+		this.latitude = 0;
+		this.hour = 0;
+		this.minute = 0;
+
+		this.setup();
+	},
 	
+	setup: function() {
+		this.element = new Element('div', { 'class': 'sprite' })
+			.insert(this._content())
+			.insert(new Element('div', { 'class': 'pointer' }));
+
+		document.body.insert(this.element);
+	},
 	
+	_content: function() {
+		var clock = new Element('div', { 'class': 'clock' })
+			.insert(new Element('div', { 'class': 'hour' }))
+			.insert(new Element('div', { 'class': 'minute' }));
+		var label = new Element('div', { 'class': 'label' });
+		return new Element('div', { 'class': 'content' })
+			.insert(clock)
+			.insert(label);
+	},
+	
+	text: function(v) {
+		var el = this.element.down('.label');
+		if (v === undefined) return el.innerHTML;
+		el.innerHTML = v;
+		return this;
+	},
+	
+	time: function(v) {
+		if (v === undefined) return { hour: this.hour, minute: this.minute };
+		this.hour = v.hour;
+		this.minute = v.minute;
+		
+		var hour_element = this.element.down('.hour');
+		var minute_element = this.element.down('.minute');
+		var angle = Time.angle_converter.convert(v);
+		hour_element.setStyle({
+			'-webkit-transform': 'rotate(#{hour}deg)'.interpolate(angle)
+		});
+		minute_element.setStyle({
+			'-webkit-transform': 'rotate(#{minute}deg)'.interpolate(angle)
+		});
+		
+		return this;
+	},
+	
+	position: function() {
+		var s = this.size();
+		var p = this.element.positionedOffset();
+		return { x: p.left + size.x / 2, y: p.top + size.y + this.DROP_PADDING };
+	},
+	
+	location: function(v) {
+		if (v === undefined) return { x: this.latitude, y: this.longitude };
+		this.latitude = v.x;
+		this.longitude = v.y;
+		return this;
+	},
+	
+	size: function() {
+		var d = this.element.getDimensions();
+		return { x: d.width, y: d.height };
+	},
+	
+	move: function(point) {
+		var size = this.size();
+		this.element.setStyle({
+			left: (point.x - size.x / 2) + 'px',
+			top: (point.y - size.y + this.DROP_PADDING) + 'px'
+		});
+	}
 });
 
 	</script>
@@ -787,11 +583,94 @@ input[type=button] {
 	bottom: 0;
 }
 
+
+.sprite {
+	position:absolute;
+	z-index: 100;
+	-webkit-box-align: center;
+}
+
+.sprite>.content {
+	min-width: 24px;
+	min-height: 18px;
+	white-space: nowrap;
+	-webkit-border-image: url('map-sprite.png') 12 18 / 12px 18px;
+}
+
+.sprite>.content>.label {
+	float:left;
+	margin-left: 4px;
+	margin-right: -4px;
+	font-family: sans-serif;
+	font-size: 0.9em;
+	font-weight: bold;
+	color: #444;
+}
+
+.sprite>.content>.clock {
+	float:left;
+	margin-top: -6px;
+	margin-left: -4px;
+	width: 28px;
+	height: 28px;
+	background: url('map-sprite-clock.png') center center no-repeat;
+}
+
+.clock>.minute {
+	width: 22px;
+	height: 22px;
+	opacity: 0.8;
+	margin-left: 3px;
+	margin-top: -22px;
+	-webkit-transform: rotate(180deg);
+	background: url('map-sprite-minute.png') center center no-repeat;
+}
+
+.clock>.hour {
+	width: 22px;
+	height: 22px;
+	opacity: 0.8;
+	margin-left: 2px;
+	margin-top: 3px;
+	-webkit-transform: rotate(270deg);
+	background: url('map-sprite-hour.png') center center no-repeat;
+}
+
+.sprite>.pointer {
+	width: 28px;
+	height: 14px;
+	position: relative;
+	bottom: 4px;
+	margin: auto;
+	background: url('map-sprite-point.png') center center no-repeat;
+}
+
+.hbox {
+	display: -webkit-box;
+	-webkit-box-orient: horizontal;
+	-webkit-box-align: stretch;
+}
+ 
+.hbox > * {
+	-webkit-box-flex: 0;
+}
+
 </style>
 
 </head>
 <body>
+<!--
+<div class="sprite">
+	<div class="content">
+		<div class="clock"><div class="hour"></div><div class="minute"></div></div>
+		<div class="label">Seattle</div>
+	</div>
+	<div class="pointer"></div>
+</div>
+-->
 
 <canvas id="core-canvas"></canvas><canvas id="seam-canvas"></canvas>
+
+
 </body>
 </html>
