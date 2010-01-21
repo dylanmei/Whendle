@@ -187,12 +187,9 @@ Time.angle_converter = new (
 			var hour = time.hour();
 			var minute = time.minute();
 
-			var m_angle = minute * DEGS_PER_MIN;
-			var h_angle = (hour % 12 * DEGS_PER_HOUR) + (minute * (DEGS_PER_HOUR / MIN_PER_HOUR));
-
 			return {
-				hour: h_angle * Math.PI / 180,
-				minute: m_angle * Math.PI / 180
+				hour: (hour % 12 * DEGS_PER_HOUR) + (minute * (DEGS_PER_HOUR / MIN_PER_HOUR)),
+				minute: minute * DEGS_PER_MIN
 			}
 		}
 	})

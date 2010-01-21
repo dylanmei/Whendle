@@ -50,6 +50,7 @@
 	{ "source": "app\/widgets\/map.js" },
 	{ "source": "app\/widgets\/map-surface.js" },
 	{ "source": "app\/widgets\/map-sunlight.js" },
+	{ "source": "app\/widgets\/map-marker.js" },
 	{ "source": "app\/widgets\/search-text.js" },
 	{ "source": "app\/widgets\/search-status.js" },
 	{ "source": "app\/widgets\/splash.js" },

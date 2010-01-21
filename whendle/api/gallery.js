@@ -137,6 +137,7 @@ Whendle.Gallery.Presenter = Class.create({
 		
 		this.timekeeper.offset_time(clock.timezone,
 			function(time) {
+				clock.time2 = time;
 				clock.time = Whendle.Clock.Format_time(time, format);
 				clock.day = Whendle.Clock.Format_day(now, time);
 				on_complete(clock);

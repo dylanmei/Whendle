@@ -3,6 +3,7 @@ Mojo.Widget.Map = Class.create({
 	initialize: function() {
 		this.orientation = 'up';
 		this.longitude = this.latitude = 0;
+		this.marks = [];
 	},
 	
 	setup: function() {
@@ -11,7 +12,7 @@ Mojo.Widget.Map = Class.create({
 		this.setup_children(id);
 		this.attach_events();
 		this.load_resources();
-		this.controller.exposeMethods(['sun', 'draw', 'orientate']);
+		this.controller.exposeMethods(['sun', 'draw', 'orientate', 'mark']);
 		
 		this.go({ x: 0, y: 0 });
 	},
@@ -135,6 +136,18 @@ Mojo.Widget.Map = Class.create({
 		
 		return latitude;
 	},
+
+	translate_point: function(point) {
+		var viewport = this.viewport();
+		var offset = {
+			  x: 0
+			, y: 0
+		};
+		
+		offset.x -= point.x - (viewport.x / 2);
+		offset.y += viewport.y / 2 - point.y;
+		return offset;	
+	},
 	
 	coordinate_to_point: function(coordinate) {
 		var scale = this.scale();
@@ -148,10 +161,45 @@ Mojo.Widget.Map = Class.create({
 		point.y -= coordinate.y * scale.y;
 		return point;	
 	},
-	
+
+	point_to_coordinate: function(point) {
+		var extent = this.extent();
+		var scale = this.scale();
+		var offset = this.map_offset();
+		
+		var coordinate = {
+			  x: (point.x - offset.x) - extent.x / 2
+			, y: (offset.y - point.y) + extent.y / 2
+		}
+		
+		coordinate.x /= scale.x;
+		coordinate.y /= scale.y;
+		
+		return coordinate;
+	},
+
 	sun: function(dec, har) {
 		this.sunlight.dec(dec);
 		this.sunlight.har(har);
+	},
+	
+	mark: function(key, text, time, location) {
+		var mark = this.marks.find(function(m) {
+			return m.key == key;
+		});
+		
+		if (!mark) {
+			mark = new Map_Marker(key);
+			this.marks.push(mark);
+			this.controller.element.insert(mark.element);
+		}
+		
+		mark
+			.text(text)
+			.time(time)
+			.location(location);
+		
+		this.move_marks();		
 	},
 
 	go: function(coordinate) {
@@ -176,6 +224,7 @@ Mojo.Widget.Map = Class.create({
 		
 		this.move_canvas(this.core, core_x, y);
 		this.move_canvas(this.seam, seam_x, y);
+		this.move_marks();
 	},
 
 	move_canvas: function(canvas, x, y) {
@@ -185,6 +234,33 @@ Mojo.Widget.Map = Class.create({
 		});
 	},
 
+	move_marks: function() {
+		if (this.marks.length == 0) return;
+		
+		var scale = this.scale();
+		var extent = this.extent();
+		var viewport = this.viewport();
+		var offset = this.translate_point(
+			this.coordinate_to_point(this.location()));
+		
+		this.marks.each(function(m) {
+			var where = {
+				  x: offset.x + (extent.x / 2) + (m.longitude * scale.x)
+				, y: offset.y + (extent.y / 2) + (m.latitude * -scale.y)
+			}		
+			
+			var size = m.size();
+			if (where.x + (size.x / 2) < 0) {
+				where.x += extent.x;
+			}
+			else if (where.x - size.x / 2 > viewport.x) {
+				where.x -= extent.x;
+			}
+
+			m.move(where);
+		});
+	},
+	
 	draw: function() {
 		var ctx = this.core.getContext('2d');
 		var extent = this.extent();

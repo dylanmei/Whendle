@@ -5,14 +5,17 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		new Whendle.Gallery.Presenter(this);
 	},
 	
-	// 	event = {
-	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
-	//		error: { message:'' }
-	//	}
 	loaded: function(event) {
 		var now = event.now;
-		this.map.mojo.sun(now.declination, now.hour_angle);
-		this.map.mojo.draw();
+		var map = this.map;
+		
+		map.mojo.sun(now.declination, now.hour_angle);
+		map.mojo.draw();
+		
+		event.clocks.each(function(c) {
+			var location = { x: c.longitude, y: c.latitude };
+			map.mojo.mark(c.id, c.name, c.time2, location);
+		});
 	},
 	
 	added: function(event) {
@@ -21,15 +24,17 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	removed: function(event) {
 	},
 	
-	// 	event = {
-	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
-	//		reason: '',
-	//		error: { message:'' }
-	//	}
 	changed: function(event) {
 		var now = event.now;
-		this.map.mojo.sun(now.declination, now.hour_angle);
-		this.map.mojo.draw();
+		var map = this.map;
+		
+		map.mojo.sun(now.declination, now.hour_angle);
+		map.mojo.draw();
+		
+		event.clocks.each(function(c) {
+			var location = { x: c.longitude, y: c.latitude };
+			map.mojo.mark(c.id, c.name, c.time2, location);
+		});
 	},
 	
 	setup: function() {

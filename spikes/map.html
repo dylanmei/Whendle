@@ -478,9 +478,16 @@ Map = Class.create({
 			  x: event.pointerX()
 			, y: event.pointerY()
 		};
-		
-		var coordinate = this.point_to_coordinate(click);
-		$.trace('click', Object.toJSON(coordinate));
+	
+		for (var i = 0; i < this.marks.length; i++) {
+			var s = this.marks[i];
+			if (s.hit(click)) {
+				$.trace(s.text(), 'click');
+			}
+		}
+	
+//		var coordinate = this.point_to_coordinate(click);
+//		$.trace('click', Object.toJSON(coordinate));
 //		this.fire(':click', {
 //			latitude: coordinate.y,
 //			longitude: coordinate.x
@@ -502,7 +509,7 @@ Map_Sprite = Class.create({
 	},
 	
 	setup: function() {
-		this.element = new Element('div', { 'class': 'sprite' })
+		this.element = new Element('div', { 'class': 'map-marker' })
 			.insert(this._content())
 			.insert(new Element('div', { 'class': 'pointer' }));
 
@@ -568,6 +575,17 @@ Map_Sprite = Class.create({
 			left: (point.x - size.x / 2) + 'px',
 			top: (point.y - size.y + this.DROP_PADDING) + 'px'
 		});
+	},
+	
+	hit: function(point) {
+		var p = this.element.positionedOffset();
+		if (point.x < p.left) return false;
+		if (point.y < p.top) return false;
+
+		var d = this.element.getDimensions();
+		if (point.x > p.left + d.width) return false;
+		if (point.y > p.top + d.height) return false;
+		return true;
 	}
 });
 
@@ -584,20 +602,20 @@ input[type=button] {
 }
 
 
-.sprite {
+.map-marker {
 	position:absolute;
 	z-index: 100;
 	-webkit-box-align: center;
 }
 
-.sprite>.content {
+.map-marker>.content {
 	min-width: 24px;
 	min-height: 18px;
 	white-space: nowrap;
 	-webkit-border-image: url('map-sprite.png') 12 18 / 12px 18px;
 }
 
-.sprite>.content>.label {
+.map-marker>.content>.label {
 	float:left;
 	margin-left: 4px;
 	margin-right: -4px;
@@ -607,7 +625,7 @@ input[type=button] {
 	color: #444;
 }
 
-.sprite>.content>.clock {
+.map-marker>.content>.clock {
 	float:left;
 	margin-top: -6px;
 	margin-left: -4px;
@@ -616,7 +634,7 @@ input[type=button] {
 	background: url('map-sprite-clock.png') center center no-repeat;
 }
 
-.clock>.minute {
+.map-marker>.content>.clock>.minute {
 	width: 22px;
 	height: 22px;
 	opacity: 0.8;
@@ -626,7 +644,7 @@ input[type=button] {
 	background: url('map-sprite-minute.png') center center no-repeat;
 }
 
-.clock>.hour {
+.map-marker>.content>.clock>.hour {
 	width: 22px;
 	height: 22px;
 	opacity: 0.8;
@@ -636,7 +654,7 @@ input[type=button] {
 	background: url('map-sprite-hour.png') center center no-repeat;
 }
 
-.sprite>.pointer {
+.map-marker>.pointer {
 	width: 28px;
 	height: 14px;
 	position: relative;
