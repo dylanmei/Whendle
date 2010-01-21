@@ -2,7 +2,6 @@
 
 describe 'Timezone Locator'
 	ajax = new Object
-	loader = new Object
 	service = new Whendle.Timezone_Locator(ajax)
 	mock_response = function(offset, timezone) {
 		return { 'rawOffset': offset, 'timezoneId': timezone }

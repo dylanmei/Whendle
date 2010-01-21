@@ -29,6 +29,7 @@ function runSuites() {
 		.exec('spec.gallery.changing.js')
 		.exec('spec.spotlight.changing.js')
 		.exec('spec.finder.js')
+		.exec('spec.place-locator.js')
 	.run({ failuresOnly: true })
 	.report();
 }
@@ -50,6 +51,7 @@ function runSuites() {
 		<script src="../whendle/api/gallery.js"></script>
 		<script src="../whendle/api/spotlight.js"></script>
 		<script src="../whendle/api/finder.js"></script>
+		<script src="../whendle/api/place-locator.js"></script>
 		<script src="../whendle/api/location.js"></script>
 		<script src="../whendle/api/clock.js"></script>
 		<script src="../whendle/api/clock-repository.js"></script>

@@ -83,6 +83,10 @@ Whendle = {
 		return Whendle.services('Whendle.timezone-locator');
 	},
 	
+	place_locator: function() {
+		return Whendle.services('Whendle.place-locator');
+	},
+	
 	timekeeper: function() {
 		return Whendle.services('Whendle.timekeeper');
 	},

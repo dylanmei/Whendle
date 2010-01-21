@@ -43,68 +43,32 @@ Whendle.Finder.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Finder.Presenter = Class.create({
-	URL_SEARCH_BY_NAME: 'http://ws.geonames.org/searchJSON',
 
-	initialize: function(view, ajax, database) {
-		this._ajax = ajax || new Whendle.AjaxService();
-		this._database = database || Whendle.database();
+	initialize: function(view, place_locator) {
+		this.place_locator = place_locator || Whendle.place_locator();
 
 		view.observe(Whendle.Event.searching,
-			this._on_search.bind(this, view));
+			this.on_search.bind(this, view));
 	},
 	
-	_on_search: function(view, event) {
+	on_search: function(view, event) {
 		if (!event) return;
-
-		var start = event.start || 0;
-		var rows = event.rows || 10;
-		var query = (event.query || '').strip();
 		
-		if (this._is_sensible_query(query)) {
-			this._ajax.load(
-				this._make_search_url(start, query, rows),
-				this._on_search_results.bind(this, view, start),
-				this._on_search_error.bind(this, view));
-		}
+		var on_results = this.on_search_results.bind(this, view);
+		var on_error = this.on_search_error.bind(this, view);
+		this.place_locator.lookup(event.query,
+			event.start || 0, event.rows || 20, on_results, on_error);
 	},
 	
-	_is_sensible_query: function(query) {
-		return (query.length > 3);
+	on_search_results: function(view, results) {
+		var places = results.places;
+		var index = results.index;
+		var total = results.total;
+	
+		view.found({ 'locations': places, 'index': index, 'total': total });
 	},
 	
-	_make_search_url: function(index, text, rows) {
-		var s = this.URL_SEARCH_BY_NAME + '?';
-		return s + Object.toQueryString({
-			'startRow': index,
-			'name': text + '*',
-			'maxRows': rows,
-			'featureClass': ['A', 'P']
-		});	
-	},
-	
-	_on_search_results: function(view, index, results) {
-		var locations = [];
-		var total = results.totalResultsCount || 0;
-
-		if (total) {
-			var mapper = function(gn) { return this._new_location(gn); }
-			locations = results.geonames.collect(mapper.bind(this));
-		}
-		
-		view.found({ 'locations': locations, 'index': index, 'total': total });
-	},
-	
-	_new_location: function(geoname) {
-		return new Whendle.Location(
-			geoname.name,
-			geoname.adminName1,
-			geoname.countryName,
-			geoname.lat,
-			geoname.lng
-		);
-	},
-	
-	_on_search_error: function(view, error) {
+	on_search_error: function(view, error) {
 		view.found({ 'locations': [], 'index': 0, 'total': 0, 'error': error });
 	}
 });

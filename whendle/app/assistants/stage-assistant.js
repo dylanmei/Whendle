@@ -16,6 +16,7 @@ StageAssistant.prototype.setup_services = function() {
 	Whendle.services('Whendle.database', database);
 	Whendle.services('Whendle.schema', new Whendle.SchemaService(database));
 	Whendle.services('Whendle.clock-repository', new Whendle.Clock_Repository(database));
+	Whendle.services('Whendle.place-locator', new Whendle.Place_Locator(ajax));
 	Whendle.services('Whendle.timezone-locator', new Whendle.Timezone_Locator(ajax));
 	Whendle.services('Whendle.timezone-repository', new Whendle.Timezone_Repository(tzloader));
 	Whendle.services('Whendle.timekeeper', new Whendle.TimekeeperService(Whendle.system(), Whendle.timezone_repository()));

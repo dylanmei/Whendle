@@ -43,6 +43,7 @@
 	{ "source": "api\/gallery.js" },
 	{ "source": "api\/spotlight.js" },
 	{ "source": "api\/finder.js" },
+	{ "source": "api\/place-locator.js" },
 	{ "source": "api\/location.js" },
 	{ "source": "api\/clock.js" },
 	{ "source": "api\/clock-repository.js" },

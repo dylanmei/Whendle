@@ -1,38 +1,12 @@
 
 describe 'Finder'
-	ajax = new Object
-	datbase = new Object
 	view = new Whendle.Observable
-	presenter = new Whendle.Finder.Presenter(view, ajax, database)
+	locator = new Object;
+	presenter = new Whendle.Finder.Presenter(view, locator)
 	
 	mock_results = function(results, count) {
-		return { 'totalResultsCount': count || results.length, 'geonames': results }
+		return { places: results, index: 0, 'total': count || results.length }
 	}
-	
-	describe 'searches with less than the minimum characters'
-		before
-			a = null
-			b = null
-			c = null
-			d = false
-			e = null
-			ajax.load = function() { d = true; }
-			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
-			view.fire(Whendle.Event.searching, { query: 'abc' })
-		end
-		
-		it 'should not make a service request'
-			d.should.be_false
-		end
-		
-		it 'should not find anything for the view'
-			a.should.be_null
-		end
-		
-		it 'should not return an error'
-			e.should.be_null
-		end
-	end
 	
 	describe 'searches that return with no results'
 		before
@@ -40,7 +14,7 @@ describe 'Finder'
 			b = null
 			c = null
 			e = null
-			ajax.load = function(r, on_success) {
+			locator.lookup = function(q, i, s, on_success) {
 				on_success(mock_results([]));
 			}
 			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
@@ -70,7 +44,7 @@ describe 'Finder'
 			b = null
 			c = null
 			e = null
-			ajax.load = function(r, on_success) {
+			locator.lookup = function(q, i, s, on_success) {
 				on_success(mock_results([{}, {}, {}]));
 			}
 			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
@@ -100,7 +74,7 @@ describe 'Finder'
 			b = null
 			c = null
 			e = null
-			ajax.load = function(r, on_success, on_error) {
+			locator.lookup = function(q, i, s, on_success, on_error) {
 				on_error({});
 			}
 			view.found = function(event) { a = event.locations; b = event.index; c = event.total; e = event.error; }
