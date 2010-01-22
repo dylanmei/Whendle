@@ -10,18 +10,19 @@ DatabaseService = Class.create({
 			var id = document.clocks.length + 1;
 			document.clocks.push({
 				'id': id,
-				'woeid': parameters[0],
-				'name': parameters[1],
-				'admin': parameters[2],
-				'country': parameters[3],
-				'longitude': parameters[4],
-				'latitude': parameters[5],
-				'timezone': parameters[6]
+				'name': parameters[0],
+				'admin': parameters[1],
+				'country': parameters[2],
+				'longitude': parameters[3],
+				'latitude': parameters[4],
+				'timezone': parameters[5],
+				'woeid': parameters[6],
+				'type': parameters[7]
 			});
 			on_results(id);
 		}
 	},
-	
+
 	remove: function(statement, parameters, on_results, on_error) {
 		if (statement.startsWith('delete from places')) {
 			var id = parameters[0];

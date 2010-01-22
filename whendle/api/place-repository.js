@@ -58,6 +58,7 @@ Whendle.Place_Repository = Class.create({
 		var place = new Whendle.Place(r.id);
 		place.woeid = r.woeid;
 		place.name = r.name;
+		place.type = r.type;
 		place.admin = r.admin;
 		place.country = r.country;
 		place.longitude = r.longitude;
@@ -68,15 +69,16 @@ Whendle.Place_Repository = Class.create({
 	
 	put_place: function(place, on_complete, on_error) {
 		this.database.insert(
-			'insert into places (woeid,name,admin,country,longitude,latitude,timezone) values (?,?,?,?,?,?,?)',
+			'insert into places (name,admin,country,longitude,latitude,timezone,woeid,type) values (?,?,?,?,?,?,?,?)',
 			[
-				place.woeid,
 				place.name,
 				place.admin,
 				place.country,
 				place.longitude,
 				place.latitude,
-				place.timezone
+				place.timezone,
+				place.woeid,
+				place.type
 			],
 			on_complete,
 			on_error

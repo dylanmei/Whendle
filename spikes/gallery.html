@@ -117,8 +117,6 @@ Gallery = Class.create(Whendle.Gallery.View, {
 	
 	setup: function() {
 		this.list = new List($('list'));
-		this.list.observe(':service', this.on_clock_service.bind(this));
-		this.drawer = $('drawer');
 	},
 	
 	add: function(place) {
@@ -147,10 +145,6 @@ Gallery = Class.create(Whendle.Gallery.View, {
 	
 	changed: function(event) {
 		this.list.change(event.clocks);
-	},
-	
-	on_clock_service: function(event) {
-		$.trace('clock =', event.clock, 'service =', event.service);
 	}
 });
 
@@ -226,10 +220,6 @@ List = Class.create(Whendle.Observable, {
 	},
 	
 	on_row_click: function(id, event) {
-	},
-	
-	_on_append: function() {
-		this.fire(':append', { 'index': this.count() });
 	},
 	
 	_on_select: function(place) {

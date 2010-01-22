@@ -69,12 +69,13 @@ Whendle.Place_Locator = Class.create({
 
 	map_place: function(p) {
 		var place = new Whendle.Place();
-		place.woeid = p.woeid;
 		place.name = p.name;
 		place.latitude = p.centroid.latitude;
 		place.longitude = p.centroid.longitude;
 		place.admin = p.admin1;
 		place.country = p.country;
+		place.woeid = p.woeid;
+		place.type = p['placeTypeName attrs'].code;
 		
 		return place;
 	},
