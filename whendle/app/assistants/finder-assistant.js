@@ -58,8 +58,8 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	on_list_tap: function(event) {
 		var index = event.index;
 		if (index < this.count()) {
-			var location = this.model.items[index].place;
-			Mojo.Controller.stageController.popScene(location, {});
+			var place = this.model.items[index].place;
+			Mojo.Controller.stageController.popScene(place, {});
 		}
 	},
 	

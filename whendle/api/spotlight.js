@@ -36,8 +36,7 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 	},
 	
 	// 	event = {
-	//		clock: { id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# },
-	//		reason: '',
+	//		clock: { id:#, title:'', subtitle:'', display:'', day:'' },
 	//		error: { message:'' }
 	//	}
 	clock_loaded: function() {
@@ -47,7 +46,7 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 	},
 	
 	// 	event = {
-	//		clock: { id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# },
+	//		clock: { id:#, title:'', subtitle:'', display:'', day:'' },
 	//		reason: '',
 	//		error: { message:'' }
 	//	}
@@ -56,9 +55,9 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Spotlight.Presenter = Class.create({
-	initialize: function(view, timekeeper, clock_repository) {
+	initialize: function(view, timekeeper, place_repository) {
 		this.timekeeper = timekeeper || Whendle.timekeeper();
-		this.clock_repository = clock_repository || Whendle.clock_repository();
+		this.place_repository = place_repository || Whendle.place_repository();
 
 		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
 		view.observe(Whendle.Event.unloading, this.on_unloading.bind(this, view));
@@ -85,13 +84,23 @@ Whendle.Spotlight.Presenter = Class.create({
 	
 	on_timekeeping_change: function(view, reason) {
 		var self = this;
+		var now = this.timekeeper.time;
+		var format = this.timekeeper.format;
 
-		var on_ready = function(clock) {
+		var on_ready = function(place) {
+			var clock = {
+				id: place.id,
+				title: place.name,
+				subtitle: Whendle.Place.Format_area(place),
+				display: Whendle.Place.Format_time(place.time, format),
+				day: Whendle.Place.Format_day(now, place.time)
+			}
+			
 			view.clock_changed({ 'clock': clock, 'reason': reason })
 		};
 
-		var on_load = function(clock) {
-			self.adjust_clock(clock, on_ready);
+		var on_load = function(place) {
+			self.adjust_clock(place, on_ready);
 		}
 
 		var on_error = function(e) {
@@ -103,19 +112,16 @@ Whendle.Spotlight.Presenter = Class.create({
 	
 	adjust_clock: function(clock, on_complete) {
 
-		var now = this.timekeeper.time;
-		var format = this.timekeeper.format;
 		
 		this.timekeeper.offset_time(clock.timezone,
 			function(time) {
-				clock.time = Whendle.Clock.Format_time(time, format);
-				clock.day = Whendle.Clock.Format_day(now, time);
+				clock.time = time;
 				on_complete(clock);
 			}
 		);
 	},
 
 	load_clock: function(id, on_complete, on_error) {
-		this.clock_repository.get_clock(id, on_complete, on_error);
+		this.place_repository.get_place(id, on_complete, on_error);
 	}
 });

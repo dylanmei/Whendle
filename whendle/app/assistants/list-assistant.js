@@ -41,8 +41,8 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		this.controller.setupWidget(Mojo.Menu.commandMenu, {}, this.menus);
 		this.controller.setupWidget(this.growler.id, {});
 		this.controller.setupWidget(this.list.id, {
-				itemTemplate: 'gallery/list-item',
-				listTemplate: 'gallery/list',
+				itemTemplate: 'list/list-item',
+				listTemplate: 'list/list',
 				uniquenessProperty: 'id',
 				swipeToDelete: true,
 				autoconfirmDelete: true,
@@ -78,8 +78,10 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	
 	loaded: function(event) {
 		if (this.report_error(event.error)) return;
+		
+		var items = this.model.items;
+		event.clocks.each(function(c) { items.push(c); });
 
-		this.model.items = event.clocks;
 		this.controller.modelChanged(this.model, this);
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
 	},
@@ -116,7 +118,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 			});
 			if (match) {
 				changes = true;
-				match.time = clock.time;
+				match.display = clock.display;
 				match.day = clock.day;
 			}
 		});
@@ -130,12 +132,12 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		return true;
 	},
 
-	activate: function(location) {
-		if (location && location.name) {
-			this.growler.mojo.spin('Adding ' + location.name + '...');
+	activate: function(place) {
+		if (place && place.name) {
+			this.growler.mojo.spin('Adding ' + place.name + '...');
 			// assuming we have come from the finder
 			// after the user has found a location...
-			this.fire(Whendle.Event.adding, { 'location': location });
+			this.fire(Whendle.Event.adding, { 'place': place });
 		}
 	},
 	

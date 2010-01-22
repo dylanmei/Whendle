@@ -38,13 +38,13 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.setup_drawer('maps');
 		this.setup_drawer('pictures');
 		this.setup_drawer('twitter');
-		this.writer_header();
+		this.write_header();
 	},
 	
-	writer_header: function() {
-		$('spotlight-name').innerHTML = this.clock.name;
-		$('spotlight-place').innerHTML = this.clock.place;
-		$('spotlight-time').innerHTML = this.clock.time;
+	write_header: function() {
+		$('spotlight-title').innerHTML = this.clock.title;
+		$('spotlight-subtitle').innerHTML = this.clock.subtitle;
+		$('spotlight-time').innerHTML = this.clock.display;
 		$('spotlight-day').innerHTML = this.clock.day;
 	},
 	
@@ -85,7 +85,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	
 	clock_changed: function(event) {
 		this.clock = event.clock;
-		this.writer_header();
+		this.write_header();
 	},
 	
 	cleanup: function(event) {

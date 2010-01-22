@@ -11,13 +11,15 @@ describe 'Gallery'
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view, timekeeper, new Object, repository)
 	
-	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
+	new_place_record = function(id) {
+		return { 'id': id, 'name': '', 'timezone': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
+	}
 	
 	describe 'loading an empty set of clocks into a view'
 		before
 			a = null
 			e = null
-			repository.get_clocks = function(on_result) {
+			repository.get_places = function(on_result) {
 				on_result([]);
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
@@ -37,8 +39,8 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			repository.get_clocks = function(on_result) {
-				on_result([ new_clock_record(1), new_clock_record(2) ])
+			repository.get_places = function(on_result) {
+				on_result([ new_place_record(1), new_place_record(2) ])
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.loading)
@@ -57,7 +59,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			repository.get_clocks = function(on_result, on_error) {
+			repository.get_places = function(on_result, on_error) {
 				on_error({})
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }

@@ -92,11 +92,11 @@
 	padding: 4px 10px 8px 10px;
 }
 
-.gallery-row-name, .gallery-row-time {
+.gallery-row-title, .gallery-row-time {
 	font-size: 0.9em;
 }
 
-.gallery-row-area, .gallery-row-day {
+.gallery-row-subtitle, .gallery-row-day {
 	font-size: 0.7em;
 }
 
@@ -167,7 +167,7 @@
 	background: url('map-marker-point.png') center center no-repeat;
 }
 
-#spotlight-name, #spotlight-time  {
+#spotlight-title, #spotlight-time  {
   left: 0px;
   right: 0px;
   padding: 13px 16px 13px 16px;
@@ -176,7 +176,7 @@
   text-shadow: #f2f2f2 0px 1px 0px;
   -webkit-palm-mouse-target: ignore;
 }
-#spotlight-place, #spotlight-day {
+#spotlight-subtitle, #spotlight-day {
   margin-top: -14px;
   padding: 0 16px 16px 16px;
   font-size: 14px;

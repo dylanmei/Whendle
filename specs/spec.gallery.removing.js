@@ -13,7 +13,7 @@ describe 'Gallery'
 			a = null
 			b = null
 			e = null
-			repository.delete_clock = function(id, on_result) {
+			repository.delete_place = function(id, on_result) {
 				on_result(b = true)
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
@@ -38,7 +38,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			repository.delete_clock = function(id, on_result, on_error) {
+			repository.delete_place = function(id, on_result, on_error) {
 				on_error({})
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }

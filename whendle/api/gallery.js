@@ -33,15 +33,16 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 	},
 
 	// 	event = {
-	//		now: { local: {}, utc: {}, hour_angle: #, sun_declination: # },
-	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
+	//		now: { local: {}, utc: {}, hour_angle: #, declination: # },
+	//		clocks: [{ id:#, title:'', subtitle:'', time:{}, display:'', day:'', latitude:#, longitude:# }],
 	//		error: { message:'' }
 	//	}
 	loaded: function(event) {
 	},
 	
 	// 	event = {
-	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
+	//		now: { local: {}, utc: {}, hour_angle: #, declination: # },
+	//		clocks: [{ id:#, title:'', subtitle:'', time:{}, display:'', day:'', latitude:#, longitude:# }],
 	//		error: { message:'' }
 	//	}
 	added: function(event) {
@@ -55,8 +56,8 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 	},
 	
 	// 	event = {
-	//		now: { time: {}, utc: {}, hour_angle: #, sun_declination: # },
-	//		clocks: [{ id:#, name:'', place:'', time:'', day:'', latitude:#, longitude:# }],
+	//		now: { local: {}, utc: {}, hour_angle: #, declination: # },
+	//		clocks: [{ id:#, title:'', subtitle:'', time:{}, display:'', day:'', latitude:#, longitude:# }],
 	//		reason: '',
 	//		error: { message:'' }
 	//	}
@@ -65,12 +66,10 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Gallery.Presenter = Class.create({
-	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
-
-	initialize: function(view, timekeeper, timezone_locator, clock_repository, sunlight_calculator) {
+	initialize: function(view, timekeeper, timezone_locator, place_repository, sunlight_calculator) {
 		this.timekeeper = timekeeper || Whendle.timekeeper();
 		this.timezone_locator = timezone_locator || Whendle.timezone_locator();
-		this.clock_repository = clock_repository || Whendle.clock_repository();
+		this.place_repository = place_repository || Whendle.place_repository();
 		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
 		
 		view.observe(Whendle.Event.loading,
@@ -87,37 +86,52 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 
 	on_loading: function(view) {
-		this.load(this.on_clocks_loaded.bind(this, view));
+		this.load(this.on_places_loaded.bind(this, view));
 	},
 	
 	load: function(on_complete) {
-		this.clock_repository.get_clocks(
+
+		this.place_repository.get_places(
 			on_complete,
 			function(error) { view.loaded({ 'clocks': [], 'error': error }); });
 	},
 
-	on_clocks_loaded: function(view, clocks) {
+	on_places_loaded: function(view, places) {
 
 		var self = this;
 		var wait = new Whendle.Wait();
 
-		clocks.each(function(clock) {
-			self.adjust_clock(clock, wait.on());
+		places.each(function(places) {
+			self.adjust_clock(places, wait.on());
 		});
 		
 		var now = this.timekeeper.time;
 		var utc = this.timekeeper.utc;
+		var format = this.timekeeper.format;
 
 		wait.ready(function() {
-			var result = self.pack_clocks_for_view(clocks, now, utc);
+			var result = self.pack_clocks_for_view(places, now, utc, format);
 			view.loaded(result);
 		});
 	},
 	
-	pack_clocks_for_view: function(clocks, time, utc) {
+	pack_clocks_for_view: function(places, now, utc, format) {
+		var clocks = places.collect(function(p) {
+			return {
+				id: p.id,
+				title: p.name,
+				subtitle: Whendle.Place.Format_area(p),
+				time: p.time,
+				display: Whendle.Place.Format_time(p.time, format),
+				day: Whendle.Place.Format_day(now, p.time),
+				longitude: p.longitude,
+				latitude: p.latitude
+			}
+		});
+
 		var result = {
 			now: {
-				time: time,
+				time: now,
 				utc: utc
 			},
 			clocks: clocks
@@ -132,14 +146,9 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	adjust_clock: function(clock, on_complete) {
-		var now = this.timekeeper.time;
-		var format = this.timekeeper.format;
-		
 		this.timekeeper.offset_time(clock.timezone,
 			function(time) {
-				clock.time2 = time;
-				clock.time = Whendle.Clock.Format_time(time, format);
-				clock.day = Whendle.Clock.Format_day(now, time);
+				clock.time = time;
 				on_complete(clock);
 			}
 		);
@@ -147,47 +156,43 @@ Whendle.Gallery.Presenter = Class.create({
 
 	_on_add_clock: function(view, event) {
 		if (!event) return;
-		var location = event.location;
+		var place = event.place;
 
 		this.timezone_locator.lookup(
-			location.latitude, location.longitude,
-			this._on_timezone_result.bind(this, view, location),
+			place.latitude, place.longitude,
+			this._on_timezone_result.bind(this, view, place),
 			function(error) { view.added({ 'clocks': [], 'error': error }) }
 		);
 	},
 	
-	_on_timezone_result: function(view, location, timezone) {
-		var clock = new Whendle.Clock(
-			0,
-			timezone.name,
-			timezone.offset,
-			location
-		);
-
-		this.clock_repository.put_clock(timezone, location,
-			this._on_clock_added.bind(this, view, clock),
+	_on_timezone_result: function(view, place, timezone) {
+		
+		place.timezone = timezone.name;
+		this.place_repository.put_place(place,
+			this._on_clock_added.bind(this, view, place),
 			function(error) { view.added({ 'clocks': [], 'error': error }) }
 		);
 	},
 	
-	_on_clock_added: function(view, clock, identity) {
-		var clocks = [{
-			'id': identity,
-			'name': clock.location,
-			'timezone': clock.timezone,
-			'place': Whendle.Clock.Format_place(clock.location, clock.district, clock.country),
-			'latitude': clock.latitude,
-			'longitude': clock.longitude
-		}];
+	_on_clock_added: function(view, place, identity) {
+		place.id = identity;
 
-		this.adjust_clock(clocks[0],
-			function() { view.added({ 'clocks': clocks }); }
+		var self = this;
+		var now = this.timekeeper.time;
+		var utc = this.timekeeper.utc;
+		var format = this.timekeeper.format;
+
+		this.adjust_clock(place,
+			function() {
+				var result = self.pack_clocks_for_view([place], now, utc, format);
+				view.added(result);
+			}
 		);
 	},
 	
 	_on_remove_clock: function(view, event) {
 		if (!event || !event.id) return;
-		this.clock_repository.delete_clock(event.id,
+		this.place_repository.delete_place(event.id,
 			this._on_clock_removed.bind(this, view, event.id),
 			function(error) { view.removed({ 'clocks': [], 'error': error }) }
 		);
@@ -216,9 +221,10 @@ Whendle.Gallery.Presenter = Class.create({
 		
 		var now = this.timekeeper.time;
 		var utc = this.timekeeper.utc;
+		var format = this.timekeeper.format;
 
 		wait.ready(function() {
-			var result = self.pack_clocks_for_view(clocks, now, utc);
+			var result = self.pack_clocks_for_view(clocks, now, utc, format);
 			result.reason = reason;
 			view.changed(result);
 		});	

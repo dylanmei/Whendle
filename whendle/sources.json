@@ -44,10 +44,9 @@
 	{ "source": "api\/gallery.js" },
 	{ "source": "api\/spotlight.js" },
 	{ "source": "api\/finder.js" },
+	{ "source": "api\/place.js" },
 	{ "source": "api\/place-locator.js" },
-	{ "source": "api\/location.js" },
-	{ "source": "api\/clock.js" },
-	{ "source": "api\/clock-repository.js" },
+	{ "source": "api\/place-repository.js" },
 	
 	{ "source": "app\/widgets\/map.js" },
 	{ "source": "app\/widgets\/map-surface.js" },

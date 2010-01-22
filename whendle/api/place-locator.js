@@ -24,34 +24,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-
-Whendle.Place = Class.create({
-	initialize: function(woeid) {
-		this.woeid = woeid;
-		this.name = '';
-		this.district = '';
-		this.country = '';
-		this.latitude = 0;
-		this.longitude = 0;
-	}
-});
-
-Whendle.Place.Format_area = function(place) {
-	var format = '';
-	var has_district = place.district.length > 0;
-	var has_country = place.country.length > 0;
-	if (has_district && has_country) {
-		format = $.string('location_area_district_country', '#{district}, #{country}')
-	}
-	else if (has_district) {
-		format = $.string('location_area_district', '#{district}');
-	}
-	else if (has_country) {
-		format = $.string('location_area_country', '#{country}');
-	}
-	return format.interpolate(place);
-}
-
 Whendle.Place_Locator = Class.create({
 	SEARCH_BY_NAME: 'http://where.yahooapis.com/v1/places',
 
@@ -96,11 +68,12 @@ Whendle.Place_Locator = Class.create({
 	},
 
 	map_place: function(p) {
-		var place = new Whendle.Place(p.woeid);
+		var place = new Whendle.Place();
+		place.woeid = p.woeid;
 		place.name = p.name;
 		place.latitude = p.centroid.latitude;
 		place.longitude = p.centroid.longitude;
-		place.district = p.admin1;
+		place.admin = p.admin1;
 		place.country = p.country;
 		
 		return place;

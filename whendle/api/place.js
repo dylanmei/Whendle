@@ -24,34 +24,40 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-Whendle.Clock = Class.create({
-	initialize: function(id, timezone, offset, location) {
+Whendle.Place = Class.create({
+	initialize: function(id) {
 		this.id = id || 0;
-		this.timezone = timezone || '';
-		this.offset = offset || 0;
-		this._location = location || new Whendle.Location();
+		this.woeid = 0;
+
+		this.name = '';
+		this.admin = '';
+		this.country = '';
+
+		this.latitude = 0;
+		this.longitude = 0;
+		
+		this.timezone = '';
 	}
 });
 
+Whendle.Place.Format_area = function(place) {
+	var format = '';
+	var has_admin = place.admin.length > 0;
+	var has_country = place.country.length > 0;
+	if (has_admin && has_country) {
+		format = $.string('location_area_admin_country', '#{admin}, #{country}');
+	}
+	else if (has_admin) {
+		format = $.string('location_area_admin', '#{admin}');
+	}
+	else if (has_country) {
+		format = $.string('location_area_country', '#{country}');
+	}
 
-Whendle.Clock.from_location = function(location) {
-	return new Whendle.Clock(0, '', 0, location);
+	return format.interpolate(place);
 }
 
-with (Whendle.Clock.prototype) {
-	__defineGetter__('location', function() { return this._location.name; });
-	__defineGetter__('area', function() { return this._location.area; });
-	__defineGetter__('country', function() { return this._location.country; });
-	__defineGetter__('district', function() { return this._location.district; });
-	__defineGetter__('latitude', function() { return this._location.latitude; });
-	__defineGetter__('longitude', function() { return this._location.longitude; });
-}
-
-Whendle.Clock.Format_place = function(name, district, country) {
-	return new Whendle.Location(name, district, country).area;
-}
-
-Whendle.Clock.Format_day = function(today, other_day) {
+Whendle.Place.Format_day = function(today, other_day) {
 	var here = today.clone().hour(0).minute(0).second(0);
 	var there = other_day.clone().hour(0).minute(0).second(0);
 	return there.compare(here) < 0
@@ -59,7 +65,7 @@ Whendle.Clock.Format_day = function(today, other_day) {
 			? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
 }
 
-Whendle.Clock.Format_time = function(time, pattern) {
+Whendle.Place.Format_time = function(time, pattern) {
 	var hour = time.hour()
 	var minute = time.minute().toPaddedString(2);
 	

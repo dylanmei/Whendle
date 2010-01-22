@@ -1,6 +1,6 @@
 
 describe 'Gallery'
-	clock_repository = new Object
+	place_repository = new Object
 
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
@@ -13,18 +13,20 @@ describe 'Gallery'
 	presenter = new Whendle.Gallery.Presenter(view,
 		timekeeper,
 		new Object,
-		clock_repository
+		place_repository
 	)
 	
-	new_clock_record = function(id) { return {'id': id, 'name': '', 'timezone': '', 'place': '', 'latitude': 0, 'longitude': 0 } }
+	new_place_record = function(id) {
+		return { 'id': id, 'name': '', 'timezone': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
+	}
 	
 	describe 'handling a system change'
 		before
 			a = null
 			b = null
 			e = null
-			clock_repository.get_clocks = function(on_result) {
-				on_result([ new_clock_record(1), new_clock_record(2) ])
+			place_repository.get_places = function(on_result) {
+				on_result([ new_place_record(1), new_place_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }
 			timekeeper.fire(Whendle.Event.system, 'test reason')
@@ -48,8 +50,8 @@ describe 'Gallery'
 			a = null
 			b = null
 			e = null
-			clock_repository.get_clocks = function(on_result) {
-				on_result([ new_clock_record(1), new_clock_record(2) ])
+			place_repository.get_places = function(on_result) {
+				on_result([ new_place_record(1), new_place_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }
 			timekeeper.fire(Whendle.Event.timer, {})

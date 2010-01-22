@@ -69,9 +69,9 @@ Whendle.SchemaService = Class.create({
 				  new Whendle.DatabaseStatement('drop table \'whendle\'', [])
 //					.complete(function() { $.trace('whendle dropped') })
 //					.exception(function(e) { $.trace('could not drop whendle:', e.message) }),
-				, new Whendle.DatabaseStatement('drop table \'clocks\'', [])
-//					.complete(function() { $.trace('clocks dropped') })
-//					.exception(function(e) { $.trace('could not drop clocks:', e.message) }),
+				, new Whendle.DatabaseStatement('drop table \'places\'', [])
+//					.complete(function() { $.trace('places dropped') })
+//					.exception(function(e) { $.trace('could not drop places:', e.message) }),
 			]
 		);
 	},
