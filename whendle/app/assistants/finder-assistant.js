@@ -75,7 +75,7 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	
 	empty: function() {
 		this.model.text = '';
-		this.loaded([], 0, 0);
+		this.found({ results: [], index: 0, total: 0 });
 	},
 
 	search: function(text, index) {
@@ -103,9 +103,13 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	update_status: function(count, total) {
 		var remaining = total - count;
 		var message = (remaining <= 0)
-			? ''
+			? total == 0 ? $.string('finder_no_results') : ''
 			: $.string('finder_more_results').interpolate({ 'count': remaining });
 		this.status.mojo.stop(message);
+	},
+	
+	activate: function() {
+		this.status.mojo.stop($.string('finder_type_to_find_a_location'));
 	},
 	
 	cleanup: function(event) {
