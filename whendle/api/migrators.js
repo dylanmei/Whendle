@@ -81,7 +81,9 @@ Whendle.Migrator_0_1 = Class.create(Whendle.Migrator, {
 			on_complete, on_error, 'insert version 0.1');
 		this.queue_job('create table \'places\' (id integer primary key autoincrement not null, name text not null, admin text, country text, latitude real, longitude real, timezone text, woeid integer, type integer)', [],
 			on_complete, on_error, 'create places table');
-		
+		this.queue_job('insert into \'places\' (name,admin,country,latitude,longitude,timezone,woeid,type) values (?,?,?,?,?,?,?,?)',
+			['Sunnyvale', 'California', 'United States', 37.371609, -122.038254, 'America/Los_Angeles', 2502265, 7],
+			on_complete, on_error, 'insert default place');
 		$super(on_complete, on_error);
 	}
 });
