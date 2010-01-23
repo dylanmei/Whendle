@@ -13,7 +13,7 @@ describe 'Spotlight'
 	presenter = new Whendle.Spotlight.Presenter(view, timekeeper, place_repository)
 	
 	new_place_record = function(id) {
-		return { 'id': id, 'name': '', 'timezone': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
+		return { 'id': id, 'name': 'a', 'timezone': '', 'admin': 'b', 'country': 'c', 'latitude': 0, 'longitude': 0 }
 	}
 
 	describe 'handling a system change'
@@ -24,12 +24,17 @@ describe 'Spotlight'
 			place_repository.get_place = function(id, on_result) {
 				on_result(new_place_record(1))
 			}
-			view.clock_changed = function(event) { a = event.clock; b = event.reason; e = event.error; }
+			view.changed = function(event) { a = event.clock; b = event.reason; e = event.error; }
+			view.fire(Whendle.Event.loading, { id: 1 })
 			timekeeper.fire(Whendle.Event.system, 'test reason')
 		end
 		
 		it 'loads the clocks'
 			a.should.have_property 'id', 1
+			a.should.have_property 'title',  'a'
+			a.should.have_property 'subtitle', 'b, c'
+			a.should.have_property 'display'
+			a.should.have_property 'day'
 		end
 
 		it 'provides the reason'
@@ -50,11 +55,16 @@ describe 'Spotlight'
 				on_result(new_place_record(1))
 			}
 			view.clock_changed = function(event) { a = event.clock; b = event.reason; e = event.error; }
+			view.fire(Whendle.Event.loading, { id: 1 })
 			timekeeper.fire(Whendle.Event.timer, {})
 		end
 		
 		it 'loads the clocks'
 			a.should.have_property 'id', 1
+			a.should.have_property 'title',  'a'
+			a.should.have_property 'subtitle', 'b, c'
+			a.should.have_property 'display'
+			a.should.have_property 'day'
 		end
 
 		it 'provides the reason'

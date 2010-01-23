@@ -68,7 +68,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_clock_tapped: function(event) {
 		var clock = event.item;
-		Mojo.Controller.stageController.pushScene({ name: 'spotlight' }, clock);
+		Mojo.Controller.stageController.pushScene({ name: 'spotlight' }, clock.id);
 	},
 	
 	on_remove_clock: function(event) {

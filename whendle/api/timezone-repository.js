@@ -25,8 +25,6 @@
 //
 
 Whendle.Timezone_Repository = Class.create({
-	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
-
 	initialize: function(tzloader) {
 		this._tzloader = tzloader || new Whendle.TzLoader(new Whendle.AjaxService());
 		this._cache = new Hash();

@@ -1,19 +1,15 @@
 
 SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
-	initialize: function($super, clock) {
+	initialize: function($super, id) {
 		$super();
-		this._presenter = new Whendle.Spotlight.Presenter(this);
-		this.clock = clock;
-	},
-	
-	id: function() {
-		return this.clock.id;
+		this.presenter = new Whendle.Spotlight.Presenter(this);
+		this.id = id;
 	},
 	
 	setup: function() {
 		this.setup_model();
 		this.setup_widgets();
-		this.fire(Whendle.Event.loading);
+		this.fire(Whendle.Event.loading, { id: this.id });
 	},
 	
 	setup_model: function() {
@@ -38,14 +34,13 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.setup_drawer('maps');
 		this.setup_drawer('pictures');
 		this.setup_drawer('twitter');
-		this.write_header();
 	},
 	
-	write_header: function() {
-		$('spotlight-title').innerHTML = this.clock.title;
-		$('spotlight-subtitle').innerHTML = this.clock.subtitle;
-		$('spotlight-time').innerHTML = this.clock.display;
-		$('spotlight-day').innerHTML = this.clock.day;
+	write_header: function(clock) {
+		$('spotlight-title').innerHTML = clock.title;
+		$('spotlight-subtitle').innerHTML = clock.subtitle;
+		$('spotlight-time').innerHTML = clock.display;
+		$('spotlight-day').innerHTML = clock.day;
 	},
 	
 	setup_drawer: function(drawer_key) {
@@ -79,17 +74,16 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		$.trace('notify called');
 	},
 	
-	clock_loaded: function(event) {
-		$.trace('loaded called');
+	loaded: function(event) {
+		this.write_header(event.clock);
 	},
 	
-	clock_changed: function(event) {
-		this.clock = event.clock;
-		this.write_header();
+	changed: function(event) {
+		this.write_header(event.clock);
 	},
 	
 	cleanup: function(event) {
-		this.fire(Whendle.Event.unloading);
+		this.presenter.destroy();
 	},
 	
 	detach_events: function() {

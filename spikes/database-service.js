@@ -3,7 +3,16 @@ DatabaseService = Class.create({
 		if (statement == 'select * from places') {
 			on_results(document.clocks);
 		}
+		if (statement.startsWith('select * from places where id=')) {
+			on_results([
+				document.places.find(function(p) {
+					return p.id == parameters[0];
+				})
+			]);
+		}
 	},
+	
+	
 	
 	insert: function(statement, parameters, on_results, on_error) {
 		if (statement.startsWith('insert into places')) {

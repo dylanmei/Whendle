@@ -72,6 +72,8 @@ document.observe('dom:loaded', function() {
 			new Timezone_Locator(),
 			new Whendle.Place_Repository(new DatabaseService())
 		);
+		
+		timekeeper.start(new Whendle.Timer(window));
 	});
 });
 
@@ -101,10 +103,9 @@ Timezone_Locator = Class.create(Whendle.Timezone_Locator, {
 //
 
 Gallery = Class.create(Whendle.Gallery.View, {
-	initialize: function($super, startup, timekeeper, timezone_locator, timezone_repository, clock_repository) {
+	initialize: function($super, timekeeper, timezone_locator, timezone_repository, clock_repository) {
 		$super();
 		this.presenter = new Whendle.Gallery.Presenter(this,
-			startup,
 			timekeeper,
 			timezone_locator,
 			timezone_repository,

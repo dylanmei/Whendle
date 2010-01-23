@@ -32,17 +32,11 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 		$super();
 	},
 	
-	id: function() {
-	},
-	
 	// 	event = {
 	//		clock: { id:#, title:'', subtitle:'', display:'', day:'' },
 	//		error: { message:'' }
 	//	}
-	clock_loaded: function() {
-	},
-	
-	clock_unloaded: function() {
+	loaded: function(event) {
 	},
 	
 	// 	event = {
@@ -50,7 +44,7 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 	//		reason: '',
 	//		error: { message:'' }
 	//	}
-	clock_changed: function(event) {
+	changed: function(event) {
 	}
 });
 
@@ -60,68 +54,88 @@ Whendle.Spotlight.Presenter = Class.create({
 		this.place_repository = place_repository || Whendle.place_repository();
 
 		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
-		view.observe(Whendle.Event.unloading, this.on_unloading.bind(this, view));
-
-		this.tick_handler = this.on_timekeeping_tick.bind(this, view);
-		this.system_handler = this.on_timekeeping_change.bind(this, view);
-		this.timekeeper.observe(Whendle.Event.timer, this.tick_handler);
-		this.timekeeper.observe(Whendle.Event.system, this.system_handler);
 	},
 	
-	on_unloading: function(view) {
-		this.timekeeper.ignore(Whendle.Event.timer, this.tick_handler);
-		this.timekeeper.ignore(Whendle.Event.system, this.system_handler);
-		view.clock_unloaded();
+	destroy: function() {
+		if (this.tick_handler)
+			this.timekeeper.ignore(Whendle.Event.timer, this.tick_handler);
+		if (this.system_handler)
+			this.timekeeper.ignore(Whendle.Event.system, this.system_handler);
 	},
 
 	on_loading: function(view, event) {
-		view.clock_loaded();
+		this.destroy();
+		this.wire_timekeeper(view, event.id);
+		
+		var on_error = function(e) {
+			$.trace(e.message);
+		}
+
+		var on_complete = function(view_data) {
+			view.loaded(view_data);
+		}
+		
+		this.load(event.id, on_complete, on_error);
+	},
+
+	wire_timekeeper: function(view, id) {
+		this.timekeeper.observe(Whendle.Event.timer,
+			this.tick_handler = this.on_timekeeping_tick.bind(this, view, id));
+		this.timekeeper.observe(Whendle.Event.system,
+			this.system_handler = this.on_timekeeping_change.bind(this, view, id));
 	},
 	
-	on_timekeeping_tick: function(view, time) {
-		this.on_timekeeping_change(view, 'time');
-	},
-	
-	on_timekeeping_change: function(view, reason) {
+	load: function(id, on_complete, on_error) {
 		var self = this;
 		var now = this.timekeeper.time;
 		var format = this.timekeeper.format;
 
-		var on_ready = function(place) {
-			var clock = {
+		var on_loaded = function(place) {
+			self.adjust_clock(place, function(place) {
+				var view_data = self.pack_clock_for_view(place, now, format);
+				on_complete(view_data);
+			})
+		}
+		
+		this.place_repository.get_place(id, on_loaded, on_error)
+	},
+	
+	on_timekeeping_tick: function(view, id, time) {
+		this.on_timekeeping_change(view, id, 'time');
+	},
+	
+	on_timekeeping_change: function(view, id, reason) {
+
+		var on_error = function(e) {
+			$.trace(e.message);
+		}
+
+		var on_complete = function(view_data) {
+			view_data.reason = reason;
+			view.changed(view_data);
+		}
+		
+		this.load(id, on_complete, on_error);
+	},
+	
+	pack_clock_for_view: function(place, now, format) {
+		return {
+			clock: {
 				id: place.id,
 				title: place.name,
 				subtitle: Whendle.Place.Format_area(place),
 				display: Whendle.Place.Format_time(place.time, format),
 				day: Whendle.Place.Format_day(now, place.time)
 			}
-			
-			view.clock_changed({ 'clock': clock, 'reason': reason })
 		};
-
-		var on_load = function(place) {
-			self.adjust_clock(place, on_ready);
-		}
-
-		var on_error = function(e) {
-			$.trace(e.message);
-		}
-		
-		this.load_clock(view.id(), on_load, on_error);
-	},
+	},	
 	
 	adjust_clock: function(clock, on_complete) {
-
-		
 		this.timekeeper.offset_time(clock.timezone,
 			function(time) {
 				clock.time = time;
 				on_complete(clock);
 			}
 		);
-	},
-
-	load_clock: function(id, on_complete, on_error) {
-		this.place_repository.get_place(id, on_complete, on_error);
 	}
 });
