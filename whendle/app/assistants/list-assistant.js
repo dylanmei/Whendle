@@ -83,7 +83,6 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		event.clocks.each(function(c) { items.push(c); });
 
 		this.controller.modelChanged(this.model, this);
-		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
 	},
 
 	added: function(event) {
@@ -133,12 +132,17 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	},
 
 	activate: function(place) {
+		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
+
 		if (place && place.name) {
 			this.growler.mojo.spin('Adding ' + place.name + '...');
 			// assuming we have come from the finder
 			// after the user has found a location...
 			this.fire(Whendle.Event.adding, { 'place': place });
 		}
+		
+		var profile = Whendle.profile();
+		profile.data('gallery', 'list');
 	},
 	
 	deactivate: function(event) {

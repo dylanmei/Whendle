@@ -13,8 +13,6 @@ Mojo.Widget.Map = Class.create({
 		this.attach_events();
 		this.load_resources();
 		this.controller.exposeMethods(['sun', 'draw', 'orientate', 'mark', 'go']);
-		
-		this.go({ x: 0, y: 0 });
 	},
 	
 	make_identifier: function() {
@@ -225,6 +223,12 @@ Mojo.Widget.Map = Class.create({
 		this.move_canvas(this.core, core_x, y);
 		this.move_canvas(this.seam, seam_x, y);
 		this.move_marks();
+		
+		this.fire_location_changed(coordinate);
+	},
+	
+	fire_location_changed: function(coordinate) {
+		Mojo.Event.send(this.controller.element, ':location', { location: coordinate });
 	},
 
 	move_canvas: function(canvas, x, y) {

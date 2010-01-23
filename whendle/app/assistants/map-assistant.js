@@ -6,6 +6,9 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	loaded: function(event) {
+		var profile = Whendle.profile();
+		var location = profile.data('location');
+		
 		var now = event.now;
 		var map = this.map;
 		
@@ -15,12 +18,14 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		var clocks = event.clocks;
 		for (var i = 0; i < clocks.length; i++) {
 			var clock = clocks[i];
-			var location = { x: clock.longitude, y: clock.latitude };
-			map.mojo.mark(clock.id, clock.title, clock.time, location);
-			if (i == 0) {
-				map.mojo.go(location);
+			var coordinate = { x: clock.longitude, y: clock.latitude };
+			map.mojo.mark(clock.id, clock.title, clock.time, coordinate);
+			if (i == 0 && location == null) {
+				location = coordinate;
 			}
 		}
+
+		map.mojo.go(location);
 	},
 	
 	added: function(event) {
@@ -79,8 +84,10 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	attach_events: function() {
 		this.controller.listen(this.growler.id, Mojo.Event.tap,
 			this.growler.tap_handler = this.on_growler_tapped.bind(this));
-	this.controller.listen(document, 'orientationchange',
-		this.orientation_handler = this.on_orientation_changed.bind(this));
+		this.controller.listen(document, 'orientationchange',
+			this.orientation_handler = this.on_orientation_changed.bind(this));
+		this.controller.listen(this.map.id, ':location',
+			this.map.location_handler = this.on_location_changed.bind(this));
 	},
 	
 	on_growler_tapped: function() {
@@ -114,9 +121,17 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		stage_controller.setWindowOrientation(orientation);
 		this.map.mojo.orient(orientation);
 	},
+	
+	on_location_changed: function(event) {
+		var profile = Whendle.profile();
+		profile.data('location', event.location);
+	},
 
 	activate: function() {
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
+
+		var profile = Whendle.profile();
+		profile.data('gallery', 'map');
 	},
 	
 	deactivate: function() {
@@ -128,5 +143,6 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	
 	detach_events: function() {
 		this.controller.stopListening(this.growler, Mojo.Event.tap, this.growler.tap_handler);
+		this.controller.stopListening(this.map, ':location', this.map.location_handler);
 	}
 });

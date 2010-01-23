@@ -2,7 +2,7 @@
 StartupAssistant = Class.create(Whendle.Startup.View, {
 	initialize: function($super) {
 		$super();
-		new Whendle.Startup.Presenter(this, Whendle.startup());
+		new Whendle.Startup.Presenter(this);
 	},
 	
 	setup: function() {

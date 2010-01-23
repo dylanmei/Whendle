@@ -48,8 +48,9 @@ Whendle.Startup.View = Class.create(Whendle.Observable, {
 
 Whendle.Startup.Presenter = Class.create({
 
-	initialize: function(view, startup) {
+	initialize: function(view, startup, profile) {
 		this.startup = startup || Whendle.startup();
+		this.profile = profile || Whendle.profile();
 		
 		view.observe(':starting',
 			this.on_starting.bind(this, view));
@@ -89,7 +90,7 @@ Whendle.Startup.Presenter = Class.create({
 	
 	on_startup_ready: function(view) {
 		view.started({
-			scene: 'list'
+			'scene': this.profile.data('gallery') || 'list'
 		});
 	},
 	

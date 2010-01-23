@@ -31,6 +31,7 @@
 	{ "source": "api\/wait.js" },
 	{ "source": "api\/observable.js" },
 	{ "source": "api\/palm-service.js" },
+	{ "source": "api\/profile.js" },
 	{ "source": "api\/database-service.js" },
 	{ "source": "api\/schema-service.js" },
 	{ "source": "api\/timezone-locator.js" },

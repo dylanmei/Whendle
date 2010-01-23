@@ -13,6 +13,7 @@ StageAssistant.prototype.setup_services = function() {
 	var database = new Whendle.DatabaseService();
 
 	Whendle.services('Whendle.system', new Whendle.PalmService());
+	Whendle.services('Whendle.profile', new Whendle.Profile());
 	Whendle.services('Whendle.database', database);
 	Whendle.services('Whendle.schema', new Whendle.SchemaService(database));
 	Whendle.services('Whendle.place-repository', new Whendle.Place_Repository(database));

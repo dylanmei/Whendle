@@ -63,6 +63,10 @@ Whendle = {
 		return Whendle.services('Whendle.system');
 	},
 	
+	profile: function() {
+		return Whendle.services('Whendle.profile');
+	},
+	
 	startup: function() {
 		return Whendle.services('Whendle.startup');
 	},
