@@ -12,9 +12,15 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		map.mojo.sun(now.declination, now.hour_angle);
 		map.mojo.draw();
 		
-		event.clocks.each(function(c) {
-			map.mojo.mark(c.id, c.title, c.time, { x: c.longitude, y: c.latitude });
-		});
+		var clocks = event.clocks;
+		for (var i = 0; i < clocks.length; i++) {
+			var clock = clocks[i];
+			var location = { x: clock.longitude, y: clock.latitude };
+			map.mojo.mark(clock.id, clock.title, clock.time, location);
+			if (i == 0) {
+				map.mojo.go(location);
+			}
+		}
 	},
 	
 	added: function(event) {

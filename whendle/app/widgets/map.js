@@ -12,7 +12,7 @@ Mojo.Widget.Map = Class.create({
 		this.setup_children(id);
 		this.attach_events();
 		this.load_resources();
-		this.controller.exposeMethods(['sun', 'draw', 'orientate', 'mark']);
+		this.controller.exposeMethods(['sun', 'draw', 'orientate', 'mark', 'go']);
 		
 		this.go({ x: 0, y: 0 });
 	},
