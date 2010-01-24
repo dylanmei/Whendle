@@ -125,7 +125,9 @@ Whendle.Spotlight.Presenter = Class.create({
 				title: place.name,
 				subtitle: Whendle.Place.Format_area(place),
 				display: Whendle.Place.Format_time(place.time, format),
-				day: Whendle.Place.Format_day(now, place.time)
+				day: Whendle.Place.Format_day(now, place.time),
+				longitude: place.longitude,
+				latitude: place.latitude
 			}
 		};
 	},	

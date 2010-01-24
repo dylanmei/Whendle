@@ -23,6 +23,7 @@
 	<script src="../whendle/api/spotlight.js" type="text/javascript"></script>
 	<script src="database-service.js" type="text/javascript"></script>
 	<script src="system-service.js" type="text/javascript"></script>
+	<script src="tyler.js" type="text/javascript"></script>
 	<script>
 
 $.trace = function() { console.log($A(arguments).join(' ')); }
@@ -31,7 +32,7 @@ document.tzone = 'America/Los_Angeles';
 document.tformat = 'HH12';
 document.tzpath = '../whendle/tzdata'; // firefox set ~ security.fileuri.strict_origin_policy = false
 document.places = [
-	  { id: 1, name: 'Seattle', admin: 'Washington', country: 'United States', latitude: 47.6, longitude: -122.3, timezone: 'America/Los_Angeles' }
+	  { id: 1, name: 'Seattle', admin: 'Washington', country: 'United States', latitude: 47.64016717530487, longitude: -122.44181251718135, timezone: 'America/Los_Angeles' }
 	, { id: 2, name: 'Sao Paulo', admin: 'Sao Paulo', country: 'Brazil', latitude: -23.5, longitude: -46.6, timezone: 'America/Sao_Paulo' }
 	, { id: 3, name: 'London', admin: 'England', country: 'United Kingdom', latitude: 51.5, longitude: -0.12, timezone: 'Europe/London' }
 	, { id: 4, name: 'Berlin', admin: 'Berlin', country: 'Germany', latitude: 52.51, longitude: 13.4, timezone: 'Europe/Berlin' }
@@ -39,7 +40,7 @@ document.places = [
 	, { id: 6, name: 'Sydney', admin: 'New South Wales', country: 'Australia', latitude: -33.8, longitude: 151.2, timezone: 'Australia/Sydney' }
 	, { id: 7, name: 'Mexico City', admin: 'The Federal District', country: 'Mexico', latitude: 19.26, longitude: -99.8, timezone: 'America/Mexico_City' }
 	, { id: 8, name: 'Ottawa', admin: 'Ontario', country: 'Canada', latitude: 45.25, longitude: -75.43, timezone: 'America/Toronto' }
-	, { id: 9, name: 'Johannesburg', admin: 'Gauteng', country: 'South Africa', latitude: -26.08, longitude: 27.54, timezone: 'Africa/Johannesburg' }
+	, { id: 9, name: 'Cape Town', admin: 'Western Cape', country: 'South Africa', latitude: -33.98820755384909, longitude: 18.435457266784795, timezone: 'Africa/Johannesburg' }
 	, { id: 10, name: 'Tokyo', admin: 'Tokyo', country: 'Japan', latitude: 35.41, longitude: 139.44, timezone: 'Asia/Tokyo' }
 ];
 
@@ -76,7 +77,18 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	setup: function() {
-		this.page = new Page($('spotlight'));
+		this.options = new Options();
+		this.tyler = new Tyler($('tyler'));
+		this.tyler.setup({
+			width: window.innerWidth,
+			height: window.innerHeight
+		});
+		
+		this.tyler.observe('tyler:ready',
+			this.on_tyler_ready.bind(this));
+	},
+	
+	on_tyler_ready: function() {
 	},
 	
 	load: function(id) {
@@ -84,32 +96,45 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	loaded: function(event) {
-		this.write_header(event.clock);
+		var clock = event.clock;
+		this.write_header(clock);
+		this.tyler.go(clock.longitude, clock.latitude);
 	},
 	
 	write_header: function(clock) {
-		this.page.title(clock.title);
-		this.page.subtitle(clock.subtitle);
-		this.page.time(clock.display);
-		this.page.day(clock.day);
-	},
-	
-	unloaded: function() {
+		this.title(clock.title);
+		this.subtitle(clock.subtitle);
+		this.time(clock.display);
+		this.day(clock.day);
 	},
 	
 	changed: function(event) {
 		this.write_header(event.clock);
-	}
-});
-
-Page = Class.create(Whendle.Observable, {
-	initialize: function($super, element) {
-		$super();
-		this.element = element;
-		this.setup();
 	},
 	
-	setup: function() {
+	changed: function(event) {
+		this.write_header(event.clock);
+	},
+	
+	title: function(v) {
+		$('spotlight-title').innerHTML = v;
+	},
+	
+	subtitle: function(v) {
+		$('spotlight-subtitle').innerHTML = v;
+	},
+	
+	time: function(v) {
+		$('spotlight-time').innerHTML = v;
+	},
+	
+	day: function(v) {
+		$('spotlight-day').innerHTML = v;
+	}	
+});
+
+Options = Class.create({
+	initialize: function() {
 		$('options').observe('click', this.on_options_click.bind(this));
 		$('finder').observe('click', this.on_finder_click.bind(this));
 		$('formatter').observe('click', this.on_formatter_click.bind(this));
@@ -117,9 +142,9 @@ Page = Class.create(Whendle.Observable, {
 		var self = this;
 		document.places.each(function(p) {
 			self.add_place_to_finder(p.name);
-		});			
+		});
 	},
-
+	
 	add_place_to_finder: function(name) {
 		var li = new Element('li');
 		li.innerHTML = name;
@@ -169,42 +194,28 @@ Page = Class.create(Whendle.Observable, {
 			document.system.timeformat(format);
 		}
 		$('formatter').hide();
-	},
-
-	title: function(v) {
-		$('spotlight-title').innerHTML = v;
-	},
-	
-	subtitle: function(v) {
-		$('spotlight-subtitle').innerHTML = v;
-	},
-	
-	time: function(v) {
-		$('spotlight-time').innerHTML = v;
-	},
-	
-	day: function(v) {
-		$('spotlight-day').innerHTML = v;
 	}
-	
 });
 
 	</script>
 	<link href="flex-box.css" media="screen" rel="stylesheet" type="text/css" />
 	<style>
-.app {
-	width: 320px;
-	min-height: 400px;
-	margin: 40px auto;
-	border: 1px solid black;
-	background-color: #efefef;
-	
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	font-size: 0.9em;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 }
 
 .header {
-	padding: 4px;
+	padding-left: 4px;
 	border-bottom: 1px solid #ccc;
+	width: 100%;
+}
+
+#spotlight-subtitle, #spotlight-day {
+	text-align: right;
 }
 
 .drawer-button {
@@ -212,10 +223,17 @@ Page = Class.create(Whendle.Observable, {
 	border-bottom: 1px solid #ccc;
 }
 
-.drawer {
-	display: none;
-	border-bottom: 1px solid #ccc;
-	background-color: #666;
+#options {
+	position: fixed;
+	top: 40px;
+	margin: auto 0;
+	font-size: 0.8em;
+	margin: 10px;
+}
+
+#options .link {
+	border-bottom: 2px solid #393;
+	cursor: pointer;	
 }
 
 ul.selection {
@@ -243,112 +261,35 @@ ul.selection li.emph {
 	color: #55C;
 }
 
-#options {
-	font-size: 0.8em;
-	margin: 10px;
-}
-
-#options .link {
-	border-bottom: 2px solid #393;
-	cursor: pointer;	
-}
 	</style>
 </head>
 <body>
-<div class="app">
-	<div id="list">
-		<div id="spotlight">
-			<div class="palm-page-header multi-line header">
-				<div class="palm-page-header-wrapper hbox">
-					<div>
-						<div id="spotlight-title"></div>
-						<div id="spotlight-subtitle"></div>
-					</div>
-					<div class="spacer"></div>
-					<div>
-						<div id="spotlight-time"></div>
-						<div id="spotlight-day"></div>
-					</div>
-				</div>
-			</div>
 
-			<div class="palm-list">
-				<div class="palm-row drawer-button">
-					<div class="palm-row-wrapper">
-						<div x-mojo-element="Spinner" id="weather-spinner"></div>
-						<div class="left icon spotlight-icon weather"></div>
-						<div class="title">Weather</div>
-					</div>
-				</div>
-				
-				<div class="drawer" x-mojo-element="Drawer" id="weather-drawer">
-					<div class="palm-row">
-						<div class="palm-row-wrapper">Weather...</div>
-					</div>
-				</div>
-				
-				<div class="palm-row drawer-button first">
-					<div class="palm-row-wrapper">
-						<div  x-mojo-element="Spinner" id="maps-spinner"></div>
-						<div class="left icon spotlight-icon maps"></div>
-						<div class="title">Maps</div>
-					</div>
-				</div>
-				
-				<div class="drawer" x-mojo-element="Drawer" id="maps-drawer">
-
-					<div class="palm-row">
-						<div class="palm-row-wrapper">Maps...</div>
-					</div>
-
-				</div>
-				
-				<div class="palm-row drawer-button">
-					<div class="palm-row-wrapper">
-						<div x-mojo-element="Spinner" id="pictures-spinner"></div>
-						<div class="left icon spotlight-icon pictures"></div>
-						<div class="title">Pictures</div>
-					</div>
-				</div>
-				
-				<div class="drawer" x-mojo-element="Drawer" id="pictures-drawer">
-					
-					<div class="palm-row">
-						<div class="palm-row-wrapper">Pictures...</div>
-					</div>
-					
-				</div>
-
-				<div class="palm-row drawer-button last">
-					<div class="palm-row-wrapper">
-						<div x-mojo-element="Spinner" id="twitter-spinner"></div>
-						<div class="left icon spotlight-icon twitter"></div>
-						<div class="title">Twitter</div>
-					</div>
-				</div>
-
-				<div class="drawer" x-mojo-element="Drawer" id="twitter-drawer">
-					<div class="palm-row">
-						<div class="palm-row-wrapper">Twitter...</div>
-					</div>
-				</div>
-			</div>
+<div class="header">
+	<div class="hbox">
+		<div>
+			<div id="spotlight-title"></div>
+			<div id="spotlight-subtitle"></div>
 		</div>
-		<div id="options">
-			change the <span class="link">location</span>,
-			
-			change the <span class="link">format</span>
+		<div class="spacer"></div>
+		<div>
+			<div id="spotlight-time"></div>
+			<div id="spotlight-day"></div>
 		</div>
 	</div>
 </div>
 
+<div id="options">
+	change the <span class="link">location</span>,
+	change the <span class="link">format</span>
+</div>
 
-<ul id="finder" class="selection" style="display:none;min-width:120px">
-</ul>
+<canvas id="tyler"></canvas>
+
+<ul id="finder" class="selection" style="display:none;min-width:120px"></ul>
 <ul id="formatter" class="selection" style="display:none;min-width:80px">
 	<li value="HH12">12 Hour</li>
 	<li value="HH24">24 Hour</li>
 </ul>
-
 </body>
 </html>
