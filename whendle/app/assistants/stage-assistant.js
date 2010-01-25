@@ -31,7 +31,7 @@ StageAssistant.prototype.handleCommand = function(event) {
 	if (event.command == 'add') {
 		this.controller.pushScene({ name: 'finder' });
 	}
-	else {
+	else if (event.command =='list' || event.command == 'map') {
 		var scene = this.controller.activeScene();
 		if (event.command == 'list' && scene.sceneName == 'list') return;
 		if (event.command == 'map'  && scene.sceneName == 'map')  return;
