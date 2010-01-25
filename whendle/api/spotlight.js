@@ -105,7 +105,6 @@ Whendle.Spotlight.Presenter = Class.create({
 	},
 	
 	on_timekeeping_change: function(view, id, reason) {
-
 		var on_error = function(e) {
 			$.trace(e.message);
 		}
