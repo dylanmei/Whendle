@@ -16,8 +16,13 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	setup_widgets: function() {
+		viewport = Mojo.View.getViewportDimensions(this.controller.document);
+
 		this.tyler = this.controller.get('spotlight-tyler');
-		this.controller.setupWidget(this.tyler.id, {}, {});
+		this.controller.setupWidget(this.tyler.id, {
+			width: viewport.width,
+			height: viewport.height - 72
+		});
 		this.controller.listen(this.tyler, 'tyler:ready',
 			this.tyler.ready_handler = this.on_tyler_ready.bind(this));
 	},
