@@ -79,9 +79,10 @@ Tyler = Class.create({
 		
 		this.busy = true;
 		this.requests = [];
-		this.load_tiles
-			.bind(this)
-			.defer(tiles);
+		this.load_tiles(tiles);
+//		this.load_tiles
+//			.bind(this)
+//			.defer(tiles);
 	},
 	
 	new_tile: function(column, row, grid, offset) {

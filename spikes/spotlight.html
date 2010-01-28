@@ -9,6 +9,7 @@
 	-->
 	<script src="prototype.js" type="text/javascript"></script>
 	<script src="../whendle/api/whendle.js" type="text/javascript"></script>
+	<script src="../whendle/api/yahoo.js" type="text/javascript"></script>
 	<script src="../whendle/api/time.js" type="text/javascript"></script>
 	<script src="../whendle/api/wait.js" type="text/javascript"></script>
 	<script src="../whendle/api/place.js" type="text/javascript"></script>
@@ -78,29 +79,144 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 	
 	setup: function() {
 		this.options = new Options();
-		this.tyler = new Tyler($('tyler'));
-		this.tyler.setup({
-			width: window.innerWidth,
-			height: window.innerHeight
-		});
 		
-		this.tyler.observe('tyler:ready',
-			this.on_tyler_ready.bind(this));
+		this.setup_tyler();
+		this.setup_carousel();
+		this.setup_slides();
 	},
 	
-	on_tyler_ready: function() {
+	setup_tyler: function() {
+		var extent = this.extent();
+		this.tyler = new Tyler($('tyler'));
+		this.tyler.setup({
+			width: extent.x,
+			height: extent.y
+		});
+	},
+	
+	setup_carousel: function() {
+		var carousel = $('carousel');
+		var extent = this.extent();
+		carousel.setStyle({
+			width: extent.x + 'px',
+			height: extent.y + 'px'
+		});
+		
+		carousel.insert(new Element('div', { 'class': 'tray' }));
+	},
+	
+	setup_slides: function() {
+		this.slides = [];
+		this.slides.push(new Weather_Slide());
+		this.slides.push(new Flickr_Slide());
+	},
+	
+	extent: function() {
+		return {
+			x: window.innerWidth,
+			y: window.innerHeight
+		}
 	},
 	
 	load: function(id) {
 		this.fire(Whendle.Event.loading, { 'id': id });
+
+		if (this.timer)
+			this.timer.stop();
 	},
 	
 	loaded: function(event) {
 		var clock = event.clock;
 		this.write_header(clock);
 		this.tyler.go(clock.longitude, clock.latitude);
+		
+		this.start_sliding(clock);
 	},
 	
+	start_sliding: function(clock) {
+		if (this.slides.length == 0) return;
+
+		this.slides.each(function(s) {
+			s.setup(clock);
+		});
+		
+		// do the first slide...
+
+		var slide = this.slides[0];
+		slide.invoke(this.on_first_slide.bind(this));
+		
+		// run the slides randomly
+		this.timer = new PeriodicalExecuter(
+			this.next_slide.bind(this), 10);
+	},
+	
+	next_slide: function() {
+		var index = Math.floor(Math.random() * this.slides.length);
+		var slide = this.slides[index];
+		slide.invoke(this.on_next_slide.bind(this));
+	},
+	
+	on_first_slide: function(element, backdrop) {
+		var tray = $('carousel')
+			.childElements().first();
+		tray.insert(element);
+		if (backdrop) {
+			this.show_backdrop(backdrop);
+		}
+	},
+	
+	show_backdrop: function(backdrop) {
+		var extent = this.extent();
+		
+		var x = extent.x / 2;
+		var y = extent.y / 2;
+		var w = backdrop.getWidth();
+		var h = backdrop.getHeight();
+		
+		if (w < extent.x) w = extent.x;
+		if (h < extent.y) h = extent.y;
+
+		backdrop.addClassName('backdrop');
+		backdrop.setStyle({
+			top: (y - h / 2) + 'px',
+			left: (x - w / 2) + 'px',
+			width: w + 'px',
+			height: h + 'px'
+		});
+
+		$('carousel').insert(backdrop);
+	},
+	
+	on_next_slide: function(info, backdrop) {
+		this.clear_tray();
+		this.clear_backdrop();
+
+		var tray = $('carousel').down('.tray');
+		tray.insert(info);
+		$.trace('info inserted!');
+		
+		if (backdrop) {
+			this.show_backdrop(backdrop);
+		}
+	},
+
+	clear_backdrop: function() {
+		var backdrop = $('carousel').down('.backdrop');
+		if (backdrop) {
+			backdrop
+				.removeClassName('backdrop')
+				.remove();
+		}
+	},
+	
+	clear_tray: function() {
+		
+		var tray = $('carousel').down('.tray');
+		tray.childElements().each(function(c) {
+			c.remove();
+		});
+	},
+
 	write_header: function(clock) {
 		this.title(clock.title);
 		this.subtitle(clock.subtitle);
@@ -197,6 +313,408 @@ Options = Class.create({
 	}
 });
 
+Weather_Agent = Class.create({
+	initialize: function(woeid) {
+		this.woeid = woeid || 2502265;
+	},
+	
+	get: function(on_complete, on_error) {
+		var resource = 'http://weather.yahooapis.com/forecastrss?u=c&w=' + this.woeid;
+		
+		new Ajax.Request(resource, {
+			method: 'get',
+			asynchronous: true,
+			onSuccess: this.on_response.bind(this, on_complete),
+			onFailure: this.on_error.bind(this)
+		});
+	},
+	
+	on_response: function(on_complete, transport) {
+		if (transport.responseXML) {
+			var response = transport.responseXML;
+			on_complete(this.rss_to_object(response));
+		}
+	},
+	
+	rss_to_object: function(xml) {
+		return {
+			weather: this.rss_weather_to_object(xml),
+			attribution: this.rss_image_to_object(xml)
+		};
+	},
+	
+	rss_weather_to_object: function(xml) {
+		var d = xml.documentElement;
+		
+		var condition = d.querySelector('item condition');
+		var forecast1 = d.querySelector('item forecast:first-of-type');
+		var forecast2 = d.querySelector('item forecast:last-of-type');
+
+		return {
+			code: condition.getAttribute('code'),
+			temp: condition.getAttribute('temp'),
+			today: {
+				code: forecast1.getAttribute('code'),
+				high: forecast1.getAttribute('high'),
+				low: forecast1.getAttribute('low')
+			},
+			tomorrow: {
+				code: forecast2.getAttribute('code'),
+				high: forecast2.getAttribute('high'),
+				low: forecast2.getAttribute('low')
+			}
+		};
+	},
+	
+	rss_image_to_object: function(xml) {
+		var d = xml.documentElement;
+		
+		return {
+			text: d.querySelector('image title').textContent,
+			width: d.querySelector('image width').textContent,
+			height: d.querySelector('image height').textContent,
+			link: d.querySelector('image link').textContent,
+			url: d.querySelector('image url').textContent
+		};
+	},
+	
+	on_error: function(error) {
+		$.trace('error');
+	}
+});
+
+Weather_Slide = Class.create({
+
+	CELCIUS: 'c',
+	FARENHEIT: 'f',
+	
+	initialize: function() {
+		this.div = new Element('div', { 'class': 'weather-slide-tray' });
+	},
+	
+	setup: function(clock) {
+		this.woeid = clock.woeid;
+
+		// in contrast providing random content, this slide cycles through
+		// the current weather, today's forcast, and tomorrow's forecast
+		this.cycle = 0;
+		this.generations = 0;
+	},
+
+	tray: function() {
+		return this.div;
+	},
+	
+	backdrop: function() {
+	},
+	
+	invoke: function(on_ready) {
+		this.div.childElements()
+			.each(function(c) { c.remove(); });
+		
+		var weather = (this.data || {}).weather;
+		var attribution = (this.data || {}).attribution;
+
+		switch (this.cycle) {
+			case 1:
+				this.compose_forecast('today', weather.today, attribution);
+				on_ready(this.tray(), this.backdrop());
+				this.cycle = 2;
+				break;
+			case 2:
+				this.compose_forecast('tomorrow', weather.tomorrow, attribution);
+				on_ready(this.tray(), this.backdrop());
+				this.cycle = 0;
+				break;
+			default:
+				if (this.generations == 0) {
+					this.generations = 10;
+					$.trace('fetching weather');
+					new Weather_Agent(this.woeid).get(
+						this.on_weather_value.bind(this, on_ready),
+						this.on_weather_error.bind(this, on_ready)
+					);
+				}
+				else {
+					this.generations--;
+					this.compose_weather(weather, attribution);
+					on_ready(this.tray(), this.backdrop());
+				}
+				this.cycle = 1;
+				break;
+		}
+	},
+	
+	on_weather_value: function(on_ready, data) {
+		this.data = data;
+		this.compose_weather(data.weather, data.attribution);
+		on_ready(this.tray(), this.backdrop());
+	},
+
+	on_weather_error: function(on_ready) {
+		this.div.insert(new Element('div', { 'class': 'error' })
+			.update('Weather service unreachable'));
+		
+		on_ready(this.tray());
+	},
+	
+	compose_weather: function(weather, attribution) {
+		this.div.insert(
+			this.new_weather_element(weather.code, weather.temp));
+		this.div.insert(
+			this.new_attribution(attribution.text));
+	},
+	
+	compose_forecast: function(day, forecast, attribution) {
+		this.div.insert(
+			this.new_forecast_element(day, forecast.code, forecast.high, forecast.low));
+		this.div.insert(
+			this.new_attribution(attribution.text));
+	},
+	
+	new_forecast_element: function(day, code, high, low) {
+		/*
+		<div class="forecast">
+			<div class="temperature">tomorrow high: 15c, low: 8c</div>
+			<div class="condition">partly cloudly</div>
+		</div>
+		*/
+		
+		var template = day == 'today' ?
+			$.string('temperature_forecast_today', 'today\'s high #{high}, low #{low}') :
+			$.string('temperature_forecast_tomorrow', 'tomorrow\'s high #{high}, low #{low}');
+		
+		var forecast = template.interpolate({
+			high: this.format_temperature(high),
+			low: this.format_temperature(low)
+		});
+		
+		return new Element('div', { 'class': 'forecast' })
+			.insert(new Element('div', { 'class': 'temperature' }).update(forecast))
+			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
+	},
+	
+	new_weather_element: function(code, temp) {
+		/*
+		<div class="currently">
+			<div class="temperature">12c</div>
+			<div class="condition">partly cloudly</div>
+		</div>
+		*/
+
+		return new Element('div', { 'class': 'currently' })
+			.insert(new Element('div', { 'class': 'temperature' }).update(this.format_temperature(temp)))
+			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
+	},
+	
+	new_attribution: function(text) {
+		return new Element('div', { 'class': 'attribution' })
+			.update(text);
+	},
+	
+	format_temperature: function(t) {
+		if (this.format == 'f') {
+			return $.string('temperature_farenheit', '#{temp}&deg;f')
+				.interpolate(this.celcius_to_farenheit({ temp: t }));
+		}
+		else {
+			return $.string('temperature_celcius', '#{temp}&deg;c').interpolate({ temp: t });
+		}
+	},
+	
+	celcius_to_farenheit: function(c) {
+		return Math.round(5 / 9 * (c - 32));
+	}
+	
+});
+
+Flickr_Agent = Class.create({
+	//http://www.flickr.com/services/api/flickr.photos.search.html
+
+	initialize: function(longitude, latitude) {
+		//this.woeid = woeid || 2502265;
+		this.page_size = 25;
+		this.radius = 20;
+		this.latitude = latitude;
+		this.longitude = longitude;
+	},
+	
+	get: function(on_complete, on_error) {
+		var resource = 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=' + Flickr.APPID;
+//		resource += '&woe_id=' + this.woeid;
+		resource += '&lat=' + this.latitude;
+		resource += '&lon=' + this.longitude;
+		resource += '&per_page=' + this.page_size;
+		resource += '&radius=' + this.radius;
+		resource += '&media=photos';
+		resource += '&content_type=photos';
+		resource += '&safe_search=1';
+		resource += '&sort=date-posted-desc';
+		resource += '&extras=owner_name,date_upload';
+		resource += '&format=json';
+		resource += '&nojsoncallback=1';
+
+		new Ajax.Request(resource, {
+			method: 'get',
+			asynchronous: true,
+			onSuccess: this.on_response.bind(this, on_complete),
+			onFailure: this.on_error.bind(this)
+		});
+	},
+
+	on_response: function(on_complete, transport) {
+		var response = transport.responseText;
+		if (response.isJSON()) {
+			response = response.evalJSON();
+		}
+		
+		on_complete({ photos: this.json_to_photos(response) });
+	},
+	
+	on_error: function(error) {
+		$.trace('error');
+	},
+	
+	json_to_photos: function(data) {
+
+		var root = data.photos;
+		var self = this;
+		return root.photo.collect(function(obj) {
+			return {
+				id: obj.id,
+				farm: obj.farm,
+				server: obj.server,
+				secret: obj.secret,
+				owner: obj.owner,
+				ownername: obj.ownername,
+				title: obj.title,
+				dateupload: self.ticks_to_time(obj.dateupload)
+			};
+		});
+	},
+	
+	ticks_to_time: function(ticks) {
+		var date = Flickr.photo_posted_date(parseInt(ticks));
+		return new Time().date(date);
+	}
+});
+
+
+Flickr_Slide = Class.create({
+	initialize: function() {
+		this.info = new Element('div', { 'class': 'flickr-slide-tray' });
+		this.image = this.new_image();
+	},
+	
+	setup: function(clock) {
+		this.longitude = clock.longitude;
+		this.latitude = clock.latitude;
+		this.photos = [];
+	},
+	
+	new_image: function() {
+		var image = new Image();
+		image.getWidth = function() {
+			return this.width;
+		};
+		image.getHeight = function() {
+			return this.height;
+		};
+		return image;
+	},
+	
+	tray: function() {
+		return this.info;
+	},
+	
+	backdrop: function() {
+		//return this.display;
+		return this.image;
+	},
+	
+	invoke: function(on_ready) {
+		if (this.photos.length) {
+			this.next_photo(this.pop_random_photo(), on_ready);
+		}
+		else {
+			new Flickr_Agent(this.longitude, this.latitude).get(
+				this.on_photo_search.bind(this, on_ready),
+				this.on_photo_error.bind(this, on_ready)
+			);
+		}
+	},
+	
+	pop_random_photo: function() {
+		var photo = this.photos[Math.floor(Math.random() * this.photos.length)];
+		this.photos = this.photos.without(photo);
+		return photo;
+	},
+	
+	next_photo: function(photo, on_ready) {
+		this.image.onload = this.on_photo_ready.bind(this, photo, on_ready);
+		this.image.src = Flickr.photo_src(photo);
+	},
+	
+	on_photo_ready: function(photo, on_ready) {
+		this.compose_photo_info(photo);
+		on_ready(this.tray(), this.backdrop());
+	},
+	
+	on_photo_search: function(on_ready, data) {
+		this.photos = data.photos;
+		this.next_photo(this.pop_random_photo(), on_ready);
+	},
+	
+	on_photo_error: function(on_ready, error) {
+		$.trace('error');
+	},
+	
+	compose_photo_info: function(photo) {
+		this.clear_tray();
+		
+		this.info.insert(this.new_photo_title(photo));
+		this.info.insert(this.new_photo_attribution(photo));
+	},
+	
+	new_photo_title: function(photo) {
+		var title = photo.title.stripTags();
+		if (title.blank()) title = $.string('flickr_empty_title', 'untitled');
+		else title = title.truncate(80, $.string('truncate_ellipses', '...'));
+		
+		var url = Flickr.photo_url(photo);
+		return new Element('div', { 'class': 'title' })
+			.update(title)
+			.observe('click', function() {
+				$.trace(url);
+			});
+	},
+	
+	new_photo_attribution: function(photo) {
+		var container = new Element('div', {'class': 'attribution'});
+
+		container.insert(new Element('span').update($.string('flickr_attribution', 'by')));
+		container.insert(new Element('span', { 'class': 'who' }).update(photo.ownername));
+	
+		var then = photo.dateupload;
+		var now = Time.now().add(
+			Time.minutes,
+			new Date().getTimezoneOffset());
+
+		var when = this.format_time_ago(now, then);
+		container.insert(new Element('span').update(when));
+		
+		return container;
+	},
+	
+	clear_tray: function() {
+		this.info.childElements()
+			.each(function(c) { c.remove(); });
+	},
+	
+	format_time_ago: function(now, then) {
+		return Time.Format_time_ago(now, then);
+	}	
+});
 	</script>
 	<link href="flex-box.css" media="screen" rel="stylesheet" type="text/css" />
 	<style>
@@ -209,22 +727,23 @@ body {
 }
 
 .header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 3;
 	padding-left: 4px;
 	border-bottom: 1px solid #ccc;
 	width: 100%;
+	background-color: #efefef;
 }
 
 #spotlight-subtitle, #spotlight-day {
 	text-align: right;
 }
 
-.drawer-button {
-	padding: 4px;
-	border-bottom: 1px solid #ccc;
-}
-
 #options {
 	position: fixed;
+	z-index: 3;
 	top: 40px;
 	margin: auto 0;
 	font-size: 0.8em;
@@ -235,6 +754,87 @@ body {
 	border-bottom: 2px solid #393;
 	cursor: pointer;	
 }
+
+#carousel {
+	position: fixed;
+	font-family: sans-serif;
+}
+
+#carousel>.tray {
+	position: fixed;
+	z-index: 1;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+	background-color: rgba(0,0,0,0.5);
+	
+	opacity: 1;
+	-webkit-transition-property: opacity;
+	-webkit-transition-duration: 1s;
+	-webkit-transition-timing-function: ease-in;
+}
+
+#carousel>.backdrop {
+	position: fixed;
+	z-index: 0;
+}
+
+.weather-slide-tray {
+	color: white;
+	padding: 12px;
+	text-shadow: black 0px 0px 8px;
+}
+
+.weather-slide-tray .currently .temperature {
+	font-size: 2.0em;
+	font-weight: bold;
+	line-height: 80%;
+}
+
+.weather-slide-tray .forecast .temperature {
+	font-size: 1.4em;
+	font-weight: bold;
+}
+
+.weather-slide-tray .condition {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+.weather-slide-tray .range {
+	font-size: 0.8em;
+}
+
+.weather-slide-tray .attribution {
+	font-size: 0.6em;
+	margin-top: 8px;
+}
+
+.flickr-slide-tray {
+	color: white;
+	padding: 12px;
+	text-shadow: black 0px 0px 8px;
+}
+
+.flickr-slide-tray .title {
+	font-size: 1.4em;
+	font-weight: bold;
+}
+
+.flickr-slide-tray .when {
+	font-size: 0.8em;
+}
+
+.flickr-slide-tray .attribution {
+	font-style: normal;
+	font-size: 0.8em;
+}
+
+.flickr-slide-tray .attribution>.who {
+	margin: 0 4px;
+	font-style: italic;
+}
+
 
 ul.selection {
 	position: absolute;
@@ -283,6 +883,8 @@ ul.selection li.emph {
 	change the <span class="link">location</span>,
 	change the <span class="link">format</span>
 </div>
+
+<div id="carousel"></div>
 
 <canvas id="tyler"></canvas>
 

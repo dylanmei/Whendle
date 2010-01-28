@@ -149,6 +149,44 @@ Time.prototype.__defineGetter__('iso', function() {
 		+ this.second().toPaddedString(2) + 'Z';
 });
 
+Time.Format_time_ago = function(now, then) {
+	// fixme, use minutes since, else on jan-1 *everything will say 'last year' or 'x years ago'
+	if (now.year() > then.year()) {
+		if (now.year() - then.year() > 1) {
+			return $.string('time_x_years_ago', '#{when} years ago').interpolate({ when: now.year() - then.year() });
+		}
+		else {
+			return $.string('time_1_year_ago', 'a year ago').interpolate({ when: now.year() - then.year() });
+		}
+	}
+
+	if (now.month() > then.month()) {
+		if (now.month() - then.month() > 1) {
+			return $.string('time_x_months_ago', '#{when} months ago').interpolate({ when: now.month() - then.month() });
+		}
+		else {
+			return $.string('time_1_month_ago', 'a month ago');
+		}
+	}
+
+	if (now.day() > then.day()) {
+		if (now.day() - then.day() > 1) {
+			return $.string('time_x_days_ago', '#{when} days ago').interpolate({ when: now.day() - then.day() });
+		}
+		else {
+			return $.string('time_yesterday', 'yesterday');
+		}
+	}
+	if (now.hour() > then.hour())
+		return $.string('time_x_hours_ago', '#{when} hours ago').interpolate({ when: now.hour() - then.hour() });
+		
+	if (now.minute() > then.minute())
+		return $.string('time_x_minutes_ago', '#{when} minutes ago').interpolate({ when: now.minute() - then.minute() });
+
+$.trace(now.iso, then.iso);
+	return $.string('time_moments_ago', 'moments ago'); 
+}
+
 Date.prototype.copy = function() {
 	return new Date(this.getTime());
 }
