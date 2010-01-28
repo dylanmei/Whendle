@@ -27,6 +27,8 @@
 	<script src="tyler.js" type="text/javascript"></script>
 	<script src="../whendle/api/weather-agent.js" type="text/javascript"></script>
 	<script src="../whendle/app/widgets/weather-slide.js" type="text/javascript"></script>
+	<script src="../whendle/api/photo-agent.js" type="text/javascript"></script>
+	<script src="../whendle/app/widgets/photo-slide.js" type="text/javascript"></script>
 	<script>
 
 $.trace = function() { console.log($A(arguments).join(' ')); }
@@ -110,7 +112,7 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 	setup_slides: function() {
 		this.slides = [];
 		this.slides.push(new Weather_Slide());
-		this.slides.push(new Flickr_Slide());
+		this.slides.push(new Photo_Slide());
 	},
 	
 	extent: function() {
@@ -320,193 +322,8 @@ Options = Class.create({
 
 
 
-Flickr_Agent = Class.create({
-	//http://www.flickr.com/services/api/flickr.photos.search.html
-
-	initialize: function(longitude, latitude) {
-		//this.woeid = woeid || 2502265;
-		this.page_size = 25;
-		this.radius = 20;
-		this.latitude = latitude;
-		this.longitude = longitude;
-	},
-	
-	get: function(on_complete, on_error) {
-		var resource = 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=' + Flickr.APPID;
-//		resource += '&woe_id=' + this.woeid;
-		resource += '&lat=' + this.latitude;
-		resource += '&lon=' + this.longitude;
-		resource += '&per_page=' + this.page_size;
-		resource += '&radius=' + this.radius;
-		resource += '&media=photos';
-		resource += '&content_type=photos';
-		resource += '&safe_search=1';
-		resource += '&sort=date-posted-desc';
-		resource += '&extras=owner_name,date_upload';
-		resource += '&format=json';
-		resource += '&nojsoncallback=1';
-
-		new Ajax.Request(resource, {
-			method: 'get',
-			asynchronous: true,
-			onSuccess: this.on_response.bind(this, on_complete),
-			onFailure: this.on_error.bind(this)
-		});
-	},
-
-	on_response: function(on_complete, transport) {
-		var response = transport.responseText;
-		if (response.isJSON()) {
-			response = response.evalJSON();
-		}
-		
-		on_complete({ photos: this.json_to_photos(response) });
-	},
-	
-	on_error: function(error) {
-		$.trace('error');
-	},
-	
-	json_to_photos: function(data) {
-
-		var root = data.photos;
-		var self = this;
-		return root.photo.collect(function(obj) {
-			return {
-				id: obj.id,
-				farm: obj.farm,
-				server: obj.server,
-				secret: obj.secret,
-				owner: obj.owner,
-				ownername: obj.ownername,
-				title: obj.title,
-				dateupload: self.ticks_to_time(obj.dateupload)
-			};
-		});
-	},
-	
-	ticks_to_time: function(ticks) {
-		var date = Flickr.photo_posted_date(parseInt(ticks));
-		return new Time().date(date);
-	}
-});
 
 
-Flickr_Slide = Class.create({
-	initialize: function() {
-		this.info = new Element('div', { 'class': 'flickr-slide-tray' });
-		this.image = this.new_image();
-	},
-	
-	setup: function(clock) {
-		this.longitude = clock.longitude;
-		this.latitude = clock.latitude;
-		this.photos = [];
-	},
-	
-	new_image: function() {
-		var image = new Image();
-		image.getWidth = function() {
-			return this.width;
-		};
-		image.getHeight = function() {
-			return this.height;
-		};
-		return image;
-	},
-	
-	tray: function() {
-		return this.info;
-	},
-	
-	backdrop: function() {
-		//return this.display;
-		return this.image;
-	},
-	
-	invoke: function(on_ready) {
-		if (this.photos.length) {
-			this.next_photo(this.pop_random_photo(), on_ready);
-		}
-		else {
-			new Flickr_Agent(this.longitude, this.latitude).get(
-				this.on_photo_search.bind(this, on_ready),
-				this.on_photo_error.bind(this, on_ready)
-			);
-		}
-	},
-	
-	pop_random_photo: function() {
-		var photo = this.photos[Math.floor(Math.random() * this.photos.length)];
-		this.photos = this.photos.without(photo);
-		return photo;
-	},
-	
-	next_photo: function(photo, on_ready) {
-		this.image.onload = this.on_photo_ready.bind(this, photo, on_ready);
-		this.image.src = Flickr.photo_src(photo);
-	},
-	
-	on_photo_ready: function(photo, on_ready) {
-		this.compose_photo_info(photo);
-		on_ready(this.tray(), this.backdrop());
-	},
-	
-	on_photo_search: function(on_ready, data) {
-		this.photos = data.photos;
-		this.next_photo(this.pop_random_photo(), on_ready);
-	},
-	
-	on_photo_error: function(on_ready, error) {
-		$.trace('error');
-	},
-	
-	compose_photo_info: function(photo) {
-		this.clear_tray();
-		
-		this.info.insert(this.new_photo_title(photo));
-		this.info.insert(this.new_photo_attribution(photo));
-	},
-	
-	new_photo_title: function(photo) {
-		var title = photo.title.stripTags();
-		if (title.blank()) title = $.string('flickr_empty_title', 'untitled');
-		else title = title.truncate(80, $.string('truncate_ellipses', '...'));
-		
-		var url = Flickr.photo_url(photo);
-		return new Element('div', { 'class': 'title' })
-			.update(title)
-			.observe('click', function() {
-				$.trace(url);
-			});
-	},
-	
-	new_photo_attribution: function(photo) {
-		var container = new Element('div', {'class': 'attribution'});
-
-		container.insert(new Element('span').update($.string('flickr_attribution', 'by')));
-		container.insert(new Element('span', { 'class': 'who' }).update(photo.ownername));
-	
-		var then = photo.dateupload;
-		var now = Time.now().add(
-			Time.minutes,
-			new Date().getTimezoneOffset());
-
-		var when = this.format_time_ago(now, then);
-		container.insert(new Element('span').update(when));
-		
-		return container;
-	},
-	
-	clear_tray: function() {
-		this.info.childElements()
-			.each(function(c) { c.remove(); });
-	},
-	
-	format_time_ago: function(now, then) {
-		return Time.Format_time_ago(now, then);
-	}	
-});
 	</script>
 	<link href="flex-box.css" media="screen" rel="stylesheet" type="text/css" />
 	<style>
@@ -602,27 +419,24 @@ body {
 	margin-top: 8px;
 }
 
-.flickr-slide-tray {
+.photo-slide-tray {
 	color: white;
 	padding: 12px;
 	text-shadow: black 0px 0px 8px;
 }
 
-.flickr-slide-tray .title {
+.photo-slide-tray .title {
 	font-size: 1.4em;
 	font-weight: bold;
 }
 
-.flickr-slide-tray .when {
-	font-size: 0.8em;
-}
 
-.flickr-slide-tray .attribution {
+.photo-slide-tray .attribution {
 	font-style: normal;
 	font-size: 0.8em;
 }
 
-.flickr-slide-tray .attribution>.who {
+.photo-slide-tray .attribution>.who {
 	margin: 0 4px;
 	font-style: italic;
 }

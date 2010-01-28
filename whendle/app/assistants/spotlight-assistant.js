@@ -67,7 +67,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	setup_slides: function() {
 		this.slides = [];
 		this.slides.push(new Weather_Slide());
-//		this.slides.push(new Flickr_Slide());
+		this.slides.push(new Photo_Slide());
 	},
 
 	write_header: function(clock) {
@@ -97,7 +97,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 
 	start_sliding: function(clock) {
 		if (this.slides.length == 0) return;
-$.trace(Object.toJSON(clock));
+
 		this.slides.each(function(s) {
 			s.setup(clock);
 		});
@@ -126,22 +126,45 @@ $.trace(Object.toJSON(clock));
 	},
 	
 	show_backdrop: function(backdrop) {
-		var extent = this.extent();
+		var header = this.controller.get('spotlight-header');
+		var viewport = {
+			t: header.getHeight() - 1,
+			l: 0,
+			r: this.extent().x,
+			b: header.getHeight() + this.extent().y
+		};
 		
-		var x = extent.x / 2;
-		var y = extent.y / 2;
 		var w = backdrop.getWidth();
 		var h = backdrop.getHeight();
 		
-		if (w < extent.x) w = extent.x;
-		if (h < extent.y) h = extent.y;
-
+		if (w < viewport.r - viewport.l) {
+			var r = (viewport.r - viewport.l) / w;
+			w = Math.round(w * r);
+			h = Math.round(h * r);
+		}
+		
+		if (h < viewport.b - viewport.t) {
+			var r = (viewport.b - viewport.t) / h;
+			w = Math.round(w * r);
+			h = Math.round(h * r);
+		}
+		
+		var x = viewport.l + ((viewport.r - viewport.l) / 2) - (w / 2);
+		var y = viewport.t + ((viewport.b - viewport.t) / 2) - (h / 2);
+		var clip = {
+			t: -y + viewport.t,
+			l: -x + viewport.l,
+			b: h,
+			r: w
+		};
+		
 		backdrop.addClassName('backdrop');
 		backdrop.setStyle({
-			top: (y - h / 2) + 'px',
-			left: (x - w / 2) + 'px',
+			top: y + 'px',
+			left: x + 'px',
 			width: w + 'px',
-			height: h + 'px'
+			height: h + 'px',
+			clip: 'rect(#{t}px #{r}px #{b}px #{l}px)'.interpolate(clip)
 		});
 
 		this.carousel.insert(backdrop);
