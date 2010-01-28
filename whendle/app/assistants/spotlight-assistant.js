@@ -8,19 +8,12 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	
 	menu: {
 		visible: false,
-		items: [{}, {
-			label: $L('Menu'),
-			submenu: 'submenu'
-		}]
-	},
-	
-	submenu: {
-		template: 'spotlight/submenu',
 		items: [
-			{ label: $L('Maps'), command: 'maps', iconPath: 'resources/spotlight-maps-icon.png' }, 
-			{ label: $L('Weather'), command: 'weather', iconPath: 'resources/spotlight-weather-icon.png', disabled: true }, 
-			{ label: $L('Edit'), command:'save', disabled: true }
-	]},
+			{},
+			{ label: $L('Maps'), command: 'maps', iconPath: 'resources/menu-icon-maps.png' },
+			{ label: $L('Edit'), command:'save' }
+		]
+	},
 	
 	setup: function() {
 		this.setup_widgets();
@@ -29,10 +22,8 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	
 	setup_widgets: function() {
 		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.menu);
-		this.controller.setupWidget('submenu', {}, this.submenu);
 
 		var viewport = Mojo.View.getViewportDimensions(this.controller.document);
-
 		this.tyler = this.controller.get('spotlight-tyler');
 		this.controller.setupWidget(this.tyler.id, {
 			width: viewport.width,
