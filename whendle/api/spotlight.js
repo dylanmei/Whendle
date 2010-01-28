@@ -125,6 +125,7 @@ Whendle.Spotlight.Presenter = Class.create({
 				subtitle: Whendle.Place.Format_area(place),
 				display: Whendle.Place.Format_time(place.time, format),
 				day: Whendle.Place.Format_day(now, place.time),
+				woeid: place.woeid,
 				longitude: place.longitude,
 				latitude: place.latitude
 			}

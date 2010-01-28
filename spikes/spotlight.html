@@ -25,6 +25,8 @@
 	<script src="database-service.js" type="text/javascript"></script>
 	<script src="system-service.js" type="text/javascript"></script>
 	<script src="tyler.js" type="text/javascript"></script>
+	<script src="../whendle/api/weather-agent.js" type="text/javascript"></script>
+	<script src="../whendle/app/widgets/weather-slide.js" type="text/javascript"></script>
 	<script>
 
 $.trace = function() { console.log($A(arguments).join(' ')); }
@@ -135,6 +137,9 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 	
 	start_sliding: function(clock) {
 		if (this.slides.length == 0) return;
+
+		// fixme
+		clock.woeid = 2502265;
 
 		this.slides.each(function(s) {
 			s.setup(clock);
@@ -313,220 +318,7 @@ Options = Class.create({
 	}
 });
 
-Weather_Agent = Class.create({
-	initialize: function(woeid) {
-		this.woeid = woeid || 2502265;
-	},
-	
-	get: function(on_complete, on_error) {
-		var resource = 'http://weather.yahooapis.com/forecastrss?u=c&w=' + this.woeid;
-		
-		new Ajax.Request(resource, {
-			method: 'get',
-			asynchronous: true,
-			onSuccess: this.on_response.bind(this, on_complete),
-			onFailure: this.on_error.bind(this)
-		});
-	},
-	
-	on_response: function(on_complete, transport) {
-		if (transport.responseXML) {
-			var response = transport.responseXML;
-			on_complete(this.rss_to_object(response));
-		}
-	},
-	
-	rss_to_object: function(xml) {
-		return {
-			weather: this.rss_weather_to_object(xml),
-			attribution: this.rss_image_to_object(xml)
-		};
-	},
-	
-	rss_weather_to_object: function(xml) {
-		var d = xml.documentElement;
-		
-		var condition = d.querySelector('item condition');
-		var forecast1 = d.querySelector('item forecast:first-of-type');
-		var forecast2 = d.querySelector('item forecast:last-of-type');
 
-		return {
-			code: condition.getAttribute('code'),
-			temp: condition.getAttribute('temp'),
-			today: {
-				code: forecast1.getAttribute('code'),
-				high: forecast1.getAttribute('high'),
-				low: forecast1.getAttribute('low')
-			},
-			tomorrow: {
-				code: forecast2.getAttribute('code'),
-				high: forecast2.getAttribute('high'),
-				low: forecast2.getAttribute('low')
-			}
-		};
-	},
-	
-	rss_image_to_object: function(xml) {
-		var d = xml.documentElement;
-		
-		return {
-			text: d.querySelector('image title').textContent,
-			width: d.querySelector('image width').textContent,
-			height: d.querySelector('image height').textContent,
-			link: d.querySelector('image link').textContent,
-			url: d.querySelector('image url').textContent
-		};
-	},
-	
-	on_error: function(error) {
-		$.trace('error');
-	}
-});
-
-Weather_Slide = Class.create({
-
-	CELCIUS: 'c',
-	FARENHEIT: 'f',
-	
-	initialize: function() {
-		this.div = new Element('div', { 'class': 'weather-slide-tray' });
-	},
-	
-	setup: function(clock) {
-		this.woeid = clock.woeid;
-
-		// in contrast providing random content, this slide cycles through
-		// the current weather, today's forcast, and tomorrow's forecast
-		this.cycle = 0;
-		this.generations = 0;
-	},
-
-	tray: function() {
-		return this.div;
-	},
-	
-	backdrop: function() {
-	},
-	
-	invoke: function(on_ready) {
-		this.div.childElements()
-			.each(function(c) { c.remove(); });
-		
-		var weather = (this.data || {}).weather;
-		var attribution = (this.data || {}).attribution;
-
-		switch (this.cycle) {
-			case 1:
-				this.compose_forecast('today', weather.today, attribution);
-				on_ready(this.tray(), this.backdrop());
-				this.cycle = 2;
-				break;
-			case 2:
-				this.compose_forecast('tomorrow', weather.tomorrow, attribution);
-				on_ready(this.tray(), this.backdrop());
-				this.cycle = 0;
-				break;
-			default:
-				if (this.generations == 0) {
-					this.generations = 10;
-					$.trace('fetching weather');
-					new Weather_Agent(this.woeid).get(
-						this.on_weather_value.bind(this, on_ready),
-						this.on_weather_error.bind(this, on_ready)
-					);
-				}
-				else {
-					this.generations--;
-					this.compose_weather(weather, attribution);
-					on_ready(this.tray(), this.backdrop());
-				}
-				this.cycle = 1;
-				break;
-		}
-	},
-	
-	on_weather_value: function(on_ready, data) {
-		this.data = data;
-		this.compose_weather(data.weather, data.attribution);
-		on_ready(this.tray(), this.backdrop());
-	},
-
-	on_weather_error: function(on_ready) {
-		this.div.insert(new Element('div', { 'class': 'error' })
-			.update('Weather service unreachable'));
-		
-		on_ready(this.tray());
-	},
-	
-	compose_weather: function(weather, attribution) {
-		this.div.insert(
-			this.new_weather_element(weather.code, weather.temp));
-		this.div.insert(
-			this.new_attribution(attribution.text));
-	},
-	
-	compose_forecast: function(day, forecast, attribution) {
-		this.div.insert(
-			this.new_forecast_element(day, forecast.code, forecast.high, forecast.low));
-		this.div.insert(
-			this.new_attribution(attribution.text));
-	},
-	
-	new_forecast_element: function(day, code, high, low) {
-		/*
-		<div class="forecast">
-			<div class="temperature">tomorrow high: 15c, low: 8c</div>
-			<div class="condition">partly cloudly</div>
-		</div>
-		*/
-		
-		var template = day == 'today' ?
-			$.string('temperature_forecast_today', 'today\'s high #{high}, low #{low}') :
-			$.string('temperature_forecast_tomorrow', 'tomorrow\'s high #{high}, low #{low}');
-		
-		var forecast = template.interpolate({
-			high: this.format_temperature(high),
-			low: this.format_temperature(low)
-		});
-		
-		return new Element('div', { 'class': 'forecast' })
-			.insert(new Element('div', { 'class': 'temperature' }).update(forecast))
-			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
-	},
-	
-	new_weather_element: function(code, temp) {
-		/*
-		<div class="currently">
-			<div class="temperature">12c</div>
-			<div class="condition">partly cloudly</div>
-		</div>
-		*/
-
-		return new Element('div', { 'class': 'currently' })
-			.insert(new Element('div', { 'class': 'temperature' }).update(this.format_temperature(temp)))
-			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
-	},
-	
-	new_attribution: function(text) {
-		return new Element('div', { 'class': 'attribution' })
-			.update(text);
-	},
-	
-	format_temperature: function(t) {
-		if (this.format == 'f') {
-			return $.string('temperature_farenheit', '#{temp}&deg;f')
-				.interpolate(this.celcius_to_farenheit({ temp: t }));
-		}
-		else {
-			return $.string('temperature_celcius', '#{temp}&deg;c').interpolate({ temp: t });
-		}
-	},
-	
-	celcius_to_farenheit: function(c) {
-		return Math.round(5 / 9 * (c - 32));
-	}
-	
-});
 
 Flickr_Agent = Class.create({
 	//http://www.flickr.com/services/api/flickr.photos.search.html

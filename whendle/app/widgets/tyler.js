@@ -194,7 +194,7 @@ Mojo.Widget.Tyler = Class.create({
 		ctx.font = '11px sans-serif';
 		ctx.textBaseline = 'bottom';
 		ctx.fillStyle = 'rgba(0,0,0,0.75)';
-		ctx.fillText(this.OSM_NOTE, 20, this.canvas.height - 20);
+		ctx.fillText(this.OSM_NOTE, 20, this.canvas.height - 2);
 	},
 	
 	ready: function() {

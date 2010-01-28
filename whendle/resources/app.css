@@ -86,7 +86,6 @@
 	margin-left: 10px;
 }
 
-
 .finder-row .palm-row-wrapper,
 .gallery-row .palm-row-wrapper {
 	padding: 4px 10px 8px 10px;
@@ -103,7 +102,6 @@
 .gallery-row-time, .gallery-row-day {
 	text-align: right;
 }
-
 
 .map-marker {
 	position:absolute;
@@ -188,26 +186,57 @@
   text-align: right;
 }
 
-.spotlight-icon {
-	width: 32px;
-	height: 32px;
+#spotlight-carousel {
+	position: fixed;
+	font-family: sans-serif;
 }
 
-.spotlight-icon.pictures {
-	background:url(spotlight-pictures-icon.png) center center no-repeat;
+#spotlight-carousel>.tray {
+	position: fixed;
+	z-index: 1;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+	background-color: rgba(0,0,0,0.5);
+	
+	opacity: 1;
+	-webkit-transition-property: opacity;
+	-webkit-transition-duration: 1s;
+	-webkit-transition-timing-function: ease-in;
 }
 
-.spotlight-icon.twitter {
-	background:url(spotlight-twitter-icon.png) center center no-repeat;
+#spotlight-carousel>.backdrop {
+	position: fixed;
+	z-index: 0;
 }
 
-.spotlight-icon.maps {
-	background:url(spotlight-maps-icon.png) center center no-repeat;
+.weather-slide-tray {
+	color: white;
+	padding: 12px;
+	text-shadow: black 0px 0px 8px;
 }
 
-.spotlight-icon.weather {
-	background:url(spotlight-weather-icon.png) center center no-repeat;
+.weather-slide-tray .currently .temperature {
+	font-size: 28px;
+	font-weight: bold;
+	line-height: 80%;
 }
+
+.weather-slide-tray .forecast .temperature {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.weather-slide-tray .condition {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.weather-slide-tray .attribution {
+	font-size: 10px;
+	margin-top: 6px;
+}
+
 
 .hbox {
 	display: -webkit-box;
