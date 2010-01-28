@@ -46,7 +46,8 @@ document.places = [
 	, { id: 7, name: 'Mexico City', admin: 'The Federal District', country: 'Mexico', latitude: 19.26, longitude: -99.8, timezone: 'America/Mexico_City' }
 	, { id: 8, name: 'Ottawa', admin: 'Ontario', country: 'Canada', latitude: 45.25, longitude: -75.43, timezone: 'America/Toronto' }
 	, { id: 9, name: 'Cape Town', admin: 'Western Cape', country: 'South Africa', latitude: -33.98820755384909, longitude: 18.435457266784795, timezone: 'Africa/Johannesburg' }
-	, { id: 10, name: 'Tokyo', admin: 'Tokyo', country: 'Japan', latitude: 35.41, longitude: 139.44, timezone: 'Asia/Tokyo' }
+	, { id: 10, name: 'Tokyo', admin: 'Tokyo', country: 'Japan', latitude: 35.41, longitude: 139.44, timezone: 'Asia/Tokyo' },
+	, {"id": 11, "woeid": 23424948, "name": "Singapore", "admin": "", "country": "Singapore", "latitude": 1.36558, "longitude": 103.827713, "timezone": "Asia/Singapore", "type": 12}
 ];
 
 document.observe('dom:loaded', function() {
@@ -78,7 +79,7 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 		);
 
 		this.setup();
-		this.load(1);
+		this.load(11);
 	},
 	
 	setup: function() {
@@ -158,9 +159,13 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	next_slide: function() {
-		var index = Math.floor(Math.random() * this.slides.length);
+		var index = (this.slide_index || 0) + 1;
+		if (index > this.slides.length - 1) index = 0;
+		//var index = Math.floor(Math.random() * this.slides.length);
+		
 		var slide = this.slides[index];
 		slide.invoke(this.on_next_slide.bind(this));
+		this.slide_index = index;
 	},
 	
 	on_first_slide: function(element, backdrop) {
@@ -200,7 +205,6 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 
 		var tray = $('carousel').down('.tray');
 		tray.insert(info);
-		$.trace('info inserted!');
 		
 		if (backdrop) {
 			this.show_backdrop(backdrop);

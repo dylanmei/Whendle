@@ -42,6 +42,7 @@ Whendle.Photo_Agent = Class.create({
 		resource += '&lon=' + this.longitude;
 		resource += '&per_page=' + this.page_size;
 		resource += '&radius=' + this.radius;
+		resource += '&accuracy=1';
 		resource += '&media=photos';
 		resource += '&content_type=photos';
 		resource += '&safe_search=1';

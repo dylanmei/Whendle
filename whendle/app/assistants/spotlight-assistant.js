@@ -112,9 +112,13 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	next_slide: function() {
-		var index = Math.floor(Math.random() * this.slides.length);
+		var index = (this.slide_index || 0) + 1;
+		if (index > this.slides.length - 1) index = 0;
+		//var index = Math.floor(Math.random() * this.slides.length);
+		
 		var slide = this.slides[index];
 		slide.invoke(this.on_next_slide.bind(this));
+		this.slide_index = index;
 	},
 	
 	on_first_slide: function(element, backdrop) {
