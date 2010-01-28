@@ -36,6 +36,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.setup_tyler();
 		this.setup_carousel();
 		this.setup_slides();
+		//this.setup_dialog();
 	},
 	
 	setup_tyler: function() {
@@ -69,32 +70,14 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.slides.push(new Weather_Slide());
 		this.slides.push(new Photo_Slide());
 	},
-
-	write_header: function(clock) {
-		$('spotlight-title').innerHTML = clock.title;
-		$('spotlight-subtitle').innerHTML = clock.subtitle;
+	
+	set_clock_values: function(clock) {
+		$('spotlight-title').innerHTML = clock.title.escapeHTML();
+		$('spotlight-subtitle').innerHTML = clock.subtitle.escapeHTML();
 		$('spotlight-time').innerHTML = clock.display;
 		$('spotlight-day').innerHTML = clock.day;
 	},
 	
-	notify: function(event) {
-		$.trace('notify called');
-	},
-
-	loaded: function(event) {
-		var clock = event.clock;
-		this.write_header(clock);
-
-		this.woeid = clock.woeid;
-		this.longitude = clock.longitude;
-		this.latitude = clock.latitude;
-
-		this.tyler.mojo.go(clock.longitude, clock.latitude);
-		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
-
-		this.start_sliding(clock);
-	},
-
 	start_sliding: function(clock) {
 		if (this.slides.length == 0) return;
 
@@ -202,13 +185,43 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		});
 	},
 
+	notify: function(event) {
+		$.trace('notify called');
+	},
+
+	loaded: function(event) {
+		var clock = event.clock;
+		this.set_clock_values(clock);
+
+		this.woeid = clock.woeid;
+		this.longitude = clock.longitude;
+		this.latitude = clock.latitude;
+
+		this.tyler.mojo.go(clock.longitude, clock.latitude);
+		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
+
+		this.model = {
+			id: clock.id,
+			name: clock.name,
+			admin: clock.admin,
+			country: clock.country
+		};
+
+		this.start_sliding(clock);
+	},
+
 	changed: function(event) {
-		this.write_header(event.clock);
+		this.set_clock_values(event.clock);
+	},
+	
+	saved: function(event) {
+		this.set_clock_values(event.clock);
 	},
 	
 	handleCommand: function(event) {
 		if (event.command == 'save') {
 			event.stop();
+			this.launch_dialog();
 		}
 		else if (event.command == 'maps') {
 			event.stop();
@@ -229,6 +242,36 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		});
 	},
 	
+	launch_dialog: function() {
+		this.setup_dialog();
+		this.controller.showDialog({
+			template: 'spotlight/spotlight-dialog',
+			assistant: new SpotlightDialogAssistant(this)
+		});		
+	},
+
+	setup_dialog: function() {
+		var model = this.model || {};
+		var attributes = {
+			multiline: false,
+			focusMode: Mojo.Widget.focusInsertMode,
+			maxLength: 32
+		}
+		
+		this.controller.setupWidget('spotlight-dialog-name',
+			Object.extend({ modelProperty: 'name' }, attributes), model);
+
+		this.controller.setupWidget('spotlight-dialog-admin',
+			Object.extend({ modelProperty: 'admin' }, attributes), model);	
+
+		this.controller.setupWidget('spotlight-dialog-country',
+			Object.extend({ modelProperty: 'country' }, attributes), model);
+	},
+	
+	save_dialog: function() {
+		this.fire(':editing', this.model);
+	},
+
 	cleanup: function(event) {
 		if (this.timer) this.timer.stop();
 		this.presenter.destroy();
@@ -236,4 +279,28 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	
 	detach_events: function() {
 	}	
+});
+
+SpotlightDialogAssistant = Class.create({
+	initialize: function(scene_assistant) {
+		this.scene_assistant = scene_assistant;
+		this.controller = scene_assistant.controller;
+	},
+	
+	setup: function(widget) {
+		this.widget = widget;
+		this.controller.get('spotlight-dialog-save').addEventListener(Mojo.Event.tap,
+			this.on_save.bindAsEventListener(this));
+		this.controller.get('spotlight-dialog-cancel').addEventListener(Mojo.Event.tap,
+			this.on_cancel.bindAsEventListener(this));
+	},
+	
+	on_save: function() {
+		this.scene_assistant.save_dialog();
+		this.widget.mojo.close();
+	},
+	
+	on_cancel: function() {
+		this.widget.mojo.close();
+	}
 });

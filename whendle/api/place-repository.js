@@ -67,7 +67,21 @@ Whendle.Place_Repository = Class.create({
 		return place;
 	},
 	
-	put_place: function(place, on_complete, on_error) {
+	edit_place: function(place, on_complete, on_error) {
+		this.database.scalar(
+			'update places set name=?,admin=?,country=? where id=?',
+			[
+				place.name || '',
+				place.admin || '',
+				place.country || '',
+				place.id
+			],
+			on_complete,
+			on_error
+		);
+	},
+	
+	add_place: function(place, on_complete, on_error) {
 		this.database.insert(
 			'insert into places (name,admin,country,longitude,latitude,timezone,woeid,type) values (?,?,?,?,?,?,?,?)',
 			[

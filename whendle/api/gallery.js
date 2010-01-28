@@ -168,7 +168,7 @@ Whendle.Gallery.Presenter = Class.create({
 	_on_timezone_result: function(view, place, timezone) {
 		
 		place.timezone = timezone.name;
-		this.place_repository.put_place(place,
+		this.place_repository.add_place(place,
 			this._on_clock_added.bind(this, view, place),
 			function(error) { view.added({ 'clocks': [], 'error': error }) }
 		);

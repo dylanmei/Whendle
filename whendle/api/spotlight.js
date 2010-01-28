@@ -45,6 +45,13 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 	//		error: { message:'' }
 	//	}
 	changed: function(event) {
+	},
+	
+	// 	event = {
+	//		clock: { id:#, title:'', subtitle:'', display:'', day:'' },
+	//		error: { message:'' }
+	//	}
+	saved: function(event) {
 	}
 });
 
@@ -54,6 +61,7 @@ Whendle.Spotlight.Presenter = Class.create({
 		this.place_repository = place_repository || Whendle.place_repository();
 
 		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
+		view.observe(':editing', this.on_editing.bind(this, view));
 	},
 	
 	destroy: function() {
@@ -76,6 +84,42 @@ Whendle.Spotlight.Presenter = Class.create({
 		}
 		
 		this.load(event.id, on_complete, on_error);
+	},
+	
+	on_editing: function(view, event) {
+		var id = event.id;
+		var name = event.name.strip();
+		var admin = event.admin.strip();
+		var country = event.country.strip();
+		
+		if (name.blank()) return;
+		
+		this.place_repository.get_place(id,
+			this.on_edit_place.bind(this, view, name, admin, country)
+		);
+	},
+	
+	on_edit_place: function(view, name, admin, country, place) {
+		place.name = name;
+		place.admin = admin;
+		place.country = country;
+		
+		this.place_repository.edit_place(place,
+			this.on_place_saved.bind(this, view, place.id)
+		);
+	},
+	
+	on_place_saved: function(view, id) {
+
+		var on_error = function(e) {
+			$.trace(e.message);
+		}
+
+		var on_complete = function(view_data) {
+			view.saved(view_data);
+		}
+		
+		this.load(id, on_complete, on_error);
 	},
 
 	wire_timekeeper: function(view, id) {
@@ -121,6 +165,9 @@ Whendle.Spotlight.Presenter = Class.create({
 		return {
 			clock: {
 				id: place.id,
+				name: place.name,
+				admin: place.admin,
+				country: place.country,
 				title: place.name,
 				subtitle: Whendle.Place.Format_area(place),
 				display: Whendle.Place.Format_time(place.time, format),

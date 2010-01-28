@@ -31,7 +31,7 @@ describe 'Gallery'
 			a = null
 			e = null
 			timezone_locator.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z')); }
-			place_repository.put_place = function(p, on_result) { on_result(123); }
+			place_repository.add_place = function(p, on_result) { on_result(123); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding,
 				{ 'place': mock_place('A', 'B', 'C') });
@@ -75,7 +75,7 @@ describe 'Gallery'
 			a = null
 			e = null
 			timezone_locator.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z', 1)); }
-			place_repository.put_place = function(p, on_result, on_error) { on_error({}); }
+			place_repository.add_place = function(p, on_result, on_error) { on_error({}); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding, { 'place': mock_place() })
 		end

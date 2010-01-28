@@ -5,48 +5,6 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		new Whendle.Gallery.Presenter(this);
 	},
 	
-	loaded: function(event) {
-		var profile = Whendle.profile();
-		var location = profile.data('location');
-		
-		var now = event.now;
-		var map = this.map;
-		
-		map.mojo.sun(now.declination, now.hour_angle);
-		map.mojo.draw();
-		
-		var clocks = event.clocks;
-		for (var i = 0; i < clocks.length; i++) {
-			var clock = clocks[i];
-			var coordinate = { x: clock.longitude, y: clock.latitude };
-			map.mojo.mark(clock.id, clock.title, clock.time, coordinate);
-			if (i == 0 && location == null) {
-				location = coordinate;
-			}
-		}
-
-		map.mojo.go(location);
-	},
-	
-	added: function(event) {
-	},
-	
-	removed: function(event) {
-	},
-	
-	changed: function(event) {
-		var now = event.now;
-		var map = this.map;
-		
-		map.mojo.sun(now.declination, now.hour_angle);
-		map.mojo.draw();
-		
-		event.clocks.each(function(c) {
-			var location = { x: c.longitude, y: c.latitude };
-			map.mojo.mark(c.id, c.name, c.time2, location);
-		});
-	},
-	
 	setup: function() {
 		this.model = {
 			'items': []
@@ -78,7 +36,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 
 		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.menus);
 		this.controller.setupWidget(this.growler.id, {});
-		this.controller.setupWidget(this.map.id, {}, this.model);
+		this.controller.setupWidget(this.map.id, {});
 	},
 	
 	attach_events: function() {
@@ -88,6 +46,49 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 			this.orientation_handler = this.on_orientation_changed.bind(this));
 		this.controller.listen(this.map.id, ':location',
 			this.map.location_handler = this.on_location_changed.bind(this));
+	},
+		
+	
+	loaded: function(event) {
+		var profile = Whendle.profile();
+		var location = profile.data('location');
+		
+		var now = event.now;
+		var map = this.map;
+		
+		map.mojo.sun(now.declination, now.hour_angle);
+		map.mojo.draw();
+		
+		var clocks = event.clocks;
+		for (var i = 0; i < clocks.length; i++) {
+			var clock = clocks[i];
+			var coordinate = { x: clock.longitude, y: clock.latitude };
+			map.mojo.mark(clock.id, clock.title.escapeHTML(), clock.time, coordinate);
+			if (i == 0 && location == null) {
+				location = coordinate;
+			}
+		}
+
+		map.mojo.go(location);
+	},
+	
+	added: function(event) {
+	},
+	
+	removed: function(event) {
+	},
+	
+	changed: function(event) {
+		var now = event.now;
+		var map = this.map;
+		
+		map.mojo.sun(now.declination, now.hour_angle);
+		map.mojo.draw();
+		
+		event.clocks.each(function(c) {
+			var coordinate = { x: c.longitude, y: c.latitude };
+			map.mojo.mark(c.id, c.name.escapeHTML(), c.time, coordinate);
+		});
 	},
 	
 	on_growler_tapped: function() {

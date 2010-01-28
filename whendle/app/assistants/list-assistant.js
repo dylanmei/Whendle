@@ -11,6 +11,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	
 	setup: function() {
 		this.model = {
+			is_loaded: false,
 			'items': []
 		};
 		
@@ -68,7 +69,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_clock_tapped: function(event) {
 		var clock = event.item;
-		Mojo.Controller.stageController.pushScene({ name: 'spotlight' }, clock.id);
+		Mojo.Controller.stageController.pushScene({ name: 'spotlight', disableSceneScroller: true }, clock.id);
 	},
 	
 	on_remove_clock: function(event) {
@@ -77,9 +78,10 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	loaded: function(event) {
+		this.is_loaded = true;
 		if (this.report_error(event.error)) return;
 		
-		var items = this.model.items;
+		var items = this.model.items = [];
 		event.clocks.each(function(c) { items.push(c); });
 
 		this.controller.modelChanged(this.model, this);
@@ -117,6 +119,8 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 			});
 			if (match) {
 				changes = true;
+				match.title = clock.title;
+				match.subtitle = clock.subtitle;
 				match.display = clock.display;
 				match.day = clock.day;
 			}
@@ -139,6 +143,10 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 			// assuming we have come from the finder
 			// after the user has found a location...
 			this.fire(Whendle.Event.adding, { 'place': place });
+		}
+		else if (this.is_loaded) {
+			// reload
+			this.fire(Whendle.Event.loading);
 		}
 		
 		var profile = Whendle.profile();
