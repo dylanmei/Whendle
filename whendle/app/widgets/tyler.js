@@ -176,11 +176,9 @@ Mojo.Widget.Tyler = Class.create({
 		var image = tile.image;
 
 		ctx.drawImage(tile.image, tile.x, tile.y, this.TILE_X, this.TILE_Y);
-
 		if (this.pending_request(image.src)) {
 			this.requests = this.requests.without(image.src);
 			if (this.requests.length == 0) {
-				this.draw_osm_note(ctx);
 				this.ready();
 			}
 		}
@@ -199,7 +197,14 @@ Mojo.Widget.Tyler = Class.create({
 	
 	ready: function() {
 		this.busy = false;
-		Event.fire.delay(0.1, this.controller.element, 'tyler:ready', false);
+		this.overlay();
+		
+		Event.fire.delay(1, this.controller.element, 'tyler:ready', false);
+	},
+	
+	overlay: function() {
+		var ctx = this.canvas.getContext('2d');
+		this.draw_osm_note(ctx);
 	},
 	
 	tile_url: function(x, y, z) {

@@ -37,11 +37,11 @@ document.tzone = 'America/Los_Angeles';
 document.tformat = 'HH12';
 document.tzpath = '../whendle/tzdata'; // firefox set ~ security.fileuri.strict_origin_policy = false
 document.places = [
-	  { id: 1, name: 'Seattle', admin: 'Washington', country: 'United States', latitude: 47.64016717530487, longitude: -122.44181251718135, timezone: 'America/Los_Angeles' }
-	, { id: 2, name: 'Sao Paulo', admin: 'Sao Paulo', country: 'Brazil', latitude: -23.5, longitude: -46.6, timezone: 'America/Sao_Paulo' }
-	, { id: 3, name: 'London', admin: 'England', country: 'United Kingdom', latitude: 51.5, longitude: -0.12, timezone: 'Europe/London' }
-	, { id: 4, name: 'Berlin', admin: 'Berlin', country: 'Germany', latitude: 52.51, longitude: 13.4, timezone: 'Europe/Berlin' }
-	, { id: 5, name: 'Shanghai', admin: 'Shanghai', country: 'China', latitude: 31.2, longitude: 121.4, timezone: 'Asia/Shanghai' }
+	  {"id": 1, "woeid": 2490383, "name": "Seattle", "admin": "Washington", "country": "United States", "latitude": 47.603561, "longitude": -122.329437, "timezone": "America/Los_Angeles", "type": 7 }
+	, {"id": 2, "woeid": 455827, "name": "Sao Paulo", "admin": "Sao Paulo", "country": "Brazil", "latitude": -23.56287, "longitude": -46.654659, "timezone": "America/Sao_Paulo", "type": 7 }
+	, {"id": 3, "woeid": 44418, "name": "London", "admin": "England", "country": "United Kingdom", "latitude": 51.506321, "longitude": -0.12714, "timezone": "Europe/London", "type": 7 }
+	, {"id": 4, "woeid": 638242, "name": "Berlin", "admin": "Berlin", "country": "Germany", "latitude": 52.516071, "longitude": 13.37698, "timezone": "Europe/Berlin", "type": 7}
+	, {"id": 5, "woeid": 2151849, "name": "Shanghai", "admin": "Shanghai", "country": "China", "latitude": 31.247709, "longitude": 121.472618, "timezone": "Asia/Shanghai", "type": 7}
 	, { id: 6, name: 'Sydney', admin: 'New South Wales', country: 'Australia', latitude: -33.8, longitude: 151.2, timezone: 'Australia/Sydney' }
 	, { id: 7, name: 'Mexico City', admin: 'The Federal District', country: 'Mexico', latitude: 19.26, longitude: -99.8, timezone: 'America/Mexico_City' }
 	, { id: 8, name: 'Ottawa', admin: 'Ontario', country: 'Canada', latitude: 45.25, longitude: -75.43, timezone: 'America/Toronto' }
@@ -79,7 +79,7 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 		);
 
 		this.setup();
-		this.load(11);
+		this.load(1);
 	},
 	
 	setup: function() {
@@ -113,7 +113,7 @@ Spotlight = Class.create(Whendle.Spotlight.View, {
 	setup_slides: function() {
 		this.slides = [];
 		this.slides.push(new Weather_Slide());
-		this.slides.push(new Photo_Slide());
+//		this.slides.push(new Photo_Slide());
 	},
 	
 	extent: function() {

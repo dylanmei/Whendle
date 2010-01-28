@@ -163,7 +163,29 @@ Tyler = Class.create({
 	
 	ready: function() {
 		this.busy = false;
+		this.overlay();
+		
 		Event.fire.delay(1, this.element, 'tyler:ready', false);
+	},
+	
+	overlay: function() {
+		var ctx = this.element.getContext('2d');
+		
+		var gradient = ctx.createLinearGradient(0, 0, 0, this.element.height);
+		gradient.addColorStop(0, 'rgba(180,180,255,0.4)');
+//		gradient.addColorStop(0.25, '#fff');
+//		gradient.addColorStop(0.75, '#fff');
+		gradient.addColorStop(0.25, 'rgba(0,0,0,0)');
+		gradient.addColorStop(0.75, 'rgba(0,0,0,0)');
+		gradient.addColorStop(1, 'rgba(20,20,80,0.6)');
+  
+//		ctx.save();
+//		ctx.globalCompositeOperation = 'darker';
+
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, this.element.width, this.element.height);
+
+//		ctx.restore();
 	},
 	
 	tile_url: function(x, y, z) {
