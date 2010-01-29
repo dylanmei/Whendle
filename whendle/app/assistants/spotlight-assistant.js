@@ -246,7 +246,10 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.setup_dialog();
 		this.controller.showDialog({
 			template: 'spotlight/spotlight-dialog',
-			assistant: new SpotlightDialogAssistant(this)
+			assistant: new SpotlightDialogAssistant(this),
+			label1: $.string('spotlight_dialog_label_name'),
+			label2: $.string('spotlight_dialog_label_admin'),
+			label3: $.string('spotlight_dialog_label_country')
 		});		
 	},
 
