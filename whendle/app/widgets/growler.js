@@ -23,22 +23,15 @@ Mojo.Widget.Growler = Class.create({
 	reveal: function() {
 		var page = this.controller.element;
 		if (page.visible()) return;
-		
-		var view_size = Mojo.View.getViewportDimensions(this.controller.document);
-		var page_size = page.getDimensions();
-		var page_left = (view_size.width / 2) - (page_size.width / 2);
 
 		page.show();
-		page.setStyle({
-			top: '-4px',
-			left: page_left + 'px'
-		});
+		page.setStyle({top: '0px' });
 	},
 	
 	dismiss: function() {
 		
 		var page = this.controller.element;
-		var size = page.getDimensions();
+		var size = page.getDimensions(); 
 		var offset = page.viewportOffset();
 		
 		var speed = 1;

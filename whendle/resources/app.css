@@ -24,7 +24,7 @@
 }
 
 .splash-status {
-	font-size: 0.75em;
+	font-size: 0.66em;
 	position: fixed;
 	bottom: 24px;
 	width:100%;
@@ -32,39 +32,25 @@
 
 .growler {
 	position: absolute;
-	top: -4px;
+	top: 0px;
 	left: 0px;
+	background-color: rgba(0,0,0,0.75);
 }
 
-.growler-page {
-	min-width: 100px;
-	max-width: 232px;
-	min-height: 40px;
-	font-size: 0.8em;
-	padding: 8px;
-/*	opacity: 0.95; */
-	background-color: #fff;
-	background: url(growler-background.png) left bottom repeat-x;
-	-webkit-border-radius: 4px;
+.growler-content {
+	color: white;
+	padding: 12px;
+	width: 320px;
+	text-shadow: black 0px 0px 8px;
 }
 
 .growler-text {
-	margin-top: 4px;
-}
-
-.growler-drop1 {
-	display:block;
-	padding: 0 0 0 25px;
-	background:url(growler-drop-left.png) left bottom no-repeat;
-}
-.growler-drop2 {
-	display:block;
-	padding: 0 25px 25px 0;
-	background:url(growler-drop-right.png) right bottom no-repeat;
+	margin: 6px;
+	font-size: 16px;
+	font-weight: bold;
 }
 
 .growler-spinner {
-	margin-right: 8px;
 }
 
 .finder-list {
