@@ -126,6 +126,9 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	on_location_changed: function(event) {
 		var profile = Whendle.profile();
 		profile.data('location', event.location);
+		if (event.select) {
+			Mojo.Controller.stageController.pushScene({ name: 'spotlight', disableSceneScroller: true }, event.select);
+		}
 	},
 
 	activate: function() {

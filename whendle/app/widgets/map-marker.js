@@ -1,7 +1,8 @@
 Map_Marker = Class.create(Whendle.Observable, {
 	DROP_PADDING: 6,
 
-	initialize: function(key) {
+	initialize: function($super, key) {
+		$super();
 		this.key = key;
 		this.longitude = 0;
 		this.latitude = 0;
@@ -29,10 +30,10 @@ Map_Marker = Class.create(Whendle.Observable, {
 			.insert(clock)
 			.insert(label);
 
-//		var self = this;
-//		element.observe('click', function() {
-//			self.fire(':select', { mark: self.key });
-//		});
+		var self = this;
+		element.observe('click', function() {
+			self.fire(':select', { mark: self });
+		});
 		return element;
 	},
 	

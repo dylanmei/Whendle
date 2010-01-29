@@ -177,6 +177,7 @@ Mojo.Widget.Map = Class.create({
 	},
 
 	sun: function(dec, har) {
+		this.sunlight.ready = true;
 		this.sunlight.dec(dec);
 		this.sunlight.har(har);
 	},
@@ -190,6 +191,7 @@ Mojo.Widget.Map = Class.create({
 			mark = new Map_Marker(key);
 			this.marks.push(mark);
 			this.controller.element.insert(mark.element);
+			mark.observe(':select', this.on_mark_select.bind(this));
 		}
 		
 		mark
@@ -201,6 +203,10 @@ Mojo.Widget.Map = Class.create({
 	},
 	
 	go: function(coordinate) {
+		this.go_internal(coordinate, true);
+	},
+	
+	go_internal: function(coordinate, notify) {
 		this.longitude = coordinate.x;
 		this.latitude = coordinate.y;
 		
@@ -224,11 +230,17 @@ Mojo.Widget.Map = Class.create({
 		this.move_canvas(this.seam, seam_x, y);
 		this.move_marks();
 		
-		this.fire_location_changed(coordinate);
+		if (notify) {
+			this.fire_location_changed(coordinate);
+		}
 	},
 	
 	fire_location_changed: function(coordinate) {
 		Mojo.Event.send(this.controller.element, ':location', { location: coordinate });
+	},
+	
+	fire_select_location: function(key, coordinate) {
+		Mojo.Event.send(this.controller.element, ':location', { select: key, location: coordinate });
 	},
 
 	move_canvas: function(canvas, x, y) {
@@ -271,7 +283,8 @@ Mojo.Widget.Map = Class.create({
 		var scale = this.scale();
 		
 		this.surface.draw(ctx, extent);
-		this.sunlight.draw(ctx, extent, scale);
+		if (this.sunlight.ready)
+			this.sunlight.draw(ctx, extent, scale);
 		
 //		this.draw_places(ctx);
 
@@ -288,6 +301,12 @@ Mojo.Widget.Map = Class.create({
 			Mojo.Event.dragging, this.dragging_handler = this.on_dragging.bind(this));
 		this.controller.listen(this.controller.scene.sceneElement,
 			Mojo.Event.flick, this.flick_handler = this.on_flick.bind(this));
+	},
+	
+	on_mark_select: function(event) {
+		var mark = event.mark;
+		var location = mark.location();
+		this.fire_select_location(mark.key, location);
 	},
 	
 	on_drag_start: function(event) {
@@ -351,7 +370,7 @@ Mojo.Widget.Map = Class.create({
 			if (x < -180) x = 180 + x % 180;
 			if (x > 180) x = -180 + x % 180;
 			
-			self.go({ x: x, y: y });
+			self.go({ x: x, y: y }, step == steps);
 
 		}, 0.04, this.controller.window);
 	},
