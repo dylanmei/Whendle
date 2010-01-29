@@ -199,7 +199,7 @@ Mojo.Widget.Map = Class.create({
 		
 		this.move_marks();		
 	},
-
+	
 	go: function(coordinate) {
 		this.longitude = coordinate.x;
 		this.latitude = coordinate.y;

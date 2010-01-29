@@ -1,4 +1,4 @@
-Map_Marker = Class.create({
+Map_Marker = Class.create(Whendle.Observable, {
 	DROP_PADDING: 6,
 
 	initialize: function(key) {
@@ -7,7 +7,8 @@ Map_Marker = Class.create({
 		this.latitude = 0;
 		this.hour = 0;
 		this.minute = 0;
-
+		this.clock = new Map_Clock();
+		
 		this.setup();
 	},
 	
@@ -20,13 +21,19 @@ Map_Marker = Class.create({
 	},
 	
 	_content: function() {
-		var clock = new Element('div', { 'class': 'clock' })
-			.insert(new Element('div', { 'class': 'hour' }))
-			.insert(new Element('div', { 'class': 'minute' }));
+		var clock = this.clock.element();
+		clock.addClassName('clock');
+
 		var label = new Element('div', { 'class': 'label' });
-		return new Element('div', { 'class': 'content' })
+		var element = new Element('div', { 'class': 'content' })
 			.insert(clock)
 			.insert(label);
+
+//		var self = this;
+//		element.observe('click', function() {
+//			self.fire(':select', { mark: self.key });
+//		});
+		return element;
 	},
 	
 	text: function(v) {
@@ -38,19 +45,11 @@ Map_Marker = Class.create({
 	
 	time: function(v) {
 		if (v === undefined) return { hour: this.hour, minute: this.minute };
+
 		this.hour = v.hour;
 		this.minute = v.minute;
 		
-		var hour_element = this.element.down('.hour');
-		var minute_element = this.element.down('.minute');
-		var angle = Time.angle_converter.convert(v);
-		hour_element.setStyle({
-			'-webkit-transform': 'rotate(#{hour}deg)'.interpolate(angle)
-		});
-		minute_element.setStyle({
-			'-webkit-transform': 'rotate(#{minute}deg)'.interpolate(angle)
-		});
-		
+		this.clock.time(v);
 		return this;
 	},
 	

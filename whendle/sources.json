@@ -55,6 +55,7 @@
 	{ "source": "app\/widgets\/map-surface.js" },
 	{ "source": "app\/widgets\/map-sunlight.js" },
 	{ "source": "app\/widgets\/map-marker.js" },
+	{ "source": "app\/widgets\/map-clock.js" },
 	{ "source": "app\/widgets\/tyler.js" },
 	{ "source": "app\/widgets\/weather-slide.js" },
 	{ "source": "app\/widgets\/photo-slide.js" },

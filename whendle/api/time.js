@@ -221,8 +221,8 @@ Time.angle_converter = new (
 			var DEGS_PER_HOUR = 30.0;
 			var MIN_PER_HOUR = 60.0;
 
-			var hour = time.hour();
-			var minute = time.minute();
+			var hour = typeof(time.hour) == 'function' ?  time.hour() : time.hour;
+			var minute = typeof(time.minute) == 'function' ?  time.minute() : time.minute;
 
 			return {
 				hour: (hour % 12 * DEGS_PER_HOUR) + (minute * (DEGS_PER_HOUR / MIN_PER_HOUR)),

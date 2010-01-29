@@ -87,7 +87,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		
 		event.clocks.each(function(c) {
 			var coordinate = { x: c.longitude, y: c.latitude };
-			map.mojo.mark(c.id, c.name.escapeHTML(), c.time, coordinate);
+			map.mojo.mark(c.id, c.title.escapeHTML(), c.time, coordinate);
 		});
 	},
 	
