@@ -12,7 +12,7 @@
 $.trace = function() { console.log($A(arguments).join(' ')); }
 
 Resources = {
-	SURFACE_FILE: 'map-surface.jpg'
+	SURFACE_FILE: 'map-surface.png'
 };
 
 Math.K = Math.PI/180.0;
@@ -46,7 +46,7 @@ View = Class.create({
 	
 	setup: function() {
 		this._map = new Map();
-		this._map.go(Places.london.location());
+		this._map.go(Places.seattle.location());
 
 		for (var x in Places)
 			this._map.mark(Places[x].id, Places[x].name, { hour: 7, minute: 22 }, { x: Places[x].latitude, y: Places[x].longitude });
@@ -71,17 +71,18 @@ Place = Class.create({
 
 var Places = {
 	  seattle: new Place(0, 'Seattle', -122.3, 47.6)
-	, sao_paulo: new Place(1, 'Sao Paulo', -46.6, -23.5)
-	, london: new Place(2, 'London', -0.12, 51.5)
-	, berlin: new Place(3, 'Berlin', 13.4, 52.51)
-	, shanghai: new Place(4, 'Shanghai', 121.4, 31.2)
-	, sydney: new Place(5, 'Sydney', 151.2, -33.8)
-	, ottawa: new Place(6, 'Ottawa', -75.43, 45.25)
-	, johannesburg: new Place(7, 'Johannesburg', 28.045556, -26.204444)
-	, tokyo: new Place(8, 'Tokyo', 139.44, 35.41)
-	, abu_dhabi: new Place(9, 'Abu Dhabi', 54.366667, 24.466667)
-	, tafuna: new Place(10, 'Tafuna', -170.72, -14.335833)
+//	, sao_paulo: new Place(1, 'Sao Paulo', -46.6, -23.5)
+//	, london: new Place(2, 'London', -0.12, 51.5)
+//	, berlin: new Place(3, 'Berlin', 13.4, 52.51)
+//	, shanghai: new Place(4, 'Shanghai', 121.4, 31.2)
+//	, sydney: new Place(5, 'Sydney', 151.2, -33.8)
+//	, ottawa: new Place(6, 'Ottawa', -75.43, 45.25)
+//	, johannesburg: new Place(7, 'Johannesburg', 28.045556, -26.204444)
+//	, tokyo: new Place(8, 'Tokyo', 139.44, 35.41)
+//	, abu_dhabi: new Place(9, 'Abu Dhabi', 54.366667, 24.466667)
+//	, tafuna: new Place(10, 'Tafuna', -170.72, -14.335833)
 	, wellington: new Place(10, 'Wellington', 174.777222, -41.288889)
+	, reykjavik: new Place(11, 'Reykjavik', -21.902479, 64.137383)
 }
 
 Map = Class.create({
