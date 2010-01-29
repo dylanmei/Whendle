@@ -47,9 +47,11 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		this.controller.listen(this.map.id, ':location',
 			this.map.location_handler = this.on_location_changed.bind(this));
 	},
-		
 	
 	loaded: function(event) {
+		this.is_loaded = true;
+		if (this.report_error(event.error)) return;
+
 		var profile = Whendle.profile();
 		var location = profile.data('location');
 		
@@ -73,6 +75,14 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	added: function(event) {
+		if (this.report_error(event.error)) return;
+		
+		var clock = event.clocks[0];
+		var coordinate = { x: clock.longitude, y: clock.latitude };
+		map.mojo.mark(clock.id, clock.title.escapeHTML(), clock.time, coordinate);
+		map.mojo.go(coordinate);
+		
+		this.growler.mojo.dismiss();
 	},
 	
 	removed: function(event) {
@@ -90,7 +100,13 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 			map.mojo.mark(c.id, c.title.escapeHTML(), c.time, coordinate);
 		});
 	},
-	
+
+	report_error: function(error) {
+		if (!error) return false;
+		$.trace('error ' + error.message);
+		return true;
+	},
+
 	on_growler_tapped: function() {
 		this.growler.mojo.dismiss();
 	},
@@ -131,8 +147,16 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		}
 	},
 
-	activate: function() {
+	activate: function(place) {
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
+
+		if (place && place.name) {
+			var message = $.string('gallery_adding_location').interpolate(place);
+			this.growler.mojo.spin(message.escapeHTML());
+			// assuming we have come from the finder
+			// after the user has found a location...
+			this.fire(Whendle.Event.adding, { 'place': place });
+		}
 
 		var profile = Whendle.profile();
 		profile.data('gallery', 'map');

@@ -7,6 +7,7 @@
 	, "splash_message_update_continue": "Update complete! Tap to continue..."
 	, "splash_message_default": "Hello!"
 	, "tip_find_a_location": "Find a location..."
+	, "gallery_adding_location": "Adding #{name}..."
 	, "finder_type_to_find_a_location": "Type to find a location..."
 	, "finder_more_results": "#{count} more..."
 	, "finder_search_status": "Searching for #{text}..."
