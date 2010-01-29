@@ -64,6 +64,7 @@ Map_Marker = Class.create(Whendle.Observable, {
 		if (v === undefined) return { x: this.longitude, y: this.latitude };
 		this.longitude = v.x;
 		this.latitude = v.y;
+		
 		return this;
 	},
 	
@@ -76,7 +77,8 @@ Map_Marker = Class.create(Whendle.Observable, {
 		var size = this.size();
 		this.element.setStyle({
 			left: (point.x - size.x / 2) + 'px',
-			top: (point.y - size.y + this.DROP_PADDING) + 'px'
+			top: (point.y - size.y + this.DROP_PADDING) + 'px',
+			zIndex: 100 + Math.floor(point.y)
 		});
 	},
 	
