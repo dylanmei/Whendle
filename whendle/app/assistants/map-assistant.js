@@ -3,6 +3,9 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	initialize: function($super) {
 		$super();
 		new Whendle.Gallery.Presenter(this);
+
+		var profile = Whendle.profile();
+		profile.data('gallery', 'map');
 	},
 	
 	setup: function() {

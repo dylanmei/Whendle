@@ -7,6 +7,9 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	initialize: function($super) {
 		$super();
 		this._presenter = new Whendle.Gallery.Presenter(this);
+
+		var profile = Whendle.profile();
+		profile.data('gallery', 'list');
 	},
 	
 	setup: function() {
@@ -149,9 +152,6 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 			// reload
 			this.fire(Whendle.Event.loading);
 		}
-		
-		var profile = Whendle.profile();
-		profile.data('gallery', 'list');
 	},
 	
 	deactivate: function(event) {

@@ -38,6 +38,10 @@ Whendle.TzZone = Class.create({
 	_parse: function() {
 		var rex = /Zone(?:\s+(\w+\/[\w-]+\/?[\w-]*))(?:\s+(-?\d+:?\d*:?\d*))?(?:\s+(\S+))?(?:\s+(\S+))?(?:\s+(.*))?/;
 		this._values = rex.exec(this._data);
+	},
+
+	toString: function() {
+		return this._data;
 	}
 });
 
@@ -78,6 +82,10 @@ Whendle.TzRule = Class.create({
 	_parse: function() {
 		var rex = /Rule(?:\s+([^\s]+))(?:\s+(\d+))?(?:\s+(\d+|only|max))?(?:\s+(\S+))?(?:\s+(\S+))?(?:\s+(\S+))?(?:\s+(\d+:\d+))?(?:[wsugz])?(?:\s+(\d+:?\d*))?(?:\s+(\S+))?/;
 		this._values = rex.exec(this._data);
+	},
+	
+	toString: function() {
+		return this._data;
 	}
 });
 

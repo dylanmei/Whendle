@@ -117,5 +117,46 @@ describe 'Timezone'
 			timezone.rule('X', new Date(1919, 11, 1)).should.equal b
 		end
 	end
+	
+	describe 'serializing a timezone to JSON'
+		timezone = new Whendle.Timezone([
+			new Whendle.TzZone('Zone	X/Y	0	-	f	1920'),
+			new Whendle.TzZone('Zone	X/Y	0	-	f	1930')
+		], [
+			new Whendle.TzRule('Rule	X	1918	1919	-	Mar	lastSun	0:00	0	A'),
+			new Whendle.TzRule('Rule	X	1918	1919	-	Oct	lastSun	0:00	0	B')
+		]);
+		
+		a = timezone.json();
+		
+		it 'should serialize the name value'
+			a.should.include '"name": "X/Y"'
+		end
+		
+		it 'should serialize the zones'
+			a.should.include '"zones":'
+			a.should.include '"Zone	X/Y	0	-	f	1920"'
+			a.should.include '"Zone	X/Y	0	-	f	1930"'
+		end
+		
+		it 'should serialize the rules'
+			a.should.include '"rules":'
+			a.should.include '"Rule	X	1918	1919	-	Mar	lastSun	0:00	0	A"'
+			a.should.include '"Rule	X	1918	1919	-	Oct	lastSun	0:00	0	B"'
+		end
+	end
+	
+	describe 'deserializing a timezone from JSON'
+		timezone = new Whendle.Timezone()
+			.json('{"name": "X/Y", "zones": ["Zone X/Y 0 - f 1920", "Zone X/Y 0 - f 1930"], "rules": ["Rule X 1918 1919 - Mar lastSun 0:00 0 A", "Rule X 1918 1919 - Oct lastSun 0:00 0 B"]}')
+	
+		it 'should deserialize the zones'
+			timezone.zones.should.have_length 2
+		end
+		
+		it 'should deserialize the rules'
+			timezone.rules.should.have_length 2
+		end
+	end
 end
 

@@ -26,8 +26,8 @@
 
 Whendle.Timezone = Class.create({
 	initialize: function(tz_zones, tz_rules) {
-		this._zones = tz_zones || [];
-		this._rules = tz_rules || [];
+		this.zones = tz_zones || [];
+		this.rules = tz_rules || [];
 	},
 
 	offset: function(date) {
@@ -56,7 +56,7 @@ Whendle.Timezone = Class.create({
 	},
 	
 	zone: function(date) {
-		var zones = this._zones;
+		var zones = this.zones;
 		var self = this;
 		var year = date.getUTCFullYear();
 		var value =  zones.find(function(z) {
@@ -80,7 +80,7 @@ Whendle.Timezone = Class.create({
 	},
 	
 	rule: function(name, date) {
-		var rules = this._rules;
+		var rules = this.rules;
 		rules = this._find_rules_by_name(rules, name);
 		rules.sort(this._sort_rules_by_date.bind(this));
 		
@@ -102,7 +102,7 @@ Whendle.Timezone = Class.create({
 	},
 	
 	_find_rules_by_name: function(rules, name) {
-		var rules = this._is_not_a_rule_name(name) ? [] : this._rules;
+		var rules = this._is_not_a_rule_name(name) ? [] : this.rules;
 		return rules.select(function(r) { return r.NAME == name; });
 	},
 
@@ -137,9 +137,26 @@ Whendle.Timezone = Class.create({
 				found_rule = rule;
 		}
 		return found_rule;
+	},
+	
+	json: function(v) {
+		if (Object.isUndefined(v)) {
+			return Object.toJSON({
+				name: this.name,
+				zones: this.zones.collect(function(z) { return z.toString(); }),
+				rules: this.rules.collect(function(r) { return r.toString(); })
+			});
+		}
+		if (Object.isString(v)) {
+			t = v.evalJSON();
+			this.rules = t.rules.each(function(s) { return new Whendle.TzRule(s); });
+			this.zones = t.zones.each(function(s) { return new Whendle.TzZone(s); });
+		}
+
+		return this;
 	}
 });
 
 with (Whendle.Timezone.prototype) {
-	__defineGetter__('name', function() { return this._zones.length ? this._zones[0].NAME : ''; });
+	__defineGetter__('name', function() { return this.zones.length ? this.zones[0].NAME : ''; });
 }
