@@ -33,27 +33,21 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	setup_widgets: function() {
 		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.menu);
 
-		this.setup_tyler();
+		this.setup_maplet();
 		this.setup_carousel();
 		this.setup_slides();
-		//this.setup_dialog();
 	},
 	
-	setup_tyler: function() {
+	setup_maplet: function() {
 		var extent = this.extent();
 
-		this.tyler = this.controller.get('spotlight-tyler');
-		this.controller.setupWidget(this.tyler.id, {
+		this.maplet = this.controller.get('spotlight-maplet');
+		this.controller.setupWidget(this.maplet.id, {
 			width: extent.x,
 			height: extent.y
 		});
-		this.controller.listen(this.tyler, 'tyler:ready',
-			this.tyler.ready_handler = this.on_tyler_ready.bind(this));
 	},
 	
-	on_tyler_ready: function() {
-	},
-
 	setup_carousel: function() {
 		var extent = this.extent();
 		this.carousel = this.controller.get('spotlight-carousel');
@@ -115,7 +109,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	show_backdrop: function(backdrop) {
 		var header = this.controller.get('spotlight-header');
 		var viewport = {
-			t: header.getHeight() - 1,
+			t: header.getHeight(),
 			l: 0,
 			r: this.extent().x,
 			b: header.getHeight() + this.extent().y
@@ -190,14 +184,18 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 
 	loaded: function(event) {
+		var now = event.now;
 		var clock = event.clock;
+
 		this.set_clock_values(clock);
 
 		this.woeid = clock.woeid;
 		this.longitude = clock.longitude;
 		this.latitude = clock.latitude;
 
-		this.tyler.mojo.go(clock.longitude, clock.latitude);
+		this.maplet.mojo.draw(clock.longitude, clock.latitude,
+			now.declination, now.hour_angle);
+		
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
 
 		this.model = {

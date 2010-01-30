@@ -17,7 +17,7 @@ Map_Sunlight = Class.create({
 		this.options.har = v;
 	},
 	
-	draw: function(ctx, extent, scale) {
+	draw: function(ctx, extent, scale, offset) {
 		ctx.fillStyle = 'rgba(0, 0, 40, 0.25)';
 		this.draw_terminator(ctx, extent, scale, 1);
 
@@ -28,7 +28,7 @@ Map_Sunlight = Class.create({
 		this.draw_terminator(ctx, extent, scale, -1);
 	},
 	
-	draw_terminator: function(ctx, extent, scale, offset) {
+	draw_terminator: function(ctx, extent, scale, outline) {
 		var k = Math.PI / 180.0;
 		var xorigin = (extent.x / 2);
 		var yorigin = (extent.y / 2);
@@ -38,8 +38,8 @@ Map_Sunlight = Class.create({
 			Math.max(0.1, this.dec()) : this.dec() < 0 ?
 				Math.min(this.dec(), -0.1) : 0.1;
 
-		var xoffset = offset * (scale.x / 10);
-		var yoffset = offset * (scale.y / 10);
+		var xoffset = outline * (scale.x / 10);
+		var yoffset = outline * (scale.y / 10);
 		var xfx = xoffset * (23.5 / Math.abs(dec));
 		var yfx = yoffset * 20;
 

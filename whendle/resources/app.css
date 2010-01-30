@@ -34,7 +34,8 @@
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	background-color: rgba(0,0,0,0.75);
+	z-index: 1000;
+	background-color: rgba(0,0,0,0.66);
 }
 
 .growler-content {
@@ -160,16 +161,12 @@
 	bottom: 0px;
 	width: 100%;
 	background-color: rgba(0,0,0,0.5);
-	
-	opacity: 1;
-	-webkit-transition-property: opacity;
-	-webkit-transition-duration: 1s;
-	-webkit-transition-timing-function: ease-in;
 }
 
 #spotlight-carousel>.backdrop {
 	position: fixed;
 	z-index: 0;
+	margin-top: -1px;
 }
 
 .weather-slide-tray {
@@ -219,6 +216,10 @@
 .photo-slide-tray .attribution>.who {
 	margin: 0 4px;
 	font-style: italic;
+}
+
+.maplet {
+	margin-top: -1px;
 }
 
 .hbox {

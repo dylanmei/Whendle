@@ -32,11 +32,19 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	
 	setup_widgets: function() {
 		this.growler = this.controller.get('growler');
-		this.map = this.controller.get('map');
 
 		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.menus);
 		this.controller.setupWidget(this.growler.id, {});
-		this.controller.setupWidget(this.map.id, {});
+		this.setup_map();
+	},
+	
+	setup_map: function() {
+		this.map = this.controller.get('map');
+
+		var profile = Whendle.profile();
+		var location = profile.data('location');
+		var attributes = location ? { longitude: location.x, latitude: location.y } : undefined;
+		this.controller.setupWidget(this.map.id, attributes);
 	},
 	
 	attach_events: function() {
@@ -71,7 +79,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 			}
 		}
 
-		map.mojo.go(location);
+		map.mojo.flick(location);
 	},
 	
 	added: function(event) {
@@ -80,7 +88,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		var clock = event.clocks[0];
 		var coordinate = { x: clock.longitude, y: clock.latitude };
 		map.mojo.mark(clock.id, clock.title.escapeHTML(), clock.time, coordinate);
-		map.mojo.go(coordinate);
+		map.mojo.flick(coordinate);
 		
 		this.growler.mojo.dismiss();
 	},
@@ -150,16 +158,20 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	activate: function(place) {
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
 
+		if (!this.is_loaded) return;
+
 		if (place && place.name) {
 			var message = $.string('gallery_adding_location').interpolate(place);
 			this.growler.mojo.spin(message.escapeHTML());
-			// assuming we have come from the finder
-			// after the user has found a location...
 			this.fire(Whendle.Event.adding, { 'place': place });
 		}
-
-		var profile = Whendle.profile();
-		profile.data('gallery', 'map');
+		else {
+			var profile = Whendle.profile();
+			var location = profile.data('location');
+			if (location) {
+				this.map.mojo.flick(location);
+			}
+		}
 	},
 	
 	deactivate: function() {

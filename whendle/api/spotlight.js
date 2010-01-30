@@ -56,9 +56,10 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Spotlight.Presenter = Class.create({
-	initialize: function(view, timekeeper, place_repository) {
+	initialize: function(view, timekeeper, place_repository, sunlight_calculator) {
 		this.timekeeper = timekeeper || Whendle.timekeeper();
 		this.place_repository = place_repository || Whendle.place_repository();
+		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
 
 		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
 		view.observe(':editing', this.on_editing.bind(this, view));
@@ -132,11 +133,12 @@ Whendle.Spotlight.Presenter = Class.create({
 	load: function(id, on_complete, on_error) {
 		var self = this;
 		var now = this.timekeeper.time;
+		var utc = this.timekeeper.utc;
 		var format = this.timekeeper.format;
 
 		var on_loaded = function(place) {
 			self.adjust_clock(place, function(place) {
-				var view_data = self.pack_clock_for_view(place, now, format);
+				var view_data = self.pack_clock_for_view(place, now, utc, format);
 				on_complete(view_data);
 			})
 		}
@@ -161,8 +163,12 @@ Whendle.Spotlight.Presenter = Class.create({
 		this.load(id, on_complete, on_error);
 	},
 	
-	pack_clock_for_view: function(place, now, format) {
-		return {
+	pack_clock_for_view: function(place, now, utc, format) {
+		var result = {
+			now: {
+				time: now,
+				utc: utc
+			},
 			clock: {
 				id: place.id,
 				name: place.name,
@@ -177,6 +183,13 @@ Whendle.Spotlight.Presenter = Class.create({
 				latitude: place.latitude
 			}
 		};
+		
+		if (this.sunlight_calculator) {
+			result.now.hour_angle = this.sunlight_calculator.hour_angle(utc);
+			result.now.declination = this.sunlight_calculator.declination(utc);
+		}
+		
+		return result;
 	},	
 	
 	adjust_clock: function(clock, on_complete) {

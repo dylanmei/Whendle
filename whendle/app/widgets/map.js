@@ -2,7 +2,6 @@
 Mojo.Widget.Map = Class.create({
 	initialize: function() {
 		this.orientation = 'up';
-		this.longitude = this.latitude = 0;
 		this.marks = [];
 	},
 	
@@ -12,7 +11,14 @@ Mojo.Widget.Map = Class.create({
 		this.setup_children(id);
 		this.attach_events();
 		this.load_resources();
-		this.controller.exposeMethods(['sun', 'draw', 'orientate', 'mark', 'go']);
+		
+		var attributes = Object.extend({
+			longitude: 0,
+			latitude: 0
+		}, this.controller.attributes);
+		
+		this.go_internal(attributes);
+		this.controller.exposeMethods(['sun', 'draw', 'orientate', 'mark', 'go', 'flick']);
 	},
 	
 	make_identifier: function() {
@@ -104,10 +110,7 @@ Mojo.Widget.Map = Class.create({
 				this.orientation = 'up';
 				break;
 		}
-		this.go({
-			x: this.longitude,
-			y: this.latitude
-		});
+		this.go_internal({ x: this.longitude, y: this.latitude }, false);
 	},
 
 	location: function() {
@@ -203,12 +206,18 @@ Mojo.Widget.Map = Class.create({
 	},
 	
 	go: function(coordinate) {
-		this.go_internal(coordinate, true);
+		this.go_internal(coordinate, false);
+	},
+	
+	flick: function(coordinate) {
+		// todo, slowly go to the coordinate
+		//this.go_internal(coordinate, false);
+		this.flick_internal(coordinate, false);
 	},
 	
 	go_internal: function(coordinate, notify) {
-		this.longitude = coordinate.x;
-		this.latitude = coordinate.y;
+		this.longitude = coordinate.x || coordinate.longitude || 0;
+		this.latitude = coordinate.y || coordinate.latitude || 0;
 		
 		var position = this.coordinate_to_point(this.location());
 		var extent = this.extent();
@@ -343,7 +352,7 @@ Mojo.Widget.Map = Class.create({
 			go.x = -180 + go.x % 180;
 		}
 		
-		this.go(go);
+		this.go_internal(go, true);
 	},
 
 	on_flick: function(event) {
@@ -370,7 +379,31 @@ Mojo.Widget.Map = Class.create({
 			if (x < -180) x = 180 + x % 180;
 			if (x > 180) x = -180 + x % 180;
 			
-			self.go({ x: x, y: y }, step == steps);
+			self.go_internal({ x: x, y: y }, step == steps);
+
+		}, 0.04, this.controller.window);
+	},
+	
+	flick_internal: function(target, notify) {
+		var start = this.location();
+		if (start.x == target.x && start.y == target.y) return;
+
+		var step = 0;
+		var steps = 24;
+		var self = this;
+		
+		if (this.animator) this.animator.stop();
+		this.animator = new PeriodicalExecuter(function(pe) {
+		
+			if (++step == steps) pe.stop();
+			
+			var x = self.flick_decay(start.x, target.x, step, steps);
+			var y = self.flick_decay(start.y, target.y, step, steps);
+			
+			if (x < -180) x = 180 + x % 180;
+			if (x > 180) x = -180 + x % 180;
+			
+			self.go_internal({ x: x, y: y }, notify && step == steps);
 
 		}, 0.04, this.controller.window);
 	},
