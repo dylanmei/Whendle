@@ -5,15 +5,15 @@ describe 'Spotlight'
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
-		format: '',
-		offset_time: function(s, f) { f(this.time); }
+		utc: Time.now(),
+		format: ''
 	}))();
 
 	view = new Whendle.Spotlight.View
 	presenter = new Whendle.Spotlight.Presenter(view, timekeeper, place_repository)
 	
 	new_place_record = function(id) {
-		return { 'id': id, 'name': 'a', 'timezone': '', 'admin': 'b', 'country': 'c', 'latitude': 0, 'longitude': 0 }
+		return { 'id': id, 'name': 'a', 'admin': 'b', 'country': 'c', 'latitude': 0, 'longitude': 0 }
 	}
 
 	describe 'handling a system change'

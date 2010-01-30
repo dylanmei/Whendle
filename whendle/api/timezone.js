@@ -149,8 +149,8 @@ Whendle.Timezone = Class.create({
 		}
 		if (Object.isString(v)) {
 			t = v.evalJSON();
-			this.rules = t.rules.each(function(s) { return new Whendle.TzRule(s); });
-			this.zones = t.zones.each(function(s) { return new Whendle.TzZone(s); });
+			this.rules = t.rules.collect(function(s) { return new Whendle.TzRule(s); });
+			this.zones = t.zones.collect(function(s) { return new Whendle.TzZone(s); });
 		}
 
 		return this;

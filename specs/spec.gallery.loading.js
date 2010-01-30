@@ -4,15 +4,15 @@ describe 'Gallery'
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
-		format: '',
-		offset_time: function(s, f) { f(this.time); }
+		utc: Time.now(),
+		format: ''
 	}))();
 
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view, timekeeper, new Object, repository)
 	
 	new_place_record = function(id) {
-		return { 'id': id, 'name': '', 'timezone': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
+		return { 'id': id, 'name': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
 	}
 	
 	describe 'loading an empty set of clocks into a view'

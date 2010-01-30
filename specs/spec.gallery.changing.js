@@ -5,8 +5,8 @@ describe 'Gallery'
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
-		format: '',
-		offset_time: function(s, f) { f(this.time); }
+		utc: Time.now(),
+		format: ''
 	}))();
 
 	view = new Whendle.Observable
@@ -17,7 +17,7 @@ describe 'Gallery'
 	)
 	
 	new_place_record = function(id) {
-		return { 'id': id, 'name': '', 'timezone': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
+		return { 'id': id, 'name': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
 	}
 	
 	describe 'handling a system change'

@@ -27,17 +27,18 @@
 Whendle.Timezone_Locator = Class.create({
 	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
-	initialize: function(ajax) {
-		this._ajax = ajax || new Whendle.AjaxService();
+	initialize: function(ajax, tzloader) {
+		this.ajax = ajax || new Whendle.AjaxService();
+		this.loader = tzloader || new Whendle.TzLoader(this.ajax);
 	},
 	
 	lookup: function(latitude, longitude, on_complete, on_error) {
 		on_complete = on_complete || Prototype.emptyFunction;
 		on_error = on_error || Prototype.emptyFunction;
 		
-		this._ajax.load(
+		this.ajax.load(
 			this._make_lookup_url(latitude, longitude),
-			this._on_lookup_result.bind(this, on_complete),
+			this._on_lookup_result.bind(this, on_complete, on_error),
 			this._on_lookup_error.bind(this, on_error)
 		);		
 	},
@@ -50,14 +51,66 @@ Whendle.Timezone_Locator = Class.create({
 		});
 	},
 	
-	_on_lookup_result: function(on_complete, response) {
-		on_complete({
-			name: response.timezoneId,
-			offset: parseInt(response.rawOffset, 10) * 60
-		});
+	_on_lookup_result: function(on_complete, on_error, response) {
+		this.load(response.timezoneId, on_complete, on_error);
 	},
 	
 	_on_lookup_error: function(on_error, error) {
+		on_error(error);
+	},
+	
+	load: function(name, on_complete, on_error) {
+		on_complete = on_complete || Prototype.emptyFunction;
+		on_error = on_error || Prototype.emptyFunction;
+		
+		this.load_from_disk(name, on_complete, on_error);
+	},
+
+	load_from_disk: function(name, on_complete, on_error) {
+		this.loader.load(
+			name,
+			this.on_load_result.bind(this, name, on_complete, on_error),
+			this.on_load_error.bind(this, name, on_error)
+		);
+	},
+	
+	on_load_result: function(name, on_complete, on_error, text) {
+		var zone_reader = this.new_reader(text);
+		var rules = [];
+		var zones = [];
+
+		zone = zone_reader.next_zone(name)
+
+		while (zone != null) {
+			zones.push(zone);
+			
+			var rule_reader = this.new_reader(text);
+			var rule = rule_reader.next_rule(zone.RULES);
+
+			while (rule != null) {
+				var contains = rules.any(function(r) {
+					return r.toString() == rule.toString();
+				});
+				
+				if (!contains) {
+					rules.push(rule);
+				}
+				
+				rule = rule_reader.next_rule(zone.RULES);
+			}
+			
+			zone = zone_reader.next_zone(name);
+		}
+		
+		var timezone = new Whendle.Timezone(zones, rules);
+		on_complete(timezone);
+	},
+	
+	new_reader: function(text) {
+		return new Whendle.TzReader(text);
+	},
+	
+	on_load_error: function(name, on_error, error) {
 		on_error(error);
 	}
 });

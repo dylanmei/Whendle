@@ -132,15 +132,10 @@ Whendle.Spotlight.Presenter = Class.create({
 	
 	load: function(id, on_complete, on_error) {
 		var self = this;
-		var now = this.timekeeper.time;
-		var utc = this.timekeeper.utc;
-		var format = this.timekeeper.format;
 
 		var on_loaded = function(place) {
-			self.adjust_clock(place, function(place) {
-				var view_data = self.pack_clock_for_view(place, now, utc, format);
-				on_complete(view_data);
-			})
+			var view_data = self.pack_clock_for_view(place);
+			on_complete(view_data);
 		}
 		
 		this.place_repository.get_place(id, on_loaded, on_error)
@@ -163,7 +158,13 @@ Whendle.Spotlight.Presenter = Class.create({
 		this.load(id, on_complete, on_error);
 	},
 	
-	pack_clock_for_view: function(place, now, utc, format) {
+	pack_clock_for_view: function(place) {
+		var now = this.timekeeper.time;
+		var utc = this.timekeeper.utc;
+		var format = this.timekeeper.format;
+
+		place.time = this.offset_time(utc, place.timezone);
+	
 		var result = {
 			now: {
 				time: now,
@@ -190,14 +191,11 @@ Whendle.Spotlight.Presenter = Class.create({
 		}
 		
 		return result;
-	},	
-	
-	adjust_clock: function(clock, on_complete) {
-		this.timekeeper.offset_time(clock.timezone,
-			function(time) {
-				clock.time = time;
-				on_complete(clock);
-			}
-		);
-	}
+	},
+
+	offset_time: function(utc, timezone) {
+		if (!timezone) return utc;
+		return utc.clone()
+			.add(Time.minutes, timezone.offset(utc.date()));
+	}	
 });

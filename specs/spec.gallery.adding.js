@@ -7,8 +7,8 @@ describe 'Gallery'
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
-		format: '',
-		offset_time: function(s, f) { f(this.time); }
+		utc: Time.now(),
+		format: ''
 	}))();
 	
 	view = new Whendle.Observable
@@ -18,8 +18,8 @@ describe 'Gallery'
 		place_repository
 	)
 	
-	mock_tzlookup_result = function(name, offset) {
-		return { 'offset': 0, 'name': name }
+	mock_tzlookup_result = function(name) {
+		return { 'name': name, offset: function() { return 0; } }
 	}
 	
 	mock_place = function(name, admin, country) {
@@ -30,7 +30,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			timezone_locator.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('Z')); }
+			timezone_locator.lookup = function(x, y, on_success) { on_success(mock_tzlookup_result('A/Z')); }
 			place_repository.add_place = function(p, on_result) { on_result(123); }
 			view.added = function(event, error) { a = event.clocks; e = event.error; }
 			view.fire(Whendle.Event.adding,

@@ -63,7 +63,9 @@ Whendle.Place_Repository = Class.create({
 		place.country = r.country;
 		place.longitude = r.longitude;
 		place.latitude = r.latitude;
-		place.timezone = r.timezone;
+		place.timezone =
+			new Whendle.Timezone()
+				.json(r.timezone);
 		return place;
 	},
 	
@@ -82,6 +84,7 @@ Whendle.Place_Repository = Class.create({
 	},
 	
 	add_place: function(place, on_complete, on_error) {
+		var tzdata = place.timezone.json();
 		this.database.insert(
 			'insert into places (name,admin,country,longitude,latitude,timezone,woeid,type) values (?,?,?,?,?,?,?,?)',
 			[
@@ -90,7 +93,7 @@ Whendle.Place_Repository = Class.create({
 				place.country,
 				place.longitude,
 				place.latitude,
-				place.timezone,
+				tzdata,
 				place.woeid,
 				place.type
 			],

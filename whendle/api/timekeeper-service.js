@@ -61,10 +61,9 @@ Whendle.Timer = Class.create(Whendle.Observable, {
 });
 
 Whendle.TimekeeperService = Class.create(Whendle.Observable, {
-	initialize: function($super, system, timezone_repository) {
+	initialize: function($super, system) {
 		$super();
 		this.system = system || Whendle.system();
-		this.timezone_repository = timezone_repository || Whendle.timezone_repository();
 		this.timer = null;
 		this.subscriptions;
 		this.offset = 0;
@@ -172,19 +171,5 @@ Whendle.TimekeeperService = Class.create(Whendle.Observable, {
 				.subtract(Time.minutes, this.offset);
 			this.fire(Whendle.Event.timer, now);
 		}
-	},
-	
-	offset_time: function(timezone_name, on_complete) {
-		var now = this.time.clone();
-		var offset = this.offset;
-
-		var on_timezone = function(timezone) {
-			now.subtract(Time.minutes, offset);
-			now.add(Time.minutes, timezone.offset(now.date()));
-
-			on_complete(now);
-		}
-		
-		this.timezone_repository.get_timezone(timezone_name, on_timezone);
 	}
 });
