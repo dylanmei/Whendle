@@ -6,7 +6,7 @@
 	left: 0px;
 	text-align: center;
 	background-color:#fff;
-	background: url(splash-background.png) left bottom repeat-x;
+	background: url('splash-background.png') left bottom repeat-x;
 	-webkit-border-radius: 24px;
 	
 	-webkit-transition-property: top;
@@ -166,7 +166,6 @@
 #spotlight-carousel>.backdrop {
 	position: fixed;
 	z-index: 0;
-	margin-top: -1px;
 }
 
 .weather-slide-tray {
@@ -218,8 +217,45 @@
 	font-style: italic;
 }
 
-.maplet {
-	margin-top: -1px;
+.palm-page-header .mini-icon {
+    background: url('icon-mini.png') center center no-repeat;
+}
+
+#help {
+	padding: 4px;
+	font-family: arial;
+	color: #555;
+}
+
+.help-app-name {
+	font-size: 18px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.help-app-version {
+	font-size: 14px;
+	font-style: italic;
+	color: #999;
+}
+
+.help-attribution {
+	font-size: 14px;
+	min-height: 18px;
+	padding-left: 20px;
+	margin-top: 4px;
+	background: url('attribution-bullet.png') -1px left no-repeat;
+}
+
+.help-copyright {
+	font-size: 12px;
+	font-style: italic;
+	margin: 12px 20px;
+}
+
+.help-link {
+	font-family: coconut;
+	float: left;
 }
 
 .hbox {

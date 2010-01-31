@@ -6,6 +6,14 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 	},
 	
 	setup: function() {
+		this.controller.setupWidget(Mojo.Menu.appMenu, {
+				omitDefaultItems: true
+			}, {
+				visible: false,
+				items: []
+			}
+		);
+	
 		this.setup_widgets();
 		this.attach_events();
 		this.fire(':starting',

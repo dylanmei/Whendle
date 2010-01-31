@@ -29,6 +29,9 @@ Whendle = {
 	schema_version: '0.1',
 	tzpath: 'tzdata/',
 
+	homepage: 'http://whendle.posterous.com',
+	email: 'whendle.app@gmail.com',
+
 	show_splash: false,
 	reset_schema: false,
 	

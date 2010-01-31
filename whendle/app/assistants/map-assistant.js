@@ -9,34 +9,29 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	setup: function() {
+
 		this.model = {
 			'items': []
 		};
 
-		this.menus = {
-			visible: false,
-			items: [
-			{
-				label: $L('View'),
-				toggleCmd: 'map',
-				items: [
-					{ label: $L('Map'), iconPath: 'resources/menu-icon-globe.png', command: 'map' },
-					{ label: $L('List'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
-				]
-			},
-			{ label: $.string('tip_find_a_location'), iconPath: 'resources/menu-icon-pin.png', command: 'add' }
-		]};
-
+		this.setup_menus();
 		this.setup_widgets();
 		this.attach_events();
 		
 		this.fire(Whendle.Event.loading);
 	},
 	
+	setup_menus: function() {
+		var menu = {};
+		Object.extend(menu, StageAssistant.Gallery_menu);
+		menu.attributes.menuClass = 'no-fade';
+//		menu.model.visible = false;
+		menu.model.items[0].toggleCmd = 'map';
+		this.controller.setupWidget(Mojo.Menu.commandMenu, menu.attributes, menu.model);
+	},
+	
 	setup_widgets: function() {
 		this.growler = this.controller.get('growler');
-
-		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.menus);
 		this.controller.setupWidget(this.growler.id, {});
 		this.setup_map();
 	},

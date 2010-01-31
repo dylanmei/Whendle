@@ -24,8 +24,14 @@ StageAssistant.prototype.setup_services = function() {
 };
 
 StageAssistant.prototype.handleCommand = function(event) {
+	if (event.type == Mojo.Event.commandEnable) {
+		if (event.command == Mojo.Menu.helpCmd) {
+			event.stopPropagation();
+		}
+	}
+
 	if (event.type != Mojo.Event.command) return;
-	
+
 	if (event.command == 'add') {
 		this.controller.pushScene({ name: 'finder' });
 	}
@@ -39,4 +45,23 @@ StageAssistant.prototype.handleCommand = function(event) {
 			transition: Mojo.Transition.crossFade
 		});
 	}
+	else if (event.command == Mojo.Menu.helpCmd) {
+		this.controller.pushScene({ name: 'help' });
+	}
 }
+
+StageAssistant.Gallery_menu = {
+	attributes: {
+	},
+	model: {
+		visible: false,
+		items: [{
+			toggleCmd: '',
+			items: [
+				{ label: $L('menu_map'), iconPath: 'resources/menu-icon-globe.png', command: 'map' },
+				{ label: $L('menu_list'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
+			]
+		},
+		{ label: $L('menu_find'), iconPath: 'resources/menu-icon-find.png', command: 'add' }
+	]}
+};

@@ -8,15 +8,6 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.id = id;
 	},
 	
-	menu: {
-		visible: false,
-		items: [
-			{},
-			{ label: $L('Maps'), command: 'maps', iconPath: 'resources/menu-icon-maps.png' },
-			{ label: $L('Edit'), command:'save' }
-		]
-	},
-
 	extent: function() {
 		var viewport = Mojo.View.getViewportDimensions(this.controller.document);
 		return {
@@ -26,12 +17,27 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	setup: function() {
+		this.setup_menus();
 		this.setup_widgets();
 		this.fire(Whendle.Event.loading, { id: this.id });
 	},
 	
+	setup_menus: function() {
+		var menu = {
+			attributes: { menuClass: 'no-fade' },
+			model: {
+				visible: false,
+				items: [
+					{},
+					{ label: $L('menu_map'), command: 'maps', iconPath: 'resources/menu-icon-maps.png' },
+					{ label: $L('menu_edit'), command:'save' }
+				]
+			}
+		}
+		this.controller.setupWidget(Mojo.Menu.commandMenu, menu.attributes , menu.model);
+	},
+	
 	setup_widgets: function() {
-		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.menu);
 
 		this.setup_maplet();
 		this.setup_carousel();

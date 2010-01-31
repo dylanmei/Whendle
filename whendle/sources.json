@@ -22,6 +22,10 @@
 		"scenes": "finder",
 		"source": "app\/assistants\/finder-assistant.js"
 	},
+	{
+		"scenes": "help",
+		"source": "app\/assistants\/help-assistant.js"
+	},
 	
 	{ "source": "api\/whendle.js" },
 	{ "source": "api\/yahoo.js" },
