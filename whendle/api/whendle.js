@@ -25,7 +25,7 @@
 //
 
 Whendle = {
-	version: '0.1.0',
+	version: '0.1.1',
 	schema_version: '0.1',
 	tzpath: 'tzdata/',
 
