@@ -41,13 +41,18 @@ StageAssistant.prototype.handleCommand = function(event) {
 	}
 	else if (event.command =='list' || event.command == 'map') {
 		var scene = this.controller.activeScene();
-		if (event.command == 'list' && scene.sceneName == 'list') return;
-		if (event.command == 'map'  && scene.sceneName == 'map')  return;
-		
-		this.controller.swapScene({
+		var swap_params = {
 			name: event.command,
 			transition: Mojo.Transition.crossFade
-		});
+		};
+		
+		if (event.command == 'list' && scene.sceneName == 'list') return;
+		if (event.command == 'map') {
+			if (scene.sceneName == 'map') return;
+			swap_params.disableSceneScroller = true;
+		}  
+		
+		this.controller.swapScene(swap_params);
 	}
 	else if (event.command == Mojo.Menu.helpCmd) {
 		this.controller.pushScene({ name: 'help' });

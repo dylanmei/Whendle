@@ -71,10 +71,8 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 	},
 	
 	exit_scene: function() {
-		this.controller.stageController.swapScene({
-			transition: Mojo.Transition.crossFade,
-			name: this.destination
-		});
+		this.controller.stageController
+			.sendEventToCommanders(Mojo.Event.make(Mojo.Event.command, { command: this.destination }));
 	},
 	
 	cleanup: function(event) {
