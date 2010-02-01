@@ -96,12 +96,13 @@ Photo_Slide = Class.create({
 
 		container.insert(new Element('span').update($.string('photo_attribution')));
 		container.insert(new Element('span', { 'class': 'who' }).update(photo.ownername));
-	
+		
 		var then = photo.dateupload;
-		var now = Time.now().add(
-			Time.minutes,
-			new Date().getTimezoneOffset());
-
+//		$.trace(then.iso, Time.now().iso);
+//		var now = Time.now().add(
+//			Time.minutes,
+//			new Date().getTimezoneOffset());
+		var now = Time.now();
 		var when = this.format_time_ago(now, then);
 		container.insert(new Element('span').update(when));
 		

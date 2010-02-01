@@ -88,13 +88,11 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		// do the first slide...
 		var slide = this.slides[0];
 		slide.invoke(this.on_first_slide.bind(this));
-		
-		// run the slides randomly
-		this.timer = new PeriodicalExecuter(
-			this.next_slide.bind(this), this.SLIDE_FREQUENCY);
 	},
 	
 	next_slide: function() {
+		this.timer.stop();
+
 		var index = (this.slide_index || 0) + 1;
 		if (index > this.slides.length - 1) index = 0;
 		//var index = Math.floor(Math.random() * this.slides.length);
@@ -110,8 +108,26 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		if (backdrop) {
 			this.show_backdrop(backdrop);
 		}
+
+		this.timer = new PeriodicalExecuter(
+			this.next_slide.bind(this), this.SLIDE_FREQUENCY);
 	},
-	
+
+	on_next_slide: function(info, backdrop) {
+		this.clear_tray();
+		this.clear_backdrop();
+
+		var tray = this.carousel.down('.tray');
+		tray.insert(info);
+		
+		if (backdrop) {
+			this.show_backdrop(backdrop);
+		}
+		
+		this.timer = new PeriodicalExecuter(
+			this.next_slide.bind(this), this.SLIDE_FREQUENCY);
+	},
+
 	show_backdrop: function(backdrop) {
 		
 		var header = this.controller.get('spotlight-header');
@@ -160,18 +176,6 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.carousel.insert(backdrop);
 	},
 	
-	on_next_slide: function(info, backdrop) {
-		this.clear_tray();
-		this.clear_backdrop();
-
-		var tray = this.carousel.down('.tray');
-		tray.insert(info);
-		
-		if (backdrop) {
-			this.show_backdrop(backdrop);
-		}
-	},
-
 	clear_backdrop: function() {
 		var backdrop = this.carousel.down('.backdrop');
 		if (backdrop) {
