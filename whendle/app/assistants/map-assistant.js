@@ -164,11 +164,8 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 			this.fire(Whendle.Event.adding, { 'place': place });
 		}
 		else {
-			var profile = Whendle.profile();
-			var location = profile.data('location');
-			if (location) {
-				this.map.mojo.flick(location);
-			}
+			// reload
+			this.fire(Whendle.Event.loading);
 		}
 	},
 	
