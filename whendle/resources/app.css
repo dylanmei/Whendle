@@ -231,7 +231,7 @@
     background: url('icon-mini.png') center center no-repeat;
 }
 
-#help {
+#help, #prefs {
 	padding: 4px;
 	font-family: arial;
 	color: #555;
@@ -270,6 +270,27 @@
 
 .help-support-group {
 	margin: 10px 0 20px 0;
+}
+
+.prefs-item {
+	font-family: coconut;
+	font-size: 80%;
+}
+
+.prefs-item>.title {
+	float: left;
+}
+
+.prefs-item>.choice {
+	color: #196AD4;
+}
+
+.prefs-item>.preview {
+	font-size: 16px;
+	color: #666;
+	font-style: italic;
+	text-align: right;
+	margin-top: 0px;
 }
 
 .hbox {

@@ -68,7 +68,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	setup_slides: function() {
 		this.slides = [];
 		this.slides.push(new Weather_Slide());
-//		this.slides.push(new Photo_Slide());
+		this.slides.push(new Photo_Slide());
 	},
 	
 	set_clock_values: function(clock) {
@@ -198,6 +198,8 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 
 		this.set_clock_values(clock);
 
+		if (this.is_reloading) return;
+
 		this.woeid = clock.woeid;
 		this.longitude = clock.longitude;
 		this.latitude = clock.latitude;
@@ -213,7 +215,9 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 			admin: clock.admin,
 			country: clock.country
 		};
-
+		
+		
+		this.is_loaded = true;
 		this.start_sliding(clock);
 	},
 
@@ -286,6 +290,14 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		if (this.timer) this.timer.stop();
 		this.presenter.destroy();
 	},
+	
+	activate: function() {
+		if (this.is_loaded) {
+			// reload
+			this.is_reloading = true;
+			this.fire(Whendle.Event.loading, { id: this.id });
+		}
+	},	
 	
 	detach_events: function() {
 	}	

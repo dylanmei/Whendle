@@ -104,8 +104,8 @@ Whendle.Gallery.Presenter = Class.create({
 	pack_clocks_for_view: function(places) {
 		var now = this.timekeeper.time;
 		var utc = this.timekeeper.utc;
-		var format = this.timekeeper.format;
-		
+		var format = this.select_time_format();
+
 		var self = this;
 		var clocks = places.collect(function(p) {
 			p.time = self.offset_time(utc, p.timezone);
@@ -134,6 +134,16 @@ Whendle.Gallery.Presenter = Class.create({
 			result.now.declination = this.sunlight_calculator.declination(utc);
 		}
 		return result;
+	},
+	
+	select_time_format: function() {
+		var format = null;
+		if (Object.isFunction(Whendle.profile)) {
+			var profile = Whendle.profile();
+			format = profile.get('time_format');
+		}
+
+		return format || this.timekeeper.format;
 	},
 	
 	offset_time: function(utc, timezone) {

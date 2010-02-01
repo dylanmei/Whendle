@@ -28,6 +28,10 @@ StageAssistant.prototype.handleCommand = function(event) {
 		if (event.command == Mojo.Menu.helpCmd) {
 			event.stopPropagation();
 		}
+
+		if (event.command == Mojo.Menu.prefsCmd) {
+			event.stopPropagation();
+		}
 	}
 
 	if (event.type != Mojo.Event.command) return;
@@ -47,6 +51,9 @@ StageAssistant.prototype.handleCommand = function(event) {
 	}
 	else if (event.command == Mojo.Menu.helpCmd) {
 		this.controller.pushScene({ name: 'help' });
+	}
+	else if (event.command == Mojo.Menu.prefsCmd) {
+		this.controller.pushScene({ name: 'prefs' });
 	}
 }
 

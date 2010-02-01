@@ -31,7 +31,6 @@ Whendle.Profile = Class.create({
 	},
 	
 	data: function(name, value) {
-
 		var obj = this.cookie.get() || {};
 		if (value === undefined)
 			return obj[name];
@@ -39,5 +38,21 @@ Whendle.Profile = Class.create({
 		obj[name] = value;
 		this.cookie.put(obj);
 		return this;
+	},
+	
+	get: function(name) {
+		return this.data(name);
+	},
+	
+	set: function(name, value) {
+		this.data(name, value);
+	},
+	
+	remove: function(name) {
+		var obj = this.cookie.get() || {};
+		if (obj[name]) {
+			delete obj[name];
+			this.cookie.put(obj);
+		}
 	}
 });

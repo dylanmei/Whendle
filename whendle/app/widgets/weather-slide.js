@@ -151,17 +151,27 @@ Weather_Slide = Class.create({
 	},
 	
 	format_temperature: function(t) {
-		if (this.format == 'f') {
+		if (this.select_temperature_format() == 'f') {
 			return $.string('temperature_farenheit')
-				.interpolate(this.celcius_to_farenheit({ temp: t }));
+				.interpolate({ temp: this.celcius_to_farenheit(t) });
 		}
 		else {
 			return $.string('temperature_celcius').interpolate({ temp: t });
 		}
 	},
 	
+	select_temperature_format: function() {
+		var format = null;
+		if (Object.isFunction(Whendle.profile)) {
+			var profile = Whendle.profile();
+			format = profile.get('temperature_format');
+		}
+
+		return format || 'c';
+	},	
+	
 	celcius_to_farenheit: function(c) {
-		return Math.round(5 / 9 * (c - 32));
+		return Math.round(((9 / 5) * c) + 32);
 	},
 
 	select_a_weather_image: function(description) {

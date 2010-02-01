@@ -161,8 +161,7 @@ Whendle.Spotlight.Presenter = Class.create({
 	pack_clock_for_view: function(place) {
 		var now = this.timekeeper.time;
 		var utc = this.timekeeper.utc;
-		var format = this.timekeeper.format;
-
+		var format = this.select_time_format();
 		place.time = this.offset_time(utc, place.timezone);
 	
 		var result = {
@@ -193,6 +192,16 @@ Whendle.Spotlight.Presenter = Class.create({
 		return result;
 	},
 
+	select_time_format: function() {
+		var format = null;
+		if (Object.isFunction(Whendle.profile)) {
+			var profile = Whendle.profile();
+			format = profile.get('time_format');
+		}
+
+		return format || this.timekeeper.format;
+	},
+	
 	offset_time: function(utc, timezone) {
 		if (!timezone) return utc;
 		return utc.clone()
