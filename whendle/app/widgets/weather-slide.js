@@ -36,8 +36,16 @@ Weather_Slide = Class.create({
 	backdrop: function() {
 		return this.pix;
 	},
+
+	in_error_state: function() {
+		return (this.data || {}).error == 1;
+	},
 	
 	invoke: function(on_ready) {
+		if (this.in_error_state()) {
+			return on_ready(this.tray());
+		}
+		
 		var weather = (this.data || {}).weather;
 		var attribution = (this.data || {}).attribution;
 
@@ -69,7 +77,7 @@ Weather_Slide = Class.create({
 				break;
 		}
 	},
-	
+
 	clear_tray: function() {
 		this.div.childElements()
 			.each(function(c) { c.remove(); });
@@ -82,9 +90,10 @@ Weather_Slide = Class.create({
 	},
 
 	on_weather_error: function(on_ready) {
+		this.data = { error: 1 };
 		this.clear_tray();
 		this.div.insert(new Element('div', { 'class': 'error' })
-			.update('Weather service unreachable'));
+			.update($.string('weather_unavailable')));
 		
 		on_ready(this.tray());
 	},

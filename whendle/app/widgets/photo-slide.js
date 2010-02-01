@@ -29,6 +29,10 @@ Photo_Slide = Class.create({
 		//return this.display;
 		return this.image;
 	},
+
+	in_error_state: function() {
+		return false;
+	},
 	
 	invoke: function(on_ready) {
 		if (this.photos.length) {

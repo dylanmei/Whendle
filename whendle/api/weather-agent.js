@@ -35,16 +35,27 @@ Whendle.Weather_Agent = Class.create({
 		new Ajax.Request(resource, {
 			method: 'get',
 			asynchronous: true,
-			onSuccess: this.on_response.bind(this, on_complete),
-			onFailure: this.on_error.bind(this)
+			onSuccess: this.on_response.bind(this, on_complete, on_error),
+			onFailure: this.on_error.bind(this, on_error)
 		});
 	},
 	
-	on_response: function(on_complete, transport) {
-		if (transport.responseXML) {
-			var response = transport.responseXML;
-			on_complete(this.rss_to_object(response));
+	on_response: function(on_complete, on_error, response) {
+		if (!response.responseXML) on_error();
+		else {
+			var xml = response.responseXML;
+			if (this.rss_is_error(xml)) on_error();
+			else {
+				on_complete(this.rss_to_object(xml));
+			}
 		}
+	},
+	
+	rss_is_error: function(xml) {
+		var d = xml.documentElement;
+		var descriptor = d.querySelector('channel description');
+
+		return descriptor.textContent.indexOf('Error') != -1;
 	},
 	
 	rss_to_object: function(xml) {

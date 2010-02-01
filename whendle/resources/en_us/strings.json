@@ -43,6 +43,7 @@
 	, "temperature_forecast_tomorrow": "Tomorrow's high #{high}, low #{low}"
 	, "temperature_farenheit": "#{temp}&deg;f"
 	, "temperature_celcius": "#{temp}&deg;c"
+	, "weather_unavailable": "Weather unavailable..."
 	, "weather_condition_0": "Tornado"
 	, "weather_condition_1": "Tropical storm"
 	, "weather_condition_2": "Hurricane"
