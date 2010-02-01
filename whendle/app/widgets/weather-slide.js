@@ -6,6 +6,7 @@ Weather_Slide = Class.create({
 	
 	initialize: function() {
 		this.div = new Element('div', { 'class': 'weather-slide-tray' });
+		this.pix = this.new_image();
 	},
 	
 	setup: function(clock) {
@@ -17,11 +18,23 @@ Weather_Slide = Class.create({
 		this.generations = 0;
 	},
 
+	new_image: function() {
+		var image = new Image();
+		image.getWidth = function() {
+			return 320;
+		};
+		image.getHeight = function() {
+			return 400;
+		};
+		return image;
+	},
+
 	tray: function() {
 		return this.div;
 	},
 	
 	backdrop: function() {
+		return this.pix;
 	},
 	
 	invoke: function(on_ready) {
@@ -82,6 +95,8 @@ Weather_Slide = Class.create({
 			this.new_weather_element(weather.code, weather.temp));
 		this.div.insert(
 			this.new_attribution(attribution.text));
+
+		this.compose_backdrop_image(weather.code);
 	},
 	
 	compose_forecast: function(day, forecast, attribution) {
@@ -90,6 +105,14 @@ Weather_Slide = Class.create({
 			this.new_forecast_element(day, forecast.code, forecast.high, forecast.low));
 		this.div.insert(
 			this.new_attribution(attribution.text));
+		
+		this.compose_backdrop_image(forecast.code);
+	},
+	
+	compose_backdrop_image: function(condition_code) {
+		var description = Yahoo.Weather.condition_text(condition_code);
+		var name = this.select_a_weather_image(description);
+		this.pix.src = 'resources/' + name + '.png';
 	},
 	
 	new_forecast_element: function(day, code, high, low) {
@@ -130,6 +153,85 @@ Weather_Slide = Class.create({
 	
 	celcius_to_farenheit: function(c) {
 		return Math.round(5 / 9 * (c - 32));
+	},
+
+	select_a_weather_image: function(description) {
+		switch (description.toLowerCase()) {
+			case 'cloudy':
+			case 'mostly cloudy':
+				return 'weather-mostly-cloudy';
+
+			case 'partly cloudy':
+			case 'partly cloudy':
+				return 'weather-partly-cloudy';
+
+			case 'mixed snow and sleet':
+			case 'light snow showers':
+			case 'snow flurries':
+			case 'blowing snow':
+			case 'snow':
+			case 'heavy snow':
+			case 'scattered snow showers':
+			case 'snow showers':
+				return 'weather-snow';
+			
+			case 'cold':
+				return 'weather-cold';
+
+			case 'hot':
+				return 'weather-hot';
+
+			case 'showers':
+			case 'freezing rain':
+			case 'scattered showers':
+				return 'weather-showers'
+				
+			case 'mixed rain and snow':
+				return 'weather-rain-and-snow';
+
+			case 'freezing drizzle':
+			case 'drizzle':
+				return 'weather-drizzle';
+			
+			case 'hail':
+			case 'sleet':
+			case 'mixed rain and hail':
+				return 'weather-hail';
+
+			case 'thunderstorms':
+			case 'thundershowers':
+			case 'severe thunderstorms':
+			case 'isolated thundershowers':
+			case 'isolated thunderstorms':
+			case 'scattered thunderstorms':
+				return 'weather-thunderstorms';
+		
+			case 'foggy':
+			case 'haze':
+				return 'weather-foggy';
+
+			case 'blustery':
+			case 'windy':
+			case 'smoky':
+				return 'weather-windy';
+
+			// todo major storms
+			case 'tornado':
+			case 'tropical storm':
+			case 'hurricane':
+				return 'weather-windy';
+
+			// todo
+			case 'dust':
+			case 'clear':
+			case 'sunny':
+			case 'fair':
+				return 'weather-unknown';
+
+			// unknown
+			case 'unavailable':
+			default:
+				return 'weather-unknown';
+		}
 	}
-	
 });

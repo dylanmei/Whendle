@@ -68,7 +68,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	setup_slides: function() {
 		this.slides = [];
 		this.slides.push(new Weather_Slide());
-		this.slides.push(new Photo_Slide());
+//		this.slides.push(new Photo_Slide());
 	},
 	
 	set_clock_values: function(clock) {
@@ -113,6 +113,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	show_backdrop: function(backdrop) {
+		
 		var header = this.controller.get('spotlight-header');
 		var viewport = {
 			t: header.getHeight(),
@@ -121,8 +122,8 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 			b: header.getHeight() + this.extent().y
 		};
 		
-		var w = backdrop.getWidth();
-		var h = backdrop.getHeight();
+		var w = backdrop.getWidth() || viewport.r - viewport.l;
+		var h = backdrop.getHeight() || viewport.b - viewport.t;
 		
 		if (w < viewport.r - viewport.l) {
 			var r = (viewport.r - viewport.l) / w;
@@ -145,7 +146,9 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 			r: w
 		};
 		
-		backdrop.addClassName('backdrop');
+		if (!backdrop.hasClassName('backdrop'))
+			backdrop.addClassName('backdrop');
+
 		backdrop.setStyle({
 			top: y + 'px',
 			left: x + 'px',

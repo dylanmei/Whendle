@@ -195,6 +195,10 @@
 	margin-top: 6px;
 }
 
+.weather-slide-pix {
+	background-image: url('weather-hail.png') center center no-repeat;
+}
+
 .photo-slide-tray {
 	color: white;
 	padding: 12px;
