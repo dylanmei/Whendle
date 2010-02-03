@@ -48,7 +48,7 @@ PrefsAssistant = Class.create({
 			modelProperty: 'temperature',
 			choices: [
 				{ label: $L('prefs_celcius_format'), value: 'c' },
-				{ label: $L('prefs_farenheit_format'), value: 'f' }
+				{ label: $L('prefs_fahrenheit_format'), value: 'f' }
 			]
 		}, this.model);
 	},
