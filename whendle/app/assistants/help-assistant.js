@@ -32,7 +32,7 @@ HelpAssistant = Class.create({
 								role: 1,
 								value: Whendle.email
 							}],
-							summary: 'Regarding Whendle v{#version}...'.interpolate(Whendle)
+							summary: 'Regarding Whendle v#{version}...'.interpolate(Whendle)
 						}
 					}
 				})
