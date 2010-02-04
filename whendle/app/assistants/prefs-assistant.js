@@ -54,7 +54,7 @@ PrefsAssistant = Class.create({
 		this.controller.setupWidget(this.temperature.id, {
 			modelProperty: 'temperature',
 			choices: [
-				{ label: $L('prefs_celcius_format'), value: 'c' },
+				{ label: $L('prefs_celsius_format'), value: 'c' },
 				{ label: $L('prefs_fahrenheit_format'), value: 'f' }
 			]
 		}, this.model);

@@ -1,7 +1,7 @@
 
 Weather_Slide = Class.create({
 
-	CELCIUS: 'c',
+	CELSIUS: 'c',
 	FAHRENHEIT: 'f',
 	
 	initialize: function() {
@@ -153,10 +153,10 @@ Weather_Slide = Class.create({
 	format_temperature: function(t) {
 		if (this.select_temperature_format() == 'f') {
 			return $.string('temperature_fahrenheit')
-				.interpolate({ temp: this.celcius_to_fahrenheit(t) });
+				.interpolate({ temp: this.celsius_to_fahrenheit(t) });
 		}
 		else {
-			return $.string('temperature_celcius').interpolate({ temp: t });
+			return $.string('temperature_celsius').interpolate({ temp: t });
 		}
 	},
 	
@@ -167,10 +167,10 @@ Weather_Slide = Class.create({
 			format = profile.get('temperature_format');
 		}
 
-		return format || this.CELCIUS;
+		return format || this.CELSIUS;
 	},	
 	
-	celcius_to_fahrenheit: function(c) {
+	celsius_to_fahrenheit: function(c) {
 		return Math.round(((9 / 5) * c) + 32);
 	},
 

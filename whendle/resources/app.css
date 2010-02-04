@@ -19,8 +19,8 @@
 }
 
 .splash-image {
-	width: 280;
-	height: 345;
+	width: 280px;
+	height: 345px;
 }
 
 .splash-status {
@@ -181,7 +181,7 @@
 }
 
 .weather-slide-tray .forecast .temperature {
-	font-size: 20px;
+	font-size: 18px;
 	font-weight: bold;
 }
 
