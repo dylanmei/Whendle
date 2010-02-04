@@ -90,7 +90,7 @@ Whendle.Startup.Presenter = Class.create({
 	
 	on_startup_ready: function(view) {
 		view.started({
-			'scene': this.profile.data('gallery') || 'list'
+			'scene': this.profile.get('gallery') || 'list'
 		});
 	},
 	

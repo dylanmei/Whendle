@@ -30,22 +30,15 @@ Whendle.Profile = Class.create({
 		this.cookie = cookie || new Mojo.Model.Cookie('whendle');
 	},
 	
-	data: function(name, value) {
-		var obj = this.cookie.get() || {};
-		if (value === undefined)
-			return obj[name];
-
-		obj[name] = value;
-		this.cookie.put(obj);
-		return this;
-	},
-	
 	get: function(name) {
-		return this.data(name);
+		var obj = this.cookie.get() || {};
+		return obj[name];
 	},
 	
 	set: function(name, value) {
-		this.data(name, value);
+		var obj = this.cookie.get() || {};
+		obj[name] = value;
+		this.cookie.put(obj);
 	},
 	
 	remove: function(name) {
@@ -56,3 +49,4 @@ Whendle.Profile = Class.create({
 		}
 	}
 });
+

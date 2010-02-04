@@ -1,7 +1,9 @@
 
 describe 'Spotlight'
 	place_repository = new Object
-
+	sunlight_calculator = undefined
+	profile = { get: -{} }
+	
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
@@ -10,7 +12,12 @@ describe 'Spotlight'
 	}))();
 
 	view = new Whendle.Spotlight.View
-	presenter = new Whendle.Spotlight.Presenter(view, timekeeper, place_repository)
+	presenter = new Whendle.Spotlight.Presenter(view,
+		timekeeper,
+		place_repository,
+		sunlight_calculator,
+		profile
+	)
 	
 	new_place_record = function(id) {
 		return { 'id': id, 'name': 'a', 'admin': 'b', 'country': 'c', 'latitude': 0, 'longitude': 0 }

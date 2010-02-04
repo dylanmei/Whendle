@@ -66,12 +66,13 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Gallery.Presenter = Class.create({
-	initialize: function(view, timekeeper, timezone_locator, place_repository, sunlight_calculator) {
+	initialize: function(view, timekeeper, timezone_locator, place_repository, sunlight_calculator, profile) {
 		this.timekeeper = timekeeper || Whendle.timekeeper();
 		this.timezone_locator = timezone_locator || Whendle.timezone_locator();
 		this.place_repository = place_repository || Whendle.place_repository();
 		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
-		
+		this.profile = profile || Whendle.profile();
+
 		view.observe(Whendle.Event.loading,
 			this.on_loading.bind(this, view));
 		view.observe(Whendle.Event.adding,
@@ -137,13 +138,7 @@ Whendle.Gallery.Presenter = Class.create({
 	},
 	
 	select_time_format: function() {
-		var format = null;
-		if (Object.isFunction(Whendle.profile)) {
-			var profile = Whendle.profile();
-			format = profile.get('time_format');
-		}
-
-		return format || this.timekeeper.format;
+		return this.profile.get('time_format') || this.timekeeper.format;
 	},
 	
 	offset_time: function(utc, timezone) {

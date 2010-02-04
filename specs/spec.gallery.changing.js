@@ -1,7 +1,11 @@
 
 describe 'Gallery'
-	place_repository = new Object
 
+	place_repository = new Object
+	timezone_locator = new Object
+	sunlight_calculator = undefined
+	profile = { get: -{} }
+	
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
@@ -12,8 +16,10 @@ describe 'Gallery'
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view,
 		timekeeper,
-		new Object,
-		place_repository
+		timezone_locator,
+		place_repository,
+		sunlight_calculator,
+		profile
 	)
 	
 	new_place_record = function(id) {

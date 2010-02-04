@@ -161,11 +161,8 @@ Weather_Slide = Class.create({
 	},
 	
 	select_temperature_format: function() {
-		var format = null;
-		if (Object.isFunction(Whendle.profile)) {
-			var profile = Whendle.profile();
-			format = profile.get('temperature_format');
-		}
+		var profile = Whendle.profile();
+		var format = profile.get('temperature_format');
 
 		return format || this.CELSIUS;
 	},	

@@ -1,6 +1,11 @@
 
 describe 'Gallery'
-	repository = new Object
+
+	place_repository = new Object
+	timezone_locator = new Object
+	sunlight_calculator = undefined
+	profile = { get: -{} }
+	
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
@@ -9,7 +14,13 @@ describe 'Gallery'
 	}))();
 
 	view = new Whendle.Observable
-	presenter = new Whendle.Gallery.Presenter(view, timekeeper, new Object, repository)
+	presenter = new Whendle.Gallery.Presenter(view,
+		timekeeper,
+		timezone_locator,
+		place_repository,
+		sunlight_calculator,
+		profile
+	)
 	
 	new_place_record = function(id) {
 		return { 'id': id, 'name': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
@@ -19,7 +30,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			repository.get_places = function(on_result) {
+			place_repository.get_places = function(on_result) {
 				on_result([]);
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
@@ -39,7 +50,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			repository.get_places = function(on_result) {
+			place_repository.get_places = function(on_result) {
 				on_result([ new_place_record(1), new_place_record(2) ])
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }
@@ -59,7 +70,7 @@ describe 'Gallery'
 		before
 			a = null
 			e = null
-			repository.get_places = function(on_result, on_error) {
+			place_repository.get_places = function(on_result, on_error) {
 				on_error({})
 			}
 			view.loaded = function(event) { a = event.clocks; e = event.error; }

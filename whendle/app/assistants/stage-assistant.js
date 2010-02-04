@@ -19,7 +19,7 @@ StageAssistant.prototype.setup_services = function() {
 	Whendle.services('Whendle.place-locator', new Whendle.Place_Locator(ajax));
 	Whendle.services('Whendle.timezone-locator', new Whendle.Timezone_Locator(ajax, new Whendle.TzLoader(ajax, Whendle.tzpath)));
 	Whendle.services('Whendle.timekeeper', new Whendle.TimekeeperService(Whendle.system()));
-	Whendle.services('Whendle.startup', new Whendle.StartupService(Whendle.schema(), Whendle.timekeeper()));
+	Whendle.services('Whendle.startup', new Whendle.StartupService(Whendle.schema(), Whendle.timekeeper(), Whendle.profile()));
 	Whendle.services('Whendle.sunlight-calculator', new Whendle.Sunlight_Calculator());
 };
 

@@ -3,6 +3,8 @@ describe 'Gallery'
 
 	place_repository = new Object
 	timezone_locator = new Object
+	sunlight_calculator = undefined
+	profile = { get: -{} }
 	
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
@@ -15,7 +17,9 @@ describe 'Gallery'
 	presenter = new Whendle.Gallery.Presenter(view,
 		timekeeper,
 		timezone_locator,
-		place_repository
+		place_repository,
+		sunlight_calculator,
+		profile
 	)
 	
 	mock_tzlookup_result = function(name) {

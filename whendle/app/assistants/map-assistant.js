@@ -5,7 +5,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		new Whendle.Gallery.Presenter(this);
 
 		var profile = Whendle.profile();
-		profile.data('gallery', 'map');
+		profile.set('gallery', 'map');
 	},
 	
 	setup: function() {
@@ -40,7 +40,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		this.map = this.controller.get('map');
 
 		var profile = Whendle.profile();
-		var location = profile.data('location');
+		var location = profile.get('location');
 		var attributes = location ? { longitude: location.x, latitude: location.y } : undefined;
 		this.controller.setupWidget(this.map.id, attributes);
 	},
@@ -57,7 +57,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		if (this.report_error(event.error)) return;
 
 		var profile = Whendle.profile();
-		var location = profile.data('location');
+		var location = profile.get('location');
 		
 		var now = event.now;
 		var map = this.map;
@@ -145,7 +145,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	
 	on_location_changed: function(event) {
 		var profile = Whendle.profile();
-		profile.data('location', event.location);
+		profile.set('location', event.location);
 		if (event.select) {
 			Mojo.Controller.stageController.pushScene({ name: 'spotlight', disableSceneScroller: true }, event.select);
 		}

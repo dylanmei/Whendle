@@ -56,10 +56,11 @@ Whendle.Spotlight.View = Class.create(Whendle.Observable, {
 });
 
 Whendle.Spotlight.Presenter = Class.create({
-	initialize: function(view, timekeeper, place_repository, sunlight_calculator) {
+	initialize: function(view, timekeeper, place_repository, sunlight_calculator, profile) {
 		this.timekeeper = timekeeper || Whendle.timekeeper();
 		this.place_repository = place_repository || Whendle.place_repository();
 		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
+		this.profile = profile || Whendle.profile();
 
 		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
 		view.observe(':editing', this.on_editing.bind(this, view));
@@ -193,13 +194,7 @@ Whendle.Spotlight.Presenter = Class.create({
 	},
 
 	select_time_format: function() {
-		var format = null;
-		if (Object.isFunction(Whendle.profile)) {
-			var profile = Whendle.profile();
-			format = profile.get('time_format');
-		}
-
-		return format || this.timekeeper.format;
+		return this.profile.get('time_format') || this.timekeeper.format;
 	},
 	
 	offset_time: function(utc, timezone) {

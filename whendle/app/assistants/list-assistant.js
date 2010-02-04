@@ -9,7 +9,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		this._presenter = new Whendle.Gallery.Presenter(this);
 
 		var profile = Whendle.profile();
-		profile.data('gallery', 'list');
+		profile.set('gallery', 'list');
 	},
 	
 	setup: function() {

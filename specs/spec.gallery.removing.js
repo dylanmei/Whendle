@@ -1,11 +1,25 @@
 
 describe 'Gallery'
-	repository = new Object
+	place_repository = new Object
+	timezone_locator = new Object
+	sunlight_calculator = undefined
+	profile = { get: -{} }
+	timekeeper = new Whendle.Observable
+
+	timekeeper = new (Class.create(Whendle.Observable, {
+		initialize: function($super) { $super(); },
+		time: Time.now(),
+		utc: Time.now(),
+		format: ''
+	}))();
+
 	view = new Whendle.Observable
 	presenter = new Whendle.Gallery.Presenter(view,
-		new Whendle.Observable,
-		new Object,
-		repository
+		timekeeper,
+		timezone_locator,
+		place_repository,
+		sunlight_calculator,
+		profile
 	)
 	
 	describe 'removing a clock'
@@ -13,7 +27,7 @@ describe 'Gallery'
 			a = null
 			b = null
 			e = null
-			repository.delete_place = function(id, on_result) {
+			place_repository.delete_place = function(id, on_result) {
 				on_result(b = true)
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
@@ -25,7 +39,7 @@ describe 'Gallery'
 			a[0].id.should.be 987
 		end
 		
-		it 'should delete the clock from the repository'
+		it 'should delete the clock from the place_repository'
 			b.should.be_true
 		end
 		
@@ -34,11 +48,11 @@ describe 'Gallery'
 		end
 	end
 	
-	describe 'removing a clock causes a repository error'
+	describe 'removing a clock causes a place_repository error'
 		before
 			a = null
 			e = null
-			repository.delete_place = function(id, on_result, on_error) {
+			place_repository.delete_place = function(id, on_result, on_error) {
 				on_error({})
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
