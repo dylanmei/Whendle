@@ -10,16 +10,27 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	
 	extent: function() {
 		var viewport = Mojo.View.getViewportDimensions(this.controller.document);
-		return {
-			x: viewport.width,
-			y: viewport.height - 72
-		}
+		var header = this.controller.get('spotlight-header');
+		return viewport.width < viewport.height ? {
+				x: viewport.width,
+				y: viewport.height - header.getHeight()
+			} : {
+				x: viewport.height,
+				y: viewport.width - header.getHeight()
+			};
 	},
 	
 	setup: function() {
+		this.setup_orientation();
 		this.setup_menus();
 		this.setup_widgets();
 		this.fire(Whendle.Event.loading, { id: this.id });
+	},
+	
+	setup_orientation: function() {
+		var stage_controller = this.controller.stageController;
+		if (stage_controller.getWindowOrientation() != 'up')
+			stage_controller.setWindowOrientation('up');
 	},
 	
 	setup_menus: function() {
@@ -38,6 +49,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	setup_widgets: function() {
+//		Mojo.Controller.errorDialog(Object.toJSON(Mojo.View.getViewportDimensions(this.controller.document)));
 
 		this.setup_maplet();
 		this.setup_carousel();
@@ -55,13 +67,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 	
 	setup_carousel: function() {
-		var extent = this.extent();
 		this.carousel = this.controller.get('spotlight-carousel');
-		this.carousel.setStyle({
-			width: extent.x + 'px',
-			height: extent.y + 'px'
-		});
-		
 		this.carousel.insert(new Element('div', { 'class': 'tray' }));
 	},
 

@@ -48,8 +48,6 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	attach_events: function() {
 		this.controller.listen(this.growler.id, Mojo.Event.tap,
 			this.growler.tap_handler = this.on_growler_tapped.bind(this));
-		this.controller.listen(document, 'orientationchange',
-			this.orientation_handler = this.on_orientation_changed.bind(this));
 		this.controller.listen(this.map.id, ':location',
 			this.map.location_handler = this.on_location_changed.bind(this));
 	},
@@ -155,6 +153,8 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 
 	activate: function(place) {
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
+		this.controller.listen(document, 'orientationchange',
+			this.orientation_handler = this.on_orientation_changed.bind(this));
 
 		if (!this.is_loaded) return;
 
@@ -170,6 +170,8 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	},
 	
 	deactivate: function() {
+		this.controller.stopListening(document,
+			'orientationchange', this.orientation_handler);
 	},
 	
 	cleanup: function() {

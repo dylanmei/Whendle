@@ -17,12 +17,19 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 			is_loaded: false,
 			'items': []
 		};
-
+		
+		this.setup_orientation();
 		this.setup_menus();
 		this.setup_widgets();
 		this.attach_events();
 		
 		this.fire(Whendle.Event.loading);
+	},
+
+	setup_orientation: function() {
+		var stage_controller = this.controller.stageController;
+		if (stage_controller.getWindowOrientation() != 'up')
+			stage_controller.setWindowOrientation('up');
 	},
 	
 	setup_menus: function() {

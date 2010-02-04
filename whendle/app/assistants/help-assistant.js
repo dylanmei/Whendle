@@ -4,6 +4,17 @@ HelpAssistant = Class.create({
 	},
 	
 	setup: function() {
+		this.setup_orientation();
+		this.setup_links();
+	},
+	
+	setup_orientation: function() {
+		var stage_controller = this.controller.stageController;
+		if (stage_controller.getWindowOrientation() != 'up')
+			stage_controller.setWindowOrientation('up');
+	},
+	
+	setup_links: function() {
 		var content = this.controller.get('help');
 		var version = content.down('.help-app-version');
 		version.update('v' + Whendle.version + version.innerHTML);

@@ -8,9 +8,16 @@ PrefsAssistant = Class.create({
 		var version = content.down('.help-app-version');
 		version.update('v' + Whendle.version + version.innerHTML);
 		
+		this.setup_orientation();
 		this.setup_model();
 		this.setup_widgets();
 		this.attach_events();
+	},
+
+	setup_orientation: function() {
+		var stage_controller = this.controller.stageController;
+		if (stage_controller.getWindowOrientation() != 'up')
+			stage_controller.setWindowOrientation('up');
 	},
 	
 	setup_model: function() {
