@@ -36,7 +36,7 @@ Whendle.Photo_Agent = Class.create({
 	},
 
 	get: function(on_complete, on_error) {
-		var resource = 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=abc';// + Flickr.APPID;
+		var resource = 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=' + Flickr.APPID;
 //		resource += '&woe_id=' + this.woeid;
 		resource += '&lat=' + this.latitude;
 		resource += '&lon=' + this.longitude;
@@ -50,8 +50,6 @@ Whendle.Photo_Agent = Class.create({
 		resource += '&extras=owner_name,date_upload';
 		resource += '&format=json';
 		resource += '&nojsoncallback=1';
-
-		//$.trace(resource);
 
 		new Ajax.Request(resource, {
 			method: 'get',
