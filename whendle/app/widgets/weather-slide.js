@@ -3,12 +3,12 @@ Weather_Slide = Class.create({
 
 	CELSIUS: 'c',
 	FAHRENHEIT: 'f',
-	
+
 	initialize: function() {
 		this.div = new Element('div', { 'class': 'weather-slide-tray' });
 		this.pix = this.new_image();
 	},
-	
+
 	setup: function(clock) {
 		this.woeid = clock.woeid;
 
@@ -32,7 +32,7 @@ Weather_Slide = Class.create({
 	tray: function() {
 		return this.div;
 	},
-	
+
 	backdrop: function() {
 		return this.pix;
 	},
@@ -40,12 +40,12 @@ Weather_Slide = Class.create({
 	in_error_state: function() {
 		return (this.data || {}).error == 1;
 	},
-	
+
 	invoke: function(on_ready) {
 		if (this.in_error_state()) {
-			return on_ready(this.tray());
+			on_ready(this.tray()); return;
 		}
-		
+
 		var weather = (this.data || {}).weather;
 		var attribution = (this.data || {}).attribution;
 
@@ -82,7 +82,7 @@ Weather_Slide = Class.create({
 		this.div.childElements()
 			.each(function(c) { c.remove(); });
 	},
-	
+
 	on_weather_value: function(on_ready, data) {
 		this.data = data;
 		this.compose_weather(data.weather, data.attribution);
@@ -94,10 +94,10 @@ Weather_Slide = Class.create({
 		this.clear_tray();
 		this.div.insert(new Element('div', { 'class': 'error' })
 			.update($.string('weather_unavailable')));
-		
+
 		on_ready(this.tray());
 	},
-	
+
 	compose_weather: function(weather, attribution) {
 		this.clear_tray();
 		this.div.insert(
@@ -107,49 +107,49 @@ Weather_Slide = Class.create({
 
 		this.compose_backdrop_image(weather.code);
 	},
-	
+
 	compose_forecast: function(day, forecast, attribution) {
 		this.clear_tray();
 		this.div.insert(
 			this.new_forecast_element(day, forecast.code, forecast.high, forecast.low));
 		this.div.insert(
 			this.new_attribution(attribution.text));
-		
+
 		this.compose_backdrop_image(forecast.code);
 	},
-	
+
 	compose_backdrop_image: function(condition_code) {
 		var description = Yahoo.Weather.condition_text(condition_code);
 		var name = this.select_a_weather_image(description);
 		this.pix.src = 'resources/' + name + '.png';
 	},
-	
+
 	new_forecast_element: function(day, code, high, low) {
 		var template = day == 'today' ?
 			$.string('temperature_forecast_today') :
 			$.string('temperature_forecast_tomorrow');
-		
+
 		var forecast = template.interpolate({
 			high: this.format_temperature(high),
 			low: this.format_temperature(low)
 		});
-		
+
 		return new Element('div', { 'class': 'forecast' })
 			.insert(new Element('div', { 'class': 'temperature' }).update(forecast))
 			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
 	},
-	
+
 	new_weather_element: function(code, temp) {
 		return new Element('div', { 'class': 'currently' })
 			.insert(new Element('div', { 'class': 'temperature' }).update(this.format_temperature(temp)))
 			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
 	},
-	
+
 	new_attribution: function(text) {
 		return new Element('div', { 'class': 'attribution' })
 			.update(text);
 	},
-	
+
 	format_temperature: function(t) {
 		if (this.select_temperature_format() == 'f') {
 			return $.string('temperature_fahrenheit')
@@ -159,14 +159,14 @@ Weather_Slide = Class.create({
 			return $.string('temperature_celsius').interpolate({ temp: t });
 		}
 	},
-	
+
 	select_temperature_format: function() {
 		var profile = Whendle.profile();
 		var format = profile.get('temperature_format');
 
 		return format || this.CELSIUS;
-	},	
-	
+	},
+
 	celsius_to_fahrenheit: function(c) {
 		return Math.round(((9 / 5) * c) + 32);
 	},
@@ -190,7 +190,7 @@ Weather_Slide = Class.create({
 			case 'scattered snow showers':
 			case 'snow showers':
 				return 'weather-snow';
-			
+
 			case 'cold':
 				return 'weather-cold';
 
@@ -201,14 +201,14 @@ Weather_Slide = Class.create({
 			case 'freezing rain':
 			case 'scattered showers':
 				return 'weather-showers'
-				
+
 			case 'mixed rain and snow':
 				return 'weather-rain-and-snow';
 
 			case 'freezing drizzle':
 			case 'drizzle':
 				return 'weather-drizzle';
-			
+
 			case 'hail':
 			case 'sleet':
 			case 'mixed rain and hail':
@@ -221,7 +221,7 @@ Weather_Slide = Class.create({
 			case 'isolated thunderstorms':
 			case 'scattered thunderstorms':
 				return 'weather-thunderstorms';
-		
+
 			case 'foggy':
 			case 'haze':
 				return 'weather-foggy';

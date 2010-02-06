@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -34,9 +34,9 @@ Whendle.Photo_Agent = Class.create({
 		this.latitude = latitude;
 		this.longitude = longitude;
 	},
-	
+
 	get: function(on_complete, on_error) {
-		var resource = 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=' + Flickr.APPID;
+		var resource = 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=abc';// + Flickr.APPID;
 //		resource += '&woe_id=' + this.woeid;
 		resource += '&lat=' + this.latitude;
 		resource += '&lon=' + this.longitude;
@@ -51,29 +51,43 @@ Whendle.Photo_Agent = Class.create({
 		resource += '&format=json';
 		resource += '&nojsoncallback=1';
 
+		//$.trace(resource);
+
 		new Ajax.Request(resource, {
 			method: 'get',
 			asynchronous: true,
-			onSuccess: this.on_response.bind(this, on_complete),
-			onFailure: this.on_error.bind(this)
+			onSuccess: this.on_response_data.bind(this, on_complete, on_error),
+			onFailure: this.on_response_error.bind(this, on_error)
 		});
 	},
 
-	on_response: function(on_complete, transport) {
+	on_response_data: function(on_complete, on_error, transport) {
 		var response = transport.responseText;
 		if (response.isJSON()) {
 			response = response.evalJSON();
 		}
-		
-		on_complete({ photos: this.json_to_photos(response) });
-	},
-	
-	on_error: function(error) {
-		$.trace('error');
-	},
-	
-	json_to_photos: function(data) {
 
+		if (this.is_flickr_error(response)) {
+			on_error(this.json_to_error(response));
+		}
+		else {
+			on_complete({ photos: this.json_to_photos(response) });
+		}
+	},
+
+	on_response_error: function(on_error, error) {
+		on_error(error);
+	},
+
+	json_to_error: function(data) {
+		return {
+			code: data.code,
+			//message: data.message,
+			message: $.string('photos_no_service')
+		};
+	},
+
+	json_to_photos: function(data) {
 		var root = data.photos;
 		var self = this;
 		return root.photo.collect(function(obj) {
@@ -89,7 +103,11 @@ Whendle.Photo_Agent = Class.create({
 			};
 		});
 	},
-	
+
+	is_flickr_error: function(data) {
+		return data.stat != 'ok';
+	},
+
 	ticks_to_time: function(ticks) {
 		var date = Flickr.photo_posted_date(parseInt(ticks));
 		return new Time().date(date);

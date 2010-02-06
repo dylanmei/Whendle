@@ -8,7 +8,7 @@
 	background-color:#fff;
 	background: url('splash-background.png') left bottom repeat-x;
 	-webkit-border-radius: 24px;
-	
+
 	-webkit-transition-property: top;
 	-webkit-transition-duration: .6s;
 	-webkit-transition-timing-function: ease-in;
@@ -201,10 +201,6 @@
 	margin-bottom: 32px;
 }
 
-.weather-slide-pix {
-	background-image: url('weather-hail.png') center center no-repeat;
-}
-
 .photo-slide-tray {
 	color: white;
 	padding: 12px;
@@ -225,6 +221,12 @@
 .photo-slide-tray .attribution>.who {
 	margin: 0 4px;
 	font-style: italic;
+}
+
+.photo-slide-tray .error {
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 22px;
 }
 
 .palm-page-header .mini-icon {
@@ -298,21 +300,21 @@
 	-webkit-box-orient: horizontal;
 	-webkit-box-align: stretch;
 }
- 
+
 .hbox > * {
 	-webkit-box-flex: 0;
 }
- 
+
 .vbox {
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-box-align: stretch;
 }
- 
+
 .vbox > * {
 	-webkit-box-flex: 0;
 }
- 
+
 .spacer {
 	-webkit-box-flex: 1;
 }
@@ -320,11 +322,11 @@
 .start {
 	-webkit-box-pack: start;
 }
- 
+
 .end {
 	-webkit-box-pack: end;
 }
- 
+
 .center {
 	-webkit-box-pack: center;
 }

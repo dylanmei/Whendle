@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,33 +28,33 @@ Time = Class.create({
 	initialize: function() {
 		this._date = new Date(0);
 	},
-	
+
 	toString: function() {
 		return this.iso;
 	},
-	
+
 	ticks: function(n) {
 		if (n === undefined) return this._date.getTime();
 		this._date = new Date(n);
 		return this._millisecond(0);
 	},
-	
+
 	date: function(d) {
 		if (d === undefined) return this._date.copy();
 		this._date = d.copy();
 		return this._millisecond(0);
 	},
-	
+
 	clone: function() {
 		return new Time().ticks(this.ticks());
 	},
-	
+
 	compare: function(t) {
 		var t1 = this.ticks();
 		var t2 = t.ticks();
 		return t1 == t2 ? 0 : t1 < t2 ? -1 : 1;
 	},
-	
+
 	add: function(t, n) {
 		switch (t) {
 			case Time.years:
@@ -72,51 +72,67 @@ Time = Class.create({
 		}
 		return this;
 	},
-	
+
 	subtract: function(t, n) {
 		return this.add(t, -n);
 	},
-	
+
 	year: function(n) {
 		if (n === undefined) return this._date.getFullYear();
 		this._date.setFullYear(n);
 		return this;
 	},
-	
+
 	month: function(n) {
 		if (n === undefined) return this._date.getMonth() + 1;
 		this._date.setMonth(n - 1);
 		return this;
 	},
-	
+
 	day: function(n) {
 		if (n === undefined) return this._date.getDate();
 		this._date.setDate(n);
 		return this;
 	},
-	
+
 	hour: function(n) {
 		if (n === undefined) return this._date.getHours();
 		this._date.setHours(n);
 		return this;
 	},
-	
+
 	minute: function(n) {
 		if (n === undefined) return this._date.getMinutes();
 		this._date.setMinutes(n);
 		return this;
 	},
-	
+
 	second: function(n) {
 		if (n === undefined) return this._date.getSeconds();
 		this._date.setSeconds(n);
 		return this;
 	},
-	
+
 	_millisecond: function(n) {
 		if (n === undefined) return this._date.getMilliseconds();
 		this._date.setMilliseconds(n);
 		return this;
+	},
+
+	since: function(t) {
+		var a = this.ticks();
+		var b = t.ticks();
+		var span = {
+			minutes: 0,
+			hours: 0,
+			days:  0
+		};
+
+		if (b >= a) return span;
+		span.minutes = Math.floor((a - b) / 60000);
+		span.hours = Math.floor((a - b) / 3600000);
+		span.days = Math.floor((a - b) / 86400000);
+		return span;
 	}
 });
 
@@ -148,43 +164,6 @@ Time.prototype.__defineGetter__('iso', function() {
 		+ this.minute().toPaddedString(2) + ':'
 		+ this.second().toPaddedString(2) + 'Z';
 });
-
-Time.Format_time_ago = function(now, then) {
-	// fixme, use minutes since, else on jan-1 *everything will say 'last year' or 'x years ago'
-	if (now.year() > then.year()) {
-		if (now.year() - then.year() > 1) {
-			return $.string('time_x_years_ago').interpolate({ when: now.year() - then.year() });
-		}
-		else {
-			return $.string('time_1_year_ago').interpolate({ when: now.year() - then.year() });
-		}
-	}
-
-	if (now.month() > then.month()) {
-		if (now.month() - then.month() > 1) {
-			return $.string('time_x_months_ago').interpolate({ when: now.month() - then.month() });
-		}
-		else {
-			return $.string('time_1_month_ago');
-		}
-	}
-
-	if (now.day() > then.day()) {
-		if (now.day() - then.day() > 1) {
-			return $.string('time_x_days_ago').interpolate({ when: now.day() - then.day() });
-		}
-		else {
-			return $.string('time_yesterday');
-		}
-	}
-	if (now.hour() > then.hour())
-		return $.string('time_x_hours_ago').interpolate({ when: now.hour() - then.hour() });
-		
-	if (now.minute() > then.minute())
-		return $.string('time_x_minutes_ago').interpolate({ when: now.minute() - then.minute() });
-
-	return $.string('time_moments_ago'); 
-}
 
 Date.prototype.copy = function() {
 	return new Date(this.getTime());
