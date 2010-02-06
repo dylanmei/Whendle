@@ -46,6 +46,8 @@
 	, "prefs_24hr_time_format": "24 hour format"
 	, "prefs_celsius_format": "Temperature in Celsius"
 	, "prefs_fahrenheit_format": "Temperature in Fahrenheit"
+	, "prefs_show_local_photos": "Show local photos"
+	, "prefs_show_local_weather": "Show local weather"
 	, "weather_unavailable": "Weather unavailable..."
 	, "weather_condition_0": "Tornado"
 	, "weather_condition_1": "Tropical storm"

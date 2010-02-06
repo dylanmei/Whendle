@@ -15,15 +15,24 @@
 		<div class="palm-list">
 			<div class="palm-row first" x-mojo-touch-feedback="delayed">
 				<div class="palm-row-wrapper prefs-item">
-					<!--
-					<div class="title">Time format</div> -->
-					<div x-mojo-element="ListSelector"id="time"></div>
-					<!-- <div class="preview">8:53 am</div> -->
+					<div x-mojo-element="ListSelector"id="time" x-mojo-touch-feedback="delayed"></div>
+				</div>
+			</div>
+			<div class="palm-row">
+				<div class="palm-row-wrapper">
+					<div x-mojo-element="ListSelector"id="temperature" x-mojo-touch-feedback="delayed"></div>
+				</div>
+			</div>
+			<div class="palm-row">
+				<div class="palm-row-wrapper">
+					<div x-mojo-element="ToggleButton" id="weather"></div>
+					<div class="title left truncating-text"></div>
 				</div>
 			</div>
 			<div class="palm-row last">
 				<div class="palm-row-wrapper">
-					<div x-mojo-element="ListSelector"id="temperature" x-mojo-touch-feedback="delayed"></div>
+					<div x-mojo-element="ToggleButton" id="photos"></div>
+					<div class="title left truncating-text"></div>
 				</div>
 			</div>
 		</div>

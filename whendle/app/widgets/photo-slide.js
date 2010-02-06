@@ -1,11 +1,11 @@
 Photo_Slide = Class.create({
 	initialize: function() {
+		this.name = 'photos';
 		this.info = new Element('div', { 'class': 'photo-slide-tray' });
 		this.image = this.new_image();
 	},
 
 	setup: function(clock) {
-		this.place = clock.name;
 		this.longitude = clock.longitude;
 		this.latitude = clock.latitude;
 	},
@@ -38,7 +38,7 @@ Photo_Slide = Class.create({
 			on_ready(this.tray()); return;
 		}
 
-		if (this.data) {
+		if (this.has_photos()) {
 			this.next_photo(this.pop_random_photo(), on_ready);
 		}
 		else {
@@ -54,6 +54,12 @@ Photo_Slide = Class.create({
 		var photo = photos[Math.floor(Math.random() * photos.length)];
 		this.data.photos = photos.without(photo);
 		return photo;
+	},
+
+	has_photos: function() {
+		if (!this.data) return false;
+		if (!this.data.photos) return false;
+		return this.data.photos.length > 0;
 	},
 
 	next_photo: function(photo, on_ready) {

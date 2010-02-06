@@ -40,16 +40,16 @@ Whendle.Photo_Agent = Class.create({
 //		resource += '&woe_id=' + this.woeid;
 		resource += '&lat=' + this.latitude;
 		resource += '&lon=' + this.longitude;
+		resource += '&page=1';
 		resource += '&per_page=' + this.page_size;
 		resource += '&radius=' + this.radius;
+		resource += '&min_taken_date=2000-01-01 00:00:00';
 		resource += '&accuracy=1';
-		resource += '&media=photos';
-		resource += '&content_type=photos';
+		resource += '&media=photos&content_type=photos';
 		resource += '&safe_search=1';
 		resource += '&sort=date-posted-desc';
 		resource += '&extras=owner_name,date_upload';
-		resource += '&format=json';
-		resource += '&nojsoncallback=1';
+		resource += '&format=json&nojsoncallback=1';
 
 		new Ajax.Request(resource, {
 			method: 'get',
@@ -88,6 +88,7 @@ Whendle.Photo_Agent = Class.create({
 	json_to_photos: function(data) {
 		var root = data.photos;
 		var self = this;
+
 		return root.photo.collect(function(obj) {
 			return {
 				id: obj.id,

@@ -3,8 +3,10 @@ Weather_Slide = Class.create({
 
 	CELSIUS: 'c',
 	FAHRENHEIT: 'f',
+	MAX_GENERATIONS: 10,
 
 	initialize: function() {
+		this.name = 'weather';
 		this.div = new Element('div', { 'class': 'weather-slide-tray' });
 		this.pix = this.new_image();
 	},
@@ -62,7 +64,7 @@ Weather_Slide = Class.create({
 				break;
 			default:
 				if (this.generations < 1) {
-					this.generations = 10;
+					this.generations = this.MAX_GENERATIONS;
 					new Whendle.Weather_Agent(this.woeid).get(
 						this.on_weather_value.bind(this, on_ready),
 						this.on_weather_error.bind(this, on_ready)

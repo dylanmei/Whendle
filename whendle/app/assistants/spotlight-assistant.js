@@ -1,6 +1,6 @@
 
 SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
-	SLIDE_FREQUENCY: 10,
+	SLIDE_FREQUENCY: 5,
 
 	initialize: function($super, id) {
 		$super();
@@ -82,56 +82,57 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		$('spotlight-day').innerHTML = clock.day;
 	},
 
-	slide_first: function(clock) {
-		if (this.slides.length == 0) return;
-
-		this.slides.each(function(s) {
-			s.setup(clock);
-		});
-
-		this.invoke_slide(this.slides.first());
-	},
-
 	slide_next: function() {
-		this.timer.stop();
+		this.stop_slide_timer();
 
 		var slide = this.next_slide();
 		if (slide) {
 			this.invoke_slide(slide);
 		}
 		else {
-			this.clear_tray();
-			this.clear_backdrop();
+			this.clear_carousel();
 		}
 	},
 
 	invoke_slide: function(slide) {
-		slide.invoke(this.on_slide_ready.bind(this));
-		this.slide = slide;
+		if (slide) {
+			slide.invoke(this.on_slide_ready.bind(this, slide));
+		}
 	},
 
 	next_slide: function() {
-		var slide = null;
-		var index = this.slides.indexOf(this.slide);
-		for (var i = index + 1; i < this.slides.length; i++) {
-			if (this.slides[i].in_error_state()) continue;
-			slide = this.slides[i];
-		}
+		var index = this.slides.indexOf(this.slide || {});
+		var slide = this.slides.find(function(s, i) {
+			return i > index && this.can_show_slide(s);
+		}, this);
 
 		if (slide == null) {
-			for (var i = 0; i <= index; i++) {
-				if (this.slides[i].in_error_state()) continue;
-				slide = this.slides[i];
-			}
+			slide = this.slides.find(function(s) {
+				return this.can_show_slide(s);
+			}, this);
 		}
 
 		return slide;
 	},
 
-	on_slide_ready: function(info, backdrop) {
-		this.clear_tray();
-		this.clear_backdrop();
+	can_show_slide: function(slide) {
+		if (!slide) return false;
+		if (slide.in_error_state()) return false;
 
+		var profile = Whendle.profile();
+		var setting = false;
+		switch (slide.name) {
+			case 'weather':
+				setting = profile.get('show_weather'); break;
+			case 'photos':
+				setting = profile.get('show_photos'); break;
+		}
+
+		return Object.isUndefined(setting) ? true : setting;
+	},
+
+	on_slide_ready: function(slide, info, backdrop) {
+		this.clear_carousel();
 		var tray = this.carousel.down('.tray');
 		tray.insert(info);
 
@@ -139,8 +140,18 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 			this.show_backdrop(backdrop);
 		}
 
+		this.slide = slide;
+		this.start_slide_timer();
+	},
+
+	start_slide_timer: function() {
 		this.timer = new PeriodicalExecuter(
 			this.slide_next.bind(this), this.SLIDE_FREQUENCY);
+	},
+
+	stop_slide_timer: function() {
+		if (this.timer) this.timer.stop();
+		delete this.timer;
 	},
 
 	show_backdrop: function(backdrop) {
@@ -191,6 +202,11 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.carousel.insert(backdrop);
 	},
 
+	clear_carousel: function() {
+		this.clear_tray();
+		this.clear_backdrop();
+	},
+
 	clear_backdrop: function() {
 		var backdrop = this.carousel.down('.backdrop');
 		if (backdrop) {
@@ -215,33 +231,44 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		var now = event.now;
 		var clock = event.clock;
 
-		this.set_clock_values(clock);
+		this.load_model(clock);
+		this.maplet.mojo.draw(clock.longitude, clock.latitude,
+			now.declination, now.hour_angle);
+		if (!this.is_loaded) {
+			this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
+		}
 
-		if (this.is_reloading) return;
+		this.load_slides(clock);
+		this.is_loaded = true;
+	},
+
+	load_slides: function(clock) {
+		this.slides.each(function(s) {
+			s.setup(clock);
+		});
+
+		//this.invoke_slide(this.next_slide());
+		this.slide_next();
+	},
+
+	load_model: function(clock) {
+		this.set_clock_values(clock);
 
 		this.woeid = clock.woeid;
 		this.longitude = clock.longitude;
 		this.latitude = clock.latitude;
-
-		this.maplet.mojo.draw(clock.longitude, clock.latitude,
-			now.declination, now.hour_angle);
-
-		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
-
 		this.model = {
 			id: clock.id,
 			name: clock.name,
 			admin: clock.admin,
 			country: clock.country
 		};
-
-
-		this.is_loaded = true;
-		this.slide_first(clock);
 	},
 
 	changed: function(event) {
 		this.set_clock_values(event.clock);
+		this.maplet.mojo.draw(clock.longitude, clock.latitude,
+			now.declination, now.hour_angle);
 	},
 
 	saved: function(event) {
@@ -312,10 +339,12 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 
 	activate: function() {
 		if (this.is_loaded) {
-			// reload
-			this.is_reloading = true;
 			this.fire(Whendle.Event.loading, { id: this.id });
 		}
+	},
+
+	deactivate: function() {
+		this.stop_slide_timer();
 	},
 
 	detach_events: function() {

@@ -1,13 +1,14 @@
 
 PrefsAssistant = Class.create({
+
 	initialize: function() {
 	},
-	
+
 	setup: function() {
 		var content = this.controller.get('prefs');
 		var version = content.down('.help-app-version');
 		version.update('v' + Whendle.version + version.innerHTML);
-		
+
 		this.setup_orientation();
 		this.setup_model();
 		this.setup_widgets();
@@ -19,27 +20,41 @@ PrefsAssistant = Class.create({
 		if (stage_controller.getWindowOrientation() != 'up')
 			stage_controller.setWindowOrientation('up');
 	},
-	
+
 	setup_model: function() {
 		var profile = Whendle.profile();
+		var time_format = profile.get('time_format');
+		var temp_format = profile.get('temperature_format');
+		var show_weather = profile.get('show_weather');
+		var show_photos = profile.get('show_photos');
 
-		var time_format = profile.get('time_format') || 'default';
-		var temp_format = profile.get('temperature_format') || 'c';
-		
 		this.model = {
-			time: time_format,
-			temperature: temp_format
+			  time: Object.isUndefined(time_format) ? 'default' : time_format
+			, temperature: Object.isUndefined(temp_format) ? 'c' : temp_format
+			, weather: Object.isUndefined(show_weather) ? true : show_weather
+			, photos: Object.isUndefined(show_photos) ? true : show_photos
 		}
 	},
-	
+
 	attach_events: function() {
 		this.controller.listen(this.time.id, Mojo.Event.propertyChange,
 			this.time.change_handler = this.on_time_format.bind(this));
 		this.controller.listen(this.temperature.id, Mojo.Event.propertyChange,
 			this.temperature.change_handler = this.on_temperature_format.bind(this));
+		this.controller.listen(this.weather.id, Mojo.Event.propertyChange,
+			this.weather.change_handler = this.on_weather_value.bind(this));
+		this.controller.listen(this.photos.id, Mojo.Event.propertyChange,
+			this.photos.change_handler = this.on_photos_value.bind(this));
 	},
-	
+
 	setup_widgets: function() {
+		this.setup_time_option();
+		this.setup_temperature_option();
+		this.setup_weather_option();
+		this.setup_photos_option();
+	},
+
+	setup_time_option: function() {
 		this.time = this.controller.get('time');
 		this.controller.setupWidget(this.time.id, {
 			modelProperty: 'time',
@@ -49,7 +64,9 @@ PrefsAssistant = Class.create({
 				{ label: $L('prefs_12hr_time_format'), value: 'HH12' }
 			]
 		}, this.model);
-		
+	},
+
+	setup_temperature_option: function() {
 		this.temperature = this.controller.get('temperature');
 		this.controller.setupWidget(this.temperature.id, {
 			modelProperty: 'temperature',
@@ -59,28 +76,63 @@ PrefsAssistant = Class.create({
 			]
 		}, this.model);
 	},
-	
+
+	setup_weather_option: function() {
+		this.weather = this.controller.get('weather');
+		this.weather.next('.title')
+			.update($.string('prefs_show_local_weather'));
+		this.controller.setupWidget(this.weather.id, {
+			modelProperty: 'weather'
+		}, this.model);
+	},
+
+	setup_photos_option: function() {
+		this.photos = this.controller.get('photos');
+		this.photos.next('.title')
+			.update($.string('prefs_show_local_photos'));
+		this.controller.setupWidget(this.photos.id, {
+			modelProperty: 'photos'
+		}, this.model);
+	},
+
 	on_time_format: function(event) {
-		var profile = Whendle.profile();
 		if (event.value == 'default') {
-			profile.remove('time_format');
+			Whendle.profile()
+				.remove('time_format');
 		}
 		else {
-			profile.set('time_format', event.value);
+			Whendle.profile()
+				.set('time_format', event.value);
 		}
 	},
 
 	on_temperature_format: function(event) {
-		var profile = Whendle.profile();
-		profile.set('temperature_format', event.value);
+		Whendle.profile()
+			.set('temperature_format', event.value);
 	},
-	
+
+	on_photos_value: function(event) {
+		Whendle.profile()
+			.set('show_photos', event.value);
+	},
+
+	on_weather_value: function(event) {
+		Whendle.profile()
+			.set('show_weather', event.value);
+	},
+
 	cleanup: function(event) {
 		this.detach_events();
 	},
-	
+
 	detach_events: function() {
-		this.controller.stopListening(this.time, Mojo.Event.propertyChange, this.time.change_handler);
-		this.controller.stopListening(this.temperature, Mojo.Event.propertyChange, this.temperature.change_handler);
+		this.controller.stopListening(this.time,
+			Mojo.Event.propertyChange, this.time.change_handler);
+		this.controller.stopListening(this.temperature,
+			Mojo.Event.propertyChange, this.temperature.change_handler);
+		this.controller.stopListening(this.weather,
+			Mojo.Event.propertyChange, this.weather.change_handler);
+		this.controller.stopListening(this.photos,
+			Mojo.Event.propertyChange, this.photos.change_handler);
 	}
 });
