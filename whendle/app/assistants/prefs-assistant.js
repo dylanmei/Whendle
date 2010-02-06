@@ -23,16 +23,11 @@ PrefsAssistant = Class.create({
 
 	setup_model: function() {
 		var profile = Whendle.profile();
-		var time_format = profile.get('time_format');
-		var temp_format = profile.get('temperature_format');
-		var show_weather = profile.get('show_weather');
-		var show_photos = profile.get('show_photos');
-
 		this.model = {
-			  time: Object.isUndefined(time_format) ? 'default' : time_format
-			, temperature: Object.isUndefined(temp_format) ? 'c' : temp_format
-			, weather: Object.isUndefined(show_weather) ? true : show_weather
-			, photos: Object.isUndefined(show_photos) ? true : show_photos
+			  time: profile.get('time_format', 'default')
+			, temperature: profile.get('temperature_format', 'c')
+			, weather: profile.get('show_weather', true)
+			, photos: profile.get('show_photos', true)
 		}
 	},
 

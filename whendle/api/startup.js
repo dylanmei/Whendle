@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -38,7 +38,7 @@ Whendle.Startup.View = Class.create(Whendle.Observable, {
 	//	}
 	notify: function(event) {
 	},
-	
+
 	// 	event = {
 	//		scene: ''
 	//	}
@@ -51,7 +51,7 @@ Whendle.Startup.Presenter = Class.create({
 	initialize: function(view, startup, profile) {
 		this.startup = startup || Whendle.startup();
 		this.profile = profile || Whendle.profile();
-		
+
 		view.observe(':starting',
 			this.on_starting.bind(this, view));
 	},
@@ -74,7 +74,7 @@ Whendle.Startup.Presenter = Class.create({
 		else {
 			var needs_install = event.installing;
 			var needs_upgrade = event.upgrading;
-			
+
 			if (needs_install || needs_upgrade) {
 				var feedback = needs_install ?
 					$.string('splash_message_installing') :
@@ -87,13 +87,13 @@ Whendle.Startup.Presenter = Class.create({
 			}
 		}
 	},
-	
+
 	on_startup_ready: function(view) {
 		view.started({
-			'scene': this.profile.get('gallery') || 'list'
+			'scene': this.profile.get('gallery', 'list')
 		});
 	},
-	
+
 	notify_status: function(view, status, text) {
 		if (view && view.notify) {
 			view.notify({

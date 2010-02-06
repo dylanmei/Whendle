@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -39,7 +39,7 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 	//	}
 	loaded: function(event) {
 	},
-	
+
 	// 	event = {
 	//		now: { local: {}, utc: {}, hour_angle: #, declination: # },
 	//		clocks: [{ id:#, title:'', subtitle:'', time:{}, display:'', day:'', latitude:#, longitude:# }],
@@ -47,14 +47,14 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 	//	}
 	added: function(event) {
 	},
-	
+
 	// 	event = {
 	//		clocks: [{ id:# }],
 	//		error: { message:'' }
 	//	}
 	removed: function(event) {
 	},
-	
+
 	// 	event = {
 	//		now: { local: {}, utc: {}, hour_angle: #, declination: # },
 	//		clocks: [{ id:#, title:'', subtitle:'', time:{}, display:'', day:'', latitude:#, longitude:# }],
@@ -89,7 +89,7 @@ Whendle.Gallery.Presenter = Class.create({
 	on_loading: function(view) {
 		this.load(this.on_places_loaded.bind(this, view));
 	},
-	
+
 	load: function(on_complete) {
 
 		this.place_repository.get_places(
@@ -101,7 +101,7 @@ Whendle.Gallery.Presenter = Class.create({
 		var result = this.pack_clocks_for_view(places);
 		view.loaded(result);
 	},
-	
+
 	pack_clocks_for_view: function(places) {
 		var now = this.timekeeper.time;
 		var utc = this.timekeeper.utc;
@@ -121,7 +121,7 @@ Whendle.Gallery.Presenter = Class.create({
 				latitude: p.latitude
 			}
 		});
-		
+
 		var result = {
 			now: {
 				time: now,
@@ -136,17 +136,17 @@ Whendle.Gallery.Presenter = Class.create({
 		}
 		return result;
 	},
-	
+
 	select_time_format: function() {
-		return this.profile.get('time_format') || this.timekeeper.format;
+		return this.profile.get('time_format', this.timekeeper.format);
 	},
-	
+
 	offset_time: function(utc, timezone) {
 		if (!timezone) return utc;
 		return utc.clone()
 			.add(Time.minutes, timezone.offset(utc.date()));
-	},	
-	
+	},
+
 	_on_add_clock: function(view, event) {
 		if (!event) return;
 		var place = event.place;
@@ -157,7 +157,7 @@ Whendle.Gallery.Presenter = Class.create({
 			function(error) { view.added({ 'clocks': [], 'error': error }) }
 		);
 	},
-	
+
 	_on_timezone_result: function(view, place, timezone) {
 		place.timezone = timezone;
 		this.place_repository.add_place(place,
@@ -165,14 +165,14 @@ Whendle.Gallery.Presenter = Class.create({
 			function(error) { view.added({ 'clocks': [], 'error': error }) }
 		);
 	},
-	
+
 	_on_clock_added: function(view, place, identity) {
 		place.id = identity;
 
 		var result = this.pack_clocks_for_view([place]);
 		view.added(result);
 	},
-	
+
 	_on_remove_clock: function(view, event) {
 		if (!event || !event.id) return;
 		this.place_repository.delete_place(event.id,
@@ -180,19 +180,19 @@ Whendle.Gallery.Presenter = Class.create({
 			function(error) { view.removed({ 'clocks': [], 'error': error }) }
 		);
 	},
-	
+
 	_on_clock_removed: function(view, id) {
 		view.removed({ 'clocks': [{ 'id': id }] });
 	},
-	
+
 	_on_timekeeping_change: function(view, reason) {
 		this.load(this.on_clocks_changed.bind(this, view, reason));
 	},
-	
+
 	_on_timekeeping_tick: function(view, time) {
 		this._on_timekeeping_change(view, 'time');
 	},
-	
+
 	on_clocks_changed: function(view, reason, clocks) {
 
 		var result = this.pack_clocks_for_view(clocks);

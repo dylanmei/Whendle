@@ -12,10 +12,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -29,18 +29,19 @@ Whendle.Profile = Class.create({
 	initialize: function(cookie) {
 		this.cookie = cookie || new Mojo.Model.Cookie('whendle');
 	},
-	
-	get: function(name) {
+
+	get: function(name, default_if_empty) {
 		var obj = this.cookie.get() || {};
-		return obj[name];
+		var value = obj[name];
+		return !Object.isUndefined(value) ? value : default_if_empty;
 	},
-	
+
 	set: function(name, value) {
 		var obj = this.cookie.get() || {};
 		obj[name] = value;
 		this.cookie.put(obj);
 	},
-	
+
 	remove: function(name) {
 		var obj = this.cookie.get() || {};
 		if (obj[name]) {
@@ -49,4 +50,3 @@ Whendle.Profile = Class.create({
 		}
 	}
 });
-
