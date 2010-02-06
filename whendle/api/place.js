@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -35,7 +35,7 @@ Whendle.Place = Class.create({
 
 		this.latitude = 0;
 		this.longitude = 0;
-		
+
 		this.timezone = '';
 	}
 });
@@ -68,12 +68,13 @@ Whendle.Place.Format_day = function(today, other_day) {
 Whendle.Place.Format_time = function(time, pattern) {
 	var hour = time.hour()
 	var minute = time.minute().toPaddedString(2);
-	
+
 	if (pattern == 'HH12') {
 		var template = hour < 12 ? $.string('time_HH12am', '#{hours}:#{minutes} am') : $.string('time_HH12pm', '#{hours}:#{minutes} pm');
 		return template.interpolate({ 'hours': (hour % 12 || 12), 'minutes': minute });
 	}
-	
+
+	hour = hour.toPaddedString(2);
 	return $.string('time_HH24', '#{hours}:#{minutes}')
 		.interpolate({ 'hours': hour, 'minutes': minute });
 }
