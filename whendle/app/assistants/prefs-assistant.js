@@ -26,8 +26,8 @@ PrefsAssistant = Class.create({
 		this.model = {
 			  time: profile.get('time_format', 'default')
 			, temperature: profile.get('temperature_format', 'c')
-			, weather: profile.get('show_weather', true)
-			, photos: profile.get('show_photos', true)
+			, weather: profile.get('show_weather_slides', true)
+			, photos: profile.get('show_photo_slides', true)
 		}
 	},
 

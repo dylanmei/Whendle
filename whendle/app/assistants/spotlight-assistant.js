@@ -123,9 +123,9 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		var setting = false;
 		switch (slide.name) {
 			case 'weather':
-				setting = profile.get('show_weather'); break;
+				setting = profile.get('show_weather_slides'); break;
 			case 'photos':
-				setting = profile.get('show_photos'); break;
+				setting = profile.get('show_photo_slides'); break;
 		}
 
 		return Object.isUndefined(setting) ? true : setting;
