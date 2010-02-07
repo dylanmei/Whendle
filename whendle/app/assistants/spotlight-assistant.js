@@ -1,6 +1,6 @@
 
 SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
-	SLIDE_FREQUENCY: 5,
+	SLIDE_FREQUENCY: 10,
 
 	initialize: function($super, id) {
 		$super();
