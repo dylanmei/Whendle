@@ -1,5 +1,6 @@
 Map_Marker = Class.create(Whendle.Observable, {
 	DROP_PADDING: 6,
+	TEXT_LENGTH: 20,
 
 	initialize: function($super, key) {
 		$super();
@@ -15,15 +16,12 @@ Map_Marker = Class.create(Whendle.Observable, {
 
 	setup: function() {
 		this.element = new Element('div', { 'class': 'map-marker' })
-			.insert(this._content())
+			.insert(this.new_content())
 			.insert(new Element('div', { 'class': 'pointer' }));
-
-//		document.body.insert(this.element);
 	},
 
-	_content: function() {
+	new_content: function() {
 		var clock = this.clock.element();
-//		clock.addClassName('clock');
 
 		var label = new Element('div', { 'class': 'label' });
 		var element = new Element('div', { 'class': 'content' })
@@ -40,8 +38,19 @@ Map_Marker = Class.create(Whendle.Observable, {
 	text: function(v) {
 		var el = this.element.down('.label');
 		if (v === undefined) return el.innerHTML;
-		el.innerHTML = v;
+		el.innerHTML = this.format_text(v);
 		return this;
+	},
+
+	format_text: function(text) {
+		text = (text || '').strip();
+		if (text.length == 0) return '?';
+		if (text.length < this.TEXT_LENGTH) return text;
+
+		return text
+			.substring(0, this.TEXT_LENGTH)
+			.strip()
+			.concat($.string('truncate_ellipses'));
 	},
 
 	time: function(v) {
@@ -80,16 +89,5 @@ Map_Marker = Class.create(Whendle.Observable, {
 			top: (point.y - size.y + this.DROP_PADDING) + 'px',
 			zIndex: 100 + Math.floor(point.y)
 		});
-	},
-
-	hit: function(point) {
-		var p = this.element.positionedOffset();
-		if (point.x < p.left) return false;
-		if (point.y < p.top) return false;
-
-		var d = this.element.getDimensions();
-		if (point.x > p.left + d.width) return false;
-		if (point.y > p.top + d.height) return false;
-		return true;
 	}
 });
