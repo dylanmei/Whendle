@@ -90,6 +90,10 @@
 	text-align: right;
 }
 
+body.map-body {
+	background-color: #b2d9ba;
+}
+
 .map-marker {
 	position:absolute;
 	z-index: 100;
