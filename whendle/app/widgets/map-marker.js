@@ -9,10 +9,10 @@ Map_Marker = Class.create(Whendle.Observable, {
 		this.hour = 0;
 		this.minute = 0;
 		this.clock = new Map_Clock();
-		
+
 		this.setup();
 	},
-	
+
 	setup: function() {
 		this.element = new Element('div', { 'class': 'map-marker' })
 			.insert(this._content())
@@ -20,10 +20,10 @@ Map_Marker = Class.create(Whendle.Observable, {
 
 //		document.body.insert(this.element);
 	},
-	
+
 	_content: function() {
 		var clock = this.clock.element();
-		clock.addClassName('clock');
+//		clock.addClassName('clock');
 
 		var label = new Element('div', { 'class': 'label' });
 		var element = new Element('div', { 'class': 'content' })
@@ -36,43 +36,43 @@ Map_Marker = Class.create(Whendle.Observable, {
 		});
 		return element;
 	},
-	
+
 	text: function(v) {
 		var el = this.element.down('.label');
 		if (v === undefined) return el.innerHTML;
 		el.innerHTML = v;
 		return this;
 	},
-	
+
 	time: function(v) {
 		if (v === undefined) return { hour: this.hour, minute: this.minute };
 
 		this.hour = v.hour;
 		this.minute = v.minute;
-		
+
 		this.clock.time(v);
 		return this;
 	},
-	
+
 	position: function() {
 		var s = this.size();
 		var p = this.element.positionedOffset();
 		return { x: p.left + size.x / 2, y: p.top + size.y + this.DROP_PADDING };
 	},
-	
+
 	location: function(v) {
 		if (v === undefined) return { x: this.longitude, y: this.latitude };
 		this.longitude = v.x;
 		this.latitude = v.y;
-		
+
 		return this;
 	},
-	
+
 	size: function() {
 		var d = this.element.getDimensions();
 		return { x: d.width, y: d.height };
 	},
-	
+
 	move: function(point) {
 		var size = this.size();
 		this.element.setStyle({
@@ -81,7 +81,7 @@ Map_Marker = Class.create(Whendle.Observable, {
 			zIndex: 100 + Math.floor(point.y)
 		});
 	},
-	
+
 	hit: function(point) {
 		var p = this.element.positionedOffset();
 		if (point.x < p.left) return false;
