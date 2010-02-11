@@ -10,7 +10,7 @@ describe 'Timezone Locator'
 	mock_loader_response = function(name) {
 		return 'Zone ' + name;
 	}
-	
+
 	describe 'looking up a timezone'
 		before
 			a = null
@@ -23,11 +23,11 @@ describe 'Timezone Locator'
 			}
 			service.lookup(0, 0, function(v) { a = v; }, function(error) { e = error; });
 		end
-		
+
 		it 'should provide the timezone'
 			a.name.should.be 'a/bc'
 		end
-		
+
 		it 'should not return an error'
 			e.should.be_null
 		end
@@ -42,11 +42,11 @@ describe 'Timezone Locator'
 			}
 			service.lookup(0, 0, function(v) { a = v; }, function(error) { e = error; });
 		end
-		
+
 		it 'should not provide a result'
 			a.should.be_null
 		end
-		
+
 		it 'should return an error'
 			e.should_not.be_null
 		end
