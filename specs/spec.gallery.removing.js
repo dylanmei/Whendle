@@ -21,7 +21,7 @@ describe 'Gallery'
 		sunlight_calculator,
 		profile
 	)
-	
+
 	describe 'removing a clock'
 		before
 			a = null
@@ -31,23 +31,23 @@ describe 'Gallery'
 				on_result(b = true)
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Event.removing, { 'id': 987 });
+			view.fire(Whendle.Gallery.Events.removing, { 'id': 987 });
 		end
-		
+
 		it 'should return the clock'
 			a.should.have_length 1
 			a[0].id.should.be 987
 		end
-		
+
 		it 'should delete the clock from the place_repository'
 			b.should.be_true
 		end
-		
+
 		it 'should not return an error'
 			e.should.be_null
 		end
 	end
-	
+
 	describe 'removing a clock causes a place_repository error'
 		before
 			a = null
@@ -56,17 +56,15 @@ describe 'Gallery'
 				on_error({})
 			}
 			view.removed = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Event.removing, { 'id': 987 });
-		end		
-	
+			view.fire(Whendle.Gallery.Events.removing, { 'id': 987 });
+		end
+
 		it 'should not return a result'
 			a.should.be_empty
 		end
-		
+
 		it 'should return an error'
 			e.should_not.be_undefined
 		end
 	end
 end
-
-

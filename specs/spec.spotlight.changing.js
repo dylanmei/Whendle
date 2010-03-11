@@ -3,7 +3,7 @@ describe 'Spotlight'
 	place_repository = new Object
 	sunlight_calculator = undefined
 	profile = { get: -{} }
-	
+
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
@@ -18,7 +18,7 @@ describe 'Spotlight'
 		sunlight_calculator,
 		profile
 	)
-	
+
 	new_place_record = function(id) {
 		return { 'id': id, 'name': 'a', 'admin': 'b', 'country': 'c', 'latitude': 0, 'longitude': 0 }
 	}
@@ -32,10 +32,10 @@ describe 'Spotlight'
 				on_result(new_place_record(1))
 			}
 			view.changed = function(event) { a = event.clock; b = event.reason; e = event.error; }
-			view.fire(Whendle.Event.loading, { id: 1 })
-			timekeeper.fire(Whendle.Event.system, 'test reason')
+			view.fire(Whendle.Spotlight.Events.loading, { id: 1 })
+			timekeeper.fire(Whendle.Timekeeper.Events.system, 'test reason')
 		end
-		
+
 		it 'loads the clocks'
 			a.should.have_property 'id', 1
 			a.should.have_property 'title',  'a'
@@ -47,12 +47,12 @@ describe 'Spotlight'
 		it 'provides the reason'
 			b.should.be 'test reason'
 		end
-		
+
 		it 'should not return an error'
 			e.should.be_undefined
 		end
 	end
-	
+
 	describe 'handling a timer change'
 		before
 			a = null
@@ -62,10 +62,10 @@ describe 'Spotlight'
 				on_result(new_place_record(1))
 			}
 			view.clock_changed = function(event) { a = event.clock; b = event.reason; e = event.error; }
-			view.fire(Whendle.Event.loading, { id: 1 })
-			timekeeper.fire(Whendle.Event.timer, {})
+			view.fire(Whendle.Spotlight.Events.loading, { id: 1 })
+			timekeeper.fire(Whendle.Timekeeper.Events.timer, {})
 		end
-		
+
 		it 'loads the clocks'
 			a.should.have_property 'id', 1
 			a.should.have_property 'title',  'a'
@@ -77,9 +77,9 @@ describe 'Spotlight'
 		it 'provides the reason'
 			b.should.be 'time'
 		end
-		
+
 		it 'should not return an error'
 			e.should.be_undefined
-		end	
+		end
 	end
 end

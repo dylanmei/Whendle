@@ -4,7 +4,7 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 		$super();
 		new Whendle.Startup.Presenter(this);
 	},
-	
+
 	setup: function() {
 		this.controller.setupWidget(Mojo.Menu.appMenu, {
 				omitDefaultItems: true
@@ -13,18 +13,19 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 				items: []
 			}
 		);
-	
+
 		this.setup_widgets();
 		this.attach_events();
-		this.fire(':starting',
+		this.fire(
+			Whendle.Startup.Events.starting,
 			{ 'timer': new Whendle.Timer(this.controller.window) });
 	},
-	
+
 	setup_widgets: function() {
 		this.splash = this.controller.get('splash');
 		this.controller.setupWidget(this.splash.id);
 	},
-	
+
 	attach_events: function() {
 		this.controller.listen(this.splash.id, Mojo.Event.tap,
 			this.splash.tap_handler = this.on_splash_tapped.bind(this));
@@ -36,7 +37,7 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 		var show_splash = Whendle.show_splash ||
 			status == Whendle.Status.installing ||
 			status == Whendle.Status.updating;
-		
+
 		if (!show_splash) {
 			this.exit_scene();
 		}
@@ -53,7 +54,7 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 			}
 		}
 	},
-	
+
 	notify: function(event) {
 		if (!this.notice || event.status == Whendle.Status.exception) {
 			// only use the first notice unless there's an issue
@@ -62,23 +63,23 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 				this.splash.mojo.message(this.notice.text);
 			}
 		}
-	},	
-	
+	},
+
 	on_splash_tapped: function() {
 		if (this.destination) {
 			this.exit_scene();
 		}
 	},
-	
+
 	exit_scene: function() {
 		this.controller.stageController
 			.sendEventToCommanders(Mojo.Event.make(Mojo.Event.command, { command: this.destination }));
 	},
-	
+
 	cleanup: function(event) {
 		this.detach_events();
 	},
-	
+
 	detach_events: function() {
 		this.controller.stopListening(this.splash, Mojo.Event.tap, this.splash.tap_handler);
 	}

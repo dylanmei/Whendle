@@ -35,18 +35,6 @@ Whendle = {
 	show_splash: false,
 	reset_schema: false,
 
-	Event: {
-		system: ':system',
-		starting: ':starting',
-		loading: ':loading',
-		unloading: ':unloading',
-		searching: ':searching',
-		adding: ':adding',
-		removing: ':removing',
-		status: ':status',
-		timer: ':timer'
-	},
-
 	Status: {
 		installing: 'installing',
 		updating: 'updating',

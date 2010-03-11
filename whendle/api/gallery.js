@@ -25,6 +25,7 @@
 //
 
 Whendle.Gallery = {
+	Events: { loading: ':load', adding: ':add', removing: ':remove' }
 };
 
 Whendle.Gallery.View = Class.create(Whendle.Observable, {
@@ -73,16 +74,16 @@ Whendle.Gallery.Presenter = Class.create({
 		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
 		this.profile = profile || Whendle.profile();
 
-		view.observe(Whendle.Event.loading,
+		view.observe(Whendle.Gallery.Events.loading,
 			this.on_loading.bind(this, view));
-		view.observe(Whendle.Event.adding,
+		view.observe(Whendle.Gallery.Events.adding,
 			this._on_add_clock.bind(this, view));
-		view.observe(Whendle.Event.removing,
+		view.observe(Whendle.Gallery.Events.removing,
 			this._on_remove_clock.bind(this, view));
 
-		this.timekeeper.observe(Whendle.Event.system,
+		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
 			this._on_timekeeping_change.bind(this, view));
-		this.timekeeper.observe(Whendle.Event.timer,
+		this.timekeeper.observe(Whendle.Timekeeper.Events.timer,
 			this._on_timekeeping_tick.bind(this, view));
 	},
 

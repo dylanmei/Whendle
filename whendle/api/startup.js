@@ -25,6 +25,7 @@
 //
 
 Whendle.Startup = {
+	Events: { starting: ':staring' }
 };
 
 Whendle.Startup.View = Class.create(Whendle.Observable, {
@@ -52,7 +53,8 @@ Whendle.Startup.Presenter = Class.create({
 		this.startup = startup || Whendle.startup();
 		this.profile = profile || Whendle.profile();
 
-		view.observe(':starting',
+		view.observe(
+			Whendle.Startup.Events.starting,
 			this.on_starting.bind(this, view));
 	},
 
@@ -61,7 +63,7 @@ Whendle.Startup.Presenter = Class.create({
 		var timer = (event || {}).timer;
 
 		this.startup.observe(
-			':status',
+			Whendle.Startup.Events.status,
 			this.on_startup_status.bind(this, view)
 		);
 		this.startup.run(timer);

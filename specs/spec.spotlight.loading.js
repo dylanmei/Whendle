@@ -3,7 +3,7 @@ describe 'Spotlight'
 	place_repository = new Object
 	sunlight_calculator = undefined
 	profile = { get: -{} }
-	
+
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
@@ -18,7 +18,7 @@ describe 'Spotlight'
 		sunlight_calculator,
 		profile
 	)
-	
+
 	new_place_record = function(id) {
 		return { 'id': id, 'name': 'a', 'admin': 'b', 'country': 'c', 'latitude': 0, 'longitude': 0 }
 	}
@@ -31,9 +31,9 @@ describe 'Spotlight'
 				on_result(new_place_record(1))
 			}
 			view.loaded = function(event) { a = event.clock; e = event.error; }
-			view.fire(Whendle.Event.loading, { id: 1 })
+			view.fire(Whendle.Spotlight.Events.loading, { id: 1 })
 		end
-		
+
 		it 'loads the clock'
 			a.should.have_property 'id', 1
 			a.should.have_property 'title',  'a'

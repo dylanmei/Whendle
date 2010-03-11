@@ -18,7 +18,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		this.setup_widgets();
 		this.attach_events();
 
-		this.fire(Whendle.Event.loading);
+		this.fire(Whendle.Gallery.Events.loading);
 	},
 
 	setup_menus: function() {
@@ -161,11 +161,11 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		if (place && place.name) {
 			var message = $.string('gallery_adding_location').interpolate(place);
 			this.growler.mojo.spin(message.escapeHTML());
-			this.fire(Whendle.Event.adding, { 'place': place });
+			this.fire(Whendle.Gallery.Events.adding, { 'place': place });
 		}
 		else {
 			// reload
-			this.fire(Whendle.Event.loading);
+			this.fire(Whendle.Gallery.Events.loading);
 		}
 	},
 

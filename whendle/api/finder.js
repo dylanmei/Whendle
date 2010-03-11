@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,13 +25,14 @@
 //
 
 Whendle.Finder = {
+	Events: { searching: ':search' }
 };
 
 Whendle.Finder.View = Class.create(Whendle.Observable, {
 	initialize: function($super) {
 		$super();
 	},
-	
+
 	// 	event = {
 	//		results: [{}],
 	//		index: #,
@@ -47,31 +48,31 @@ Whendle.Finder.Presenter = Class.create({
 	initialize: function(view, place_locator) {
 		this.place_locator = place_locator || Whendle.place_locator();
 
-		view.observe(Whendle.Event.searching,
+		view.observe(Whendle.Finder.Events.searching,
 			this.on_search.bind(this, view));
 	},
-	
+
 	on_search: function(view, event) {
 		if (!event) return;
-		
+
 		var on_results = this.on_search_results.bind(this, view);
 		var on_error = this.on_search_error.bind(this, view);
 		this.place_locator.lookup(event.query,
 			event.start || 0, event.rows || 20, on_results, on_error);
 	},
-	
+
 	on_search_results: function(view, results) {
 		var places = results.places;
 		var index = results.index;
 		var total = results.total;
-		
+
 		places = places.collect(function(p) {
 			return { 'title': p.name, 'subtitle': Whendle.Place.Format_area(p), place: p };
 		});
-	
+
 		view.found({ 'results': places, 'index': index, 'total': total });
 	},
-	
+
 	on_search_error: function(view, error) {
 		view.found({ 'results': [], 'index': 0, 'total': 0, 'error': error });
 	}

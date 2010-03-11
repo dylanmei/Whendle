@@ -5,7 +5,7 @@ describe 'Gallery'
 	timezone_locator = new Object
 	sunlight_calculator = undefined
 	profile = { get: -{} }
-	
+
 	timekeeper = new (Class.create(Whendle.Observable, {
 		initialize: function($super) { $super(); },
 		time: Time.now(),
@@ -21,11 +21,11 @@ describe 'Gallery'
 		sunlight_calculator,
 		profile
 	)
-	
+
 	new_place_record = function(id) {
 		return { 'id': id, 'name': '', 'admin': '', 'country': '', 'latitude': 0, 'longitude': 0 }
 	}
-	
+
 	describe 'handling a system change'
 		before
 			a = null
@@ -35,9 +35,9 @@ describe 'Gallery'
 				on_result([ new_place_record(1), new_place_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }
-			timekeeper.fire(Whendle.Event.system, 'test reason')
+			timekeeper.fire(Whendle.Timekeeper.Events.system, 'test reason')
 		end
-		
+
 		it 'loads the clocks'
 			a.should.have_length 2
 		end
@@ -45,12 +45,12 @@ describe 'Gallery'
 		it 'provides the reason'
 			b.should.be 'test reason'
 		end
-		
+
 		it 'should not return an error'
 			e.should.be_undefined
 		end
 	end
-	
+
 	describe 'handling a timer change'
 		before
 			a = null
@@ -60,9 +60,9 @@ describe 'Gallery'
 				on_result([ new_place_record(1), new_place_record(2) ])
 			}
 			view.changed = function(event) { a = event.clocks; b = event.reason; e = event.error; }
-			timekeeper.fire(Whendle.Event.timer, {})
+			timekeeper.fire(Whendle.Timekeeper.Events.timer, {})
 		end
-		
+
 		it 'loads the clocks'
 			a.should.have_length 2
 		end
@@ -70,9 +70,9 @@ describe 'Gallery'
 		it 'provides the reason'
 			b.should.be 'time'
 		end
-		
+
 		it 'should not return an error'
 			e.should.be_undefined
-		end	
+		end
 	end
 end

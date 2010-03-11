@@ -24,7 +24,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.setup_orientation();
 		this.setup_menus();
 		this.setup_widgets();
-		this.fire(Whendle.Event.loading, { id: this.id });
+		this.fire(Whendle.Spotlight.Events.loading, { id: this.id });
 	},
 
 	setup_orientation: function() {
@@ -329,7 +329,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 
 	save_dialog: function() {
-		this.fire(':editing', this.model);
+		this.fire(Whendle.Spotlight.Events.editing,	this.model);
 	},
 
 	cleanup: function(event) {
@@ -339,7 +339,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 
 	activate: function() {
 		if (this.is_loaded) {
-			this.fire(Whendle.Event.loading, { id: this.id });
+			this.fire(Whendle.Spotlight.Events.loading, { id: this.id });
 		}
 	},
 

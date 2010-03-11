@@ -25,6 +25,7 @@
 //
 
 Whendle.Spotlight = {
+	Events: { editing: ':edit', loading: ':load' }
 };
 
 Whendle.Spotlight.View = Class.create(Whendle.Observable, {
@@ -62,15 +63,19 @@ Whendle.Spotlight.Presenter = Class.create({
 		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
 		this.profile = profile || Whendle.profile();
 
-		view.observe(Whendle.Event.loading, this.on_loading.bind(this, view));
-		view.observe(':editing', this.on_editing.bind(this, view));
+		view.observe(
+			Whendle.Spotlight.Events.loading,
+			this.on_loading.bind(this, view));
+		view.observe(
+			Whendle.Spotlight.Events.editing,
+			this.on_editing.bind(this, view));
 	},
 
 	destroy: function() {
 		if (this.tick_handler)
-			this.timekeeper.ignore(Whendle.Event.timer, this.tick_handler);
+			this.timekeeper.ignore(Whendle.Timekeeper.Events.timer, this.tick_handler);
 		if (this.system_handler)
-			this.timekeeper.ignore(Whendle.Event.system, this.system_handler);
+			this.timekeeper.ignore(Whendle.Timekeeper.Events.system, this.system_handler);
 	},
 
 	on_loading: function(view, event) {
@@ -125,9 +130,9 @@ Whendle.Spotlight.Presenter = Class.create({
 	},
 
 	wire_timekeeper: function(view, id) {
-		this.timekeeper.observe(Whendle.Event.timer,
+		this.timekeeper.observe(Whendle.Timekeeper.Events.timer,
 			this.tick_handler = this.on_timekeeping_tick.bind(this, view, id));
-		this.timekeeper.observe(Whendle.Event.system,
+		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
 			this.system_handler = this.on_timekeeping_change.bind(this, view, id));
 	},
 

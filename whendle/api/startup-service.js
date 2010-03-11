@@ -1,4 +1,7 @@
 
+Whendle.Startup = {
+	Events: { status: ':status' }
+}
 
 Whendle.StartupService = Class.create(Whendle.Observable, {
 	initialize: function($super, schema, timekeeper) {
@@ -6,10 +9,10 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 		this.schema = schema || Whendle.schema();
 		this.timekeeper = timekeeper || Whendle.timekeeper();
 	},
-	
+
 	run: function(timer) {
 		this.timer = timer;
-		
+
 		if (Whendle.reset_schema) {
 			this.schema.destroy();
 		}
@@ -21,7 +24,7 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 		// 5. notify any listeners of our status: ready
 		this.setup_schema();
 	},
-	
+
 	setup_schema: function() {
 		var on_complete = this.setup_timekeeper.bind(this);
 		this.schema.read(
@@ -34,7 +37,7 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 		var on_complete = this.on_setup_complete.bind(this);
 		this.timekeeper.setup(on_complete);
 	},
-	
+
 	on_setup_complete: function() {
 
 		if (this.is_installing()) {
@@ -47,42 +50,42 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 			this.start();
 		}
 	},
-	
+
 	start: function() {
 		this.timekeeper.start(this.timer);
-		this.fire(':status', { ready: true });
+		this.fire(Whendle.Startup.Events.status, { ready: true });
 	},
-	
+
 	install: function() {
-		this.fire(':status', { ready: false, installing: true });
+		this.fire(Whendle.Startup.Events.status, { ready: false, installing: true });
 		this.prepare_schema.bind(this).defer();
 	},
-	
+
 	upgrade: function() {
-		this.fire(':status', { ready: false, upgrading: true });
+		this.fire(Whendle.Startup.Events.status, { ready: false, upgrading: true });
 		this.prepare_schema.bind(this).defer();
 	},
-	
+
 	on_setup_exception: function(which, error) {
 		$.trace('exception running startup job....', which, Object.toJSON(error));
 	},
-	
+
 	is_installing: function() {
 		version = this.schema.version();
 		return !version || version == '0.0';
 	},
-	
+
 	is_upgrading: function() {
 		return this.is_installing() == false
 			&& this.schema.version() != this.schema.max_version();
 	},
-	
+
 	prepare_schema: function() {
 		this.migrate_schema(null,
 			this.on_migrate_complete.bind(this),
 			Prototype.emptyFunction);
 	},
-	
+
 	migrate_schema: function(version, on_complete, on_error) {
 		version = version || this.schema.version();
 
@@ -98,7 +101,7 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 			);
 		}
 	},
-	
+
 	on_migrate_version: function(on_complete, on_error, version) {
 		$.trace('schema updated to, ', version);
 		this.migrate_schema(version, on_complete, on_error);
@@ -107,7 +110,7 @@ Whendle.StartupService = Class.create(Whendle.Observable, {
 	on_migrate_complete: function() {
 		this.start();
 	},
-	
+
 	on_migrate_exception: function() {
 		$.trace('exception running migration job....', Object.toJSON(error));
 	}

@@ -15,11 +15,11 @@ describe 'Startup Service'
 			timekeeper.setup = function(f) { b = true; f(); }
 			service.run();
 		end
-	
+
 		it 'should init the timekeeper'
 			b.should.be_true
 		end
-		
+
 		it 'should connect to the schema'
 			a.should.be_true
 		end
@@ -31,7 +31,7 @@ describe 'Startup Service'
 			b = null
 			timekeeper.setup = function(f) { f() }
 			schema.read = function(f) { f() }
-			service.observe(Whendle.Event.status, function(event) {
+			service.observe(Whendle.Startup.Events.status, function(event) {
 				a = event.ready
 				b = event.installing
 			});
@@ -39,11 +39,11 @@ describe 'Startup Service'
 			schema.version = -{return null}
 			service.run();
 		end
-		
+
 		it 'should fire a not-ready status'
 			a.should.be_false
 		end
-		
+
 		it 'should fire an installing status'
 			b.should.be_true
 		end
@@ -55,24 +55,24 @@ describe 'Startup Service'
 			b = null
 			timekeeper.setup = function(f) { f() }
 			schema.read = function(f) { f() }
-			service.observe(Whendle.Event.status, function(event) {
+			service.observe(Whendle.Startup.Events.status, function(event) {
 				a = event.ready
 				b = event.upgrading
 			});
-			
+
 			schema.version = -{return 'abc'}
 			service.run();
 		end
-		
+
 		it 'should fire a not-ready status'
 			a.should.be_false
 		end
-		
+
 		it 'should fire an upgrading status'
 			b.should.be_true
 		end
 	end
-	
+
 	describe 'with an up-to-date schema'
 		before
 			a = null
@@ -80,7 +80,7 @@ describe 'Startup Service'
 			c = null
 			timekeeper.setup = function(f) {f () }
 			schema.read = function(f) { f() }
-			service.observe(Whendle.Event.status, function(event) {
+			service.observe(Whendle.Startup.Events.status, function(event) {
 				a = event.ready;
 				b = event.installing || false
 				c = event.updating || false
@@ -89,11 +89,11 @@ describe 'Startup Service'
 			schema.version = -{return 'xyz'}
 			service.run();
 		end
-	
+
 		it 'should fire a ready status'
 			a.should.be_true
 		end
-		
+
 		it 'should not fire an installing status'
 			b.should.be_false
 		end
