@@ -78,6 +78,10 @@
 	padding: 4px 10px 8px 10px;
 }
 
+.gallery-row-place {
+	max-width: 228px;
+}
+
 .gallery-row-title, .gallery-row-time {
 	font-size: 0.9em;
 }
