@@ -2,7 +2,7 @@
 MapAssistant = Class.create(Whendle.Gallery.View, {
 	initialize: function($super) {
 		$super();
-		new Whendle.Gallery.Presenter(this);
+		this.presenter = new Whendle.Gallery.Presenter(this);
 
 		var profile = Whendle.profile();
 		profile.set('gallery', 'map');
@@ -180,6 +180,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 
 	cleanup: function() {
 		this.detach_events();
+		this.presenter.destroy();
 	},
 
 	detach_events: function() {

@@ -63,12 +63,23 @@ Whendle.Spotlight.Presenter = Class.create({
 		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
 		this.profile = profile || Whendle.profile();
 
+		this.wire_view(view);
+	},
+
+	wire_view: function(view) {
 		view.observe(
 			Whendle.Spotlight.Events.loading,
 			this.on_loading.bind(this, view));
 		view.observe(
 			Whendle.Spotlight.Events.editing,
 			this.on_editing.bind(this, view));
+	},
+
+	wire_timekeeper: function(view, id) {
+		this.timekeeper.observe(Whendle.Timekeeper.Events.timer,
+			this.tick_handler = this.on_timekeeping_tick.bind(this, view, id));
+		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
+			this.system_handler = this.on_timekeeping_change.bind(this, view, id));
 	},
 
 	destroy: function() {
@@ -79,7 +90,6 @@ Whendle.Spotlight.Presenter = Class.create({
 	},
 
 	on_loading: function(view, event) {
-		this.destroy();
 		this.wire_timekeeper(view, event.id);
 
 		var on_error = function(e) {
@@ -127,13 +137,6 @@ Whendle.Spotlight.Presenter = Class.create({
 		}
 
 		this.load(id, on_complete, on_error);
-	},
-
-	wire_timekeeper: function(view, id) {
-		this.timekeeper.observe(Whendle.Timekeeper.Events.timer,
-			this.tick_handler = this.on_timekeeping_tick.bind(this, view, id));
-		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
-			this.system_handler = this.on_timekeeping_change.bind(this, view, id));
 	},
 
 	load: function(id, on_complete, on_error) {

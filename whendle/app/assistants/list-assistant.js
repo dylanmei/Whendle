@@ -6,7 +6,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 
 	initialize: function($super) {
 		$super();
-		this._presenter = new Whendle.Gallery.Presenter(this);
+		this.presenter = new Whendle.Gallery.Presenter(this);
 
 		var profile = Whendle.profile();
 		profile.set('gallery', 'list');
@@ -145,7 +145,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 
 	changed: function(event) {
 		if (this.report_error(event.error)) return;
-		
+
 		var clocks = event.clocks;
 		var items = this.model.items;
 		var changes = false;
@@ -192,6 +192,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 
 	cleanup: function(event) {
 		this.detach_events();
+		this.presenter.destroy();
 	},
 
 	detach_events: function() {

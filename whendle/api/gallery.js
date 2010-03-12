@@ -81,6 +81,11 @@ Whendle.Gallery.Presenter = Class.create({
 		this.sunlight_calculator = sunlight_calculator || Whendle.sunlight_calculator();
 		this.profile = profile || Whendle.profile();
 
+		this.wire_view(view);
+		this.wire_timekeeper(view);
+	},
+
+	wire_view: function(view) {
 		view.observe(Whendle.Gallery.Events.loading,
 			this.on_loading.bind(this, view));
 		view.observe(Whendle.Gallery.Events.adding,
@@ -89,11 +94,20 @@ Whendle.Gallery.Presenter = Class.create({
 			this._on_remove_clock.bind(this, view));
 		view.observe(Whendle.Gallery.Events.ordering,
 			this._on_order_clocks.bind(this, view));
+	},
 
-		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
-			this._on_timekeeping_change.bind(this, view));
+	wire_timekeeper: function(view) {
 		this.timekeeper.observe(Whendle.Timekeeper.Events.timer,
-			this._on_timekeeping_tick.bind(this, view));
+			this.tick_handler = this._on_timekeeping_tick.bind(this, view));
+		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
+			this.system_handler = this._on_timekeeping_change.bind(this, view));
+	},
+
+	destroy: function() {
+		if (this.tick_handler)
+			this.timekeeper.ignore(Whendle.Timekeeper.Events.timer, this.tick_handler);
+		if (this.system_handler)
+			this.timekeeper.ignore(Whendle.Timekeeper.Events.system, this.system_handler);
 	},
 
 	on_loading: function(view) {
