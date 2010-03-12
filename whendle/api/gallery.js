@@ -25,7 +25,7 @@
 //
 
 Whendle.Gallery = {
-	Events: { loading: ':load', adding: ':add', removing: ':remove' }
+	Events: { loading: ':load', adding: ':add', removing: ':remove', ordering: ':order' }
 };
 
 Whendle.Gallery.View = Class.create(Whendle.Observable, {
@@ -57,6 +57,13 @@ Whendle.Gallery.View = Class.create(Whendle.Observable, {
 	},
 
 	// 	event = {
+	//		clocks: [{ id:# }],
+	//		error: { message:'' }
+	//	}
+	ordered: function(event) {
+	},
+
+	// 	event = {
 	//		now: { local: {}, utc: {}, hour_angle: #, declination: # },
 	//		clocks: [{ id:#, title:'', subtitle:'', time:{}, display:'', day:'', latitude:#, longitude:# }],
 	//		reason: '',
@@ -80,6 +87,8 @@ Whendle.Gallery.Presenter = Class.create({
 			this._on_add_clock.bind(this, view));
 		view.observe(Whendle.Gallery.Events.removing,
 			this._on_remove_clock.bind(this, view));
+		view.observe(Whendle.Gallery.Events.ordering,
+			this._on_order_clocks.bind(this, view));
 
 		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
 			this._on_timekeeping_change.bind(this, view));
@@ -176,14 +185,36 @@ Whendle.Gallery.Presenter = Class.create({
 
 	_on_remove_clock: function(view, event) {
 		if (!event || !event.id) return;
+
+		var on_complete = this._on_clock_removed.bind(this, view, event.id);
 		this.place_repository.delete_place(event.id,
-			this._on_clock_removed.bind(this, view, event.id),
-			function(error) { view.removed({ 'clocks': [], 'error': error }) }
+			on_complete,
+			on_complete
 		);
 	},
 
-	_on_clock_removed: function(view, id) {
-		view.removed({ 'clocks': [{ 'id': id }] });
+	_on_clock_removed: function(view, id, error) {
+		view.removed({
+			'clocks': Object.isUndefined(error) ? [{ 'id': id }] : [],
+			'error': error
+		});
+	},
+
+	_on_order_clocks: function(view, event) {
+		if (!event || !event.ids) return;
+
+		var on_complete = this._on_clocks_ordered.bind(this, view, event.ids);
+		this.place_repository.order_places(event.ids,
+			on_complete,
+			on_complete
+		);
+	},
+
+	_on_clocks_ordered: function(view, ids, error) {
+		view.ordered({
+			'clocks': Object.isUndefined(error) ? ids : [],
+			'error': error
+		});
 	},
 
 	_on_timekeeping_change: function(view, reason) {

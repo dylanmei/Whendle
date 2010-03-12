@@ -22,25 +22,26 @@ describe 'Gallery'
 		profile
 	)
 
-	describe 'removing a clock'
+	describe 'ordering a clock'
 		before
 			a = null
 			b = null
 			e = null
-			place_repository.delete_place = function(id, on_result) {
-				b = true;
-				on_result()
+			place_repository.order_places = function(places, on_complete) {
+				b = true
+				on_complete();
 			}
-			view.removed = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Gallery.Events.removing, { 'id': 987 });
+			view.ordered = function(event) { a = event.clocks; e = event.error; }
+			view.fire(Whendle.Gallery.Events.ordering, { 'ids': [1, 2] });
 		end
 
-		it 'should return the clock'
-			a.should.have_length 1
-			a[0].id.should.be 987
+		it 'should return the clocks in order'
+			a.should.have_length 2
+			a[0].should.be 1
+			a[1].should.be 2
 		end
 
-		it 'should delete the clock from the place_repository'
+		it 'should order the clocks in the place_repository'
 			b.should.be_true
 		end
 
@@ -49,15 +50,16 @@ describe 'Gallery'
 		end
 	end
 
-	describe 'removing a clock causes a place_repository error'
+	describe 'ordering clocks causes a place_repository error'
 		before
 			a = null
+			b = null
 			e = null
-			place_repository.delete_place = function(id, on_result, on_error) {
-				on_error({})
+			place_repository.order_places = function(places, on_complete, on_error) {
+				on_error('error');
 			}
-			view.removed = function(event) { a = event.clocks; e = event.error; }
-			view.fire(Whendle.Gallery.Events.removing, { 'id': 987 });
+			view.ordered = function(event) { a = event.clocks; e = event.error; }
+			view.fire(Whendle.Gallery.Events.ordering, { 'ids': [1, 2] });
 		end
 
 		it 'should not return a result'

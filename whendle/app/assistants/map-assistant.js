@@ -90,6 +90,9 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 	removed: function(event) {
 	},
 
+	ordered: function(event) {
+	},
+
 	changed: function(event) {
 		var now = event.now;
 		var map = this.map;

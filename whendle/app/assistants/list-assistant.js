@@ -53,7 +53,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 				swipeToDelete: true,
 				autoconfirmDelete: true,
 				renderLimit: 80,
-				reorderable: false
+				reorderable: true
 			},
 			this.model
 		);
@@ -66,6 +66,8 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 			this.list.delete_handler = this.on_remove_clock.bind(this));
 		this.controller.listen(this.list.id, Mojo.Event.listTap,
 			this.list.tap_handler = this.on_clock_tapped.bind(this));
+		this.controller.listen(this.list.id, Mojo.Event.listReorder,
+			this.list.reorder_handler = this.on_order_clock.bind(this));
 	},
 
 	on_growler_tapped: function() {
@@ -80,6 +82,17 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 	on_remove_clock: function(event) {
 		var clock = event.item;
 		this.fire(Whendle.Gallery.Events.removing, { 'id': clock.id });
+	},
+
+	on_order_clock: function(event) {
+		var clock = event.item;
+		var new_index = event.toIndex;
+
+		var identifiers = this.model.items
+			.map(function(clock) { return clock.id; })
+			.without(clock.id);
+		identifiers.splice(new_index, 0, clock.id);
+		this.fire(Whendle.Gallery.Events.ordering, { 'ids': identifiers });
 	},
 
 	loaded: function(event) {
@@ -102,9 +115,10 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 
 	removed: function(event) {
 		if (this.report_error(event.error)) return;
+		removed_id = event.clocks[0].id;
 
 		clock = this.model.items.find(function(c) {
-			return c.id == event.clocks[0].id;
+			return c.id == removed_id;
 		});
 
 		if (clock) {
@@ -113,8 +127,25 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		}
 	},
 
+	ordered: function(event) {
+		if (this.report_error(event.error)) return;
+
+		var ordered_items = [];
+		var current_items = this.model.items;
+		event.clocks.each(function(id) {
+			var clock = current_items.find(function(c) {
+				return c.id == id;
+			});
+			if (clock) ordered_items.push(clock);
+		});
+
+		this.model.items = ordered_items;
+		this.controller.modelChanged(this.model, this);
+	},
+
 	changed: function(event) {
 		if (this.report_error(event.error)) return;
+		
 		var clocks = event.clocks;
 		var items = this.model.items;
 		var changes = false;
@@ -167,5 +198,6 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		this.controller.stopListening(this.growler, Mojo.Event.tap, this.growler.tap_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listDelete, this.list.delete_handler);
 		this.controller.stopListening(this.list, Mojo.Event.listTap, this.list.tap_handler);
+		this.controller.stopListening(this.list, Mojo.Event.listReorder, this.list.reorder_handler);
 	}
 });

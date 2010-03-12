@@ -11,10 +11,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -30,7 +30,7 @@ Whendle.Migrator = Class.create({
 		this.database = database;
 		this.jobs = [];
 	},
-	
+
 	go: function(on_complete, on_error) {
 		if (this.jobs.length == 0) {
 			this._on_job_done(on_complete);
@@ -42,7 +42,7 @@ Whendle.Migrator = Class.create({
 			}
 		}
 	},
-	
+
 	queue_job: function(statement, parameters, on_complete, on_error, note) {
 		var self = this;
 		var job = function(db) {
@@ -54,13 +54,13 @@ Whendle.Migrator = Class.create({
 
 		this.jobs.push(job);
 	},
-	
+
 	_on_job_done: function(on_complete, note) {
 
 		if (this.jobs.length != 0) {
 			this.jobs.pop();
 		}
-			
+
 		if (this.jobs.length == 0) {
 			on_complete(this.version);
 		}
@@ -75,18 +75,32 @@ Whendle.Migrator_0_1 = Class.create(Whendle.Migrator, {
 	initialize: function($super, database) {
 		$super('0.1', database);
 	},
-	
+
 	go: function($super, on_complete, on_error) {
-	
+
 		this.queue_job('create table \'whendle\' (id integer primary key autoincrement not null, version text not null)', [],
 			on_complete, on_error, 'create whendle table');
 		this.queue_job('insert into \'whendle\' (version) values (\'0.1\')', [],
 			on_complete, on_error, 'insert version 0.1');
 		this.queue_job('create table \'places\' (id integer primary key autoincrement not null, name text not null, admin text, country text, latitude real, longitude real, timezone text, woeid integer, type integer)', [],
 			on_complete, on_error, 'create places table');
-		this.queue_job('insert into \'places\' (name,admin,country,latitude,longitude,timezone,woeid,type) values (?,?,?,?,?,?,?,?)',
-			['Sunnyvale', 'California', 'United States', 37.371609, -122.038254, this.DEFAULT_TIMEZONE, 2502265, 7],
+		this.queue_job('insert into \'places\' (name,admin,country,latitude,longitude,timezone,woeid,type,sort) values (?,?,?,?,?,?,?,?,?)',
+			['Sunnyvale', 'California', 'United States', 37.371609, -122.038254, this.DEFAULT_TIMEZONE, 2502265, 7, 0],
 			on_complete, on_error, 'insert default place');
+		$super(on_complete, on_error);
+	}
+});
+
+Whendle.Migrator_0_2 = Class.create(Whendle.Migrator, {
+	initialize: function($super, database) {
+		$super('0.2', database);
+	},
+
+	go: function($super, on_complete, on_error) {
+		this.queue_job('update \'whendle\' set version=?', ['0.2'],
+			on_complete, on_error, 'update whendle table');
+		this.queue_job('alter table \'places\' add \'sort\' integer default 0 not null', [],
+			on_complete, on_error, 'alter places table');
 		$super(on_complete, on_error);
 	}
 });
