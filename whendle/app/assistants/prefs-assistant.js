@@ -54,9 +54,9 @@ PrefsAssistant = Class.create({
 		this.controller.setupWidget(this.time.id, {
 			modelProperty: 'time',
 			choices: [
-				{ label: $L('prefs_default_time_format'), value: 'default' },
-				{ label: $L('prefs_24hr_time_format'), value: 'HH24' },
-				{ label: $L('prefs_12hr_time_format'), value: 'HH12' }
+				{ label: $L('Default time format'), value: 'default' },
+				{ label: $L('24 hour format'), value: 'HH24' },
+				{ label: $L('12 hour format'), value: 'HH12' }
 			]
 		}, this.model);
 	},
@@ -66,8 +66,8 @@ PrefsAssistant = Class.create({
 		this.controller.setupWidget(this.temperature.id, {
 			modelProperty: 'temperature',
 			choices: [
-				{ label: $L('prefs_celsius_format'), value: 'c' },
-				{ label: $L('prefs_fahrenheit_format'), value: 'f' }
+				{ label: $L('Temperature in Celsius'), value: 'c' },
+				{ label: $L('Temperature in Fahrenheit'), value: 'f' }
 			]
 		}, this.model);
 	},
@@ -75,7 +75,7 @@ PrefsAssistant = Class.create({
 	setup_weather_option: function() {
 		this.weather = this.controller.get('weather');
 		this.weather.next('.title')
-			.update($.string('prefs_show_local_weather'));
+			.update($.string('Show local weather'));
 		this.controller.setupWidget(this.weather.id, {
 			modelProperty: 'weather'
 		}, this.model);
@@ -84,7 +84,7 @@ PrefsAssistant = Class.create({
 	setup_photos_option: function() {
 		this.photos = this.controller.get('photos');
 		this.photos.next('.title')
-			.update($.string('prefs_show_local_photos'));
+			.update($.string('Show local photos'));
 		this.controller.setupWidget(this.photos.id, {
 			modelProperty: 'photos'
 		}, this.model);

@@ -81,7 +81,7 @@ Whendle.Photo_Agent = Class.create({
 		return {
 			code: data.code,
 			//message: data.message,
-			message: $.string('photos_no_service')
+			message: $.string('Hmm, the photo service didn\'t like our request.')
 		};
 	},
 

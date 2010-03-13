@@ -175,7 +175,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 		this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
 
 		if (place && place.name) {
-			var message = $.string('gallery_adding_location').interpolate(place);
+			var message = $.string('Adding #{name}...').interpolate(place);
 			this.growler.mojo.spin(message.escapeHTML());
 			// assuming we have come from the finder
 			// after the user has found a location...

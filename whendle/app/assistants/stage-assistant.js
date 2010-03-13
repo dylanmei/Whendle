@@ -45,13 +45,13 @@ StageAssistant.prototype.handleCommand = function(event) {
 			name: event.command,
 			transition: Mojo.Transition.crossFade
 		};
-		
+
 		if (event.command == 'list' && scene.sceneName == 'list') return;
 		if (event.command == 'map') {
 			if (scene.sceneName == 'map') return;
 			swap_params.disableSceneScroller = true;
-		}  
-		
+		}
+
 		this.controller.swapScene(swap_params);
 	}
 	else if (event.command == Mojo.Menu.helpCmd) {
@@ -70,10 +70,10 @@ StageAssistant.Gallery_menu = {
 		items: [{
 			toggleCmd: '',
 			items: [
-				{ label: $L('menu_map'), iconPath: 'resources/menu-icon-globe.png', command: 'map' },
-				{ label: $L('menu_list'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
+				{ label: $L('Map'), iconPath: 'resources/menu-icon-globe.png', command: 'map' },
+				{ label: $L('List'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
 			]
 		},
-		{ label: $L('menu_find'), iconPath: 'resources/menu-icon-find.png', command: 'add' }
+		{ label: $L('Find'), iconPath: 'resources/menu-icon-find.png', command: 'add' }
 	]}
 };

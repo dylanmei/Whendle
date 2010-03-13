@@ -79,7 +79,7 @@ Photo_Slide = Class.create({
 		}
 		else {
 			this.on_photo_error(on_ready,
-				{ message: $.string('photos_no_results') }
+				{ message: $.string('No photos available...') }
 			);
 		}
 	},
@@ -106,8 +106,8 @@ Photo_Slide = Class.create({
 
 	new_photo_title: function(photo) {
 		var title = photo.title.stripTags();
-		if (title.blank()) title = $.string('photo_empty_title');
-		else title = title.truncate(80, $.string('truncate_ellipses'));
+		if (title.blank()) title = $.string('Untitled');
+		else title = title.truncate(80, $.string('...'));
 
 		var url = Flickr.photo_url(photo);
 		return new Element('div', { 'class': 'title' })
@@ -120,7 +120,7 @@ Photo_Slide = Class.create({
 	new_photo_attribution: function(photo) {
 		var container = new Element('div', {'class': 'attribution'});
 
-		container.insert(new Element('span').update($.string('photo_attribution')));
+		container.insert(new Element('span').update($.string('by')));
 		container.insert(new Element('span', { 'class': 'who' }).update(photo.ownername));
 
 		var then = photo.dateupload;
@@ -143,15 +143,15 @@ Photo_Slide = Class.create({
 	format_time_ago: function(now, then) {
 
 		var span = now.since(then);
-		if (span.days > 1) return $.string('time_x_days_ago').interpolate(span);
-		if (span.days == 1) return $.string('time_1_day_ago');
+		if (span.days > 1) return $.string('#{days} days ago').interpolate(span);
+		if (span.days == 1) return $.string('yesterday');
 
-		if (span.hours > 1) return $.string('time_x_hours_ago').interpolate(span);
-		if (span.hours == 1) return $.string('time_1_hour_ago');
+		if (span.hours > 1) return $.string('#{hours} hours ago').interpolate(span);
+		if (span.hours == 1) return $.string('an hour ago');
 
-		if (span.minutes > 1) return $.string('time_x_minutes_ago').interpolate(span);
-		if (span.minutes == 1) return $.string('time_1_minute_ago');
+		if (span.minutes > 1) return $.string('#{minutes} minutes ago').interpolate(span);
+		if (span.minutes == 1) return $.string('a minute ago');
 
-		return $.string('time_0_minutes_ago');
+		return $.string('a moment ago');
 	}
 });

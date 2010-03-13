@@ -79,8 +79,8 @@ Whendle.Startup.Presenter = Class.create({
 
 			if (needs_install || needs_upgrade) {
 				var feedback = needs_install ?
-					$.string('splash_message_installing') :
-					$.string('splash_message_updating');
+					$.string('Starting up for the first time...') :
+					$.string('Updating a few things...');
 				var status = needs_install ?
 					Whendle.Status.installing :
 					Whendle.Status.updating;

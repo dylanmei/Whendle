@@ -162,7 +162,7 @@ MapAssistant = Class.create(Whendle.Gallery.View, {
 		if (!this.is_loaded) return;
 
 		if (place && place.name) {
-			var message = $.string('gallery_adding_location').interpolate(place);
+			var message = $.string('Adding #{name}...').interpolate(place);
 			this.growler.mojo.spin(message.escapeHTML());
 			this.fire(Whendle.Gallery.Events.adding, { 'place': place });
 		}

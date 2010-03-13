@@ -45,13 +45,13 @@ Whendle.Place.Format_area = function(place) {
 	var has_admin = place.admin.length > 0;
 	var has_country = place.country.length > 0;
 	if (has_admin && has_country) {
-		format = $.string('location_area_admin_country', '#{admin}, #{country}');
+		format = $.string('#{admin}, #{country}');
 	}
 	else if (has_admin) {
-		format = $.string('location_area_admin', '#{admin}');
+		format = $.string('#{admin}');
 	}
 	else if (has_country) {
-		format = $.string('location_area_country', '#{country}');
+		format = $.string('#{country}');
 	}
 
 	return format.interpolate(place);
@@ -61,8 +61,8 @@ Whendle.Place.Format_day = function(today, other_day) {
 	var here = today.clone().hour(0).minute(0).second(0);
 	var there = other_day.clone().hour(0).minute(0).second(0);
 	return there.compare(here) < 0
-		? $.string('day_Yesterday', 'Yesterday') : there.compare(here) > 0
-			? $.string('day_Tomorrow', 'Tomorrow') : $.string('day_Today', 'Today');
+		? $.string('Yesterday') : there.compare(here) > 0
+			? $.string('Tomorrow') : $.string('Today');
 }
 
 Whendle.Place.Format_time = function(time, pattern) {
@@ -70,11 +70,11 @@ Whendle.Place.Format_time = function(time, pattern) {
 	var minute = time.minute().toPaddedString(2);
 
 	if (pattern == 'HH12') {
-		var template = hour < 12 ? $.string('time_HH12am', '#{hours}:#{minutes} am') : $.string('time_HH12pm', '#{hours}:#{minutes} pm');
+		var template = hour < 12 ? $.string('#{hours}:#{minutes} am') : $.string('#{hours}:#{minutes} pm');
 		return template.interpolate({ 'hours': (hour % 12 || 12), 'minutes': minute });
 	}
 
 	hour = hour.toPaddedString(2);
-	return $.string('time_HH24', '#{hours}:#{minutes}')
+	return $.string('#{hours}:#{minutes}')
 		.interpolate({ 'hours': hour, 'minutes': minute });
 }

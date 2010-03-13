@@ -40,8 +40,8 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 				visible: false,
 				items: [
 					{},
-					{ label: $L('menu_map'), command: 'maps', iconPath: 'resources/menu-icon-maps.png' },
-					{ label: $L('menu_edit'), command:'save' }
+					{ label: $L('Map'), command: 'maps', iconPath: 'resources/menu-icon-maps.png' },
+					{ label: $L('Edit'), command:'save' }
 				]
 			}
 		}
@@ -307,9 +307,9 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		this.controller.showDialog({
 			template: 'spotlight/spotlight-dialog',
 			assistant: new SpotlightDialogAssistant(this),
-			label1: $.string('spotlight_dialog_label_name'),
-			label2: $.string('spotlight_dialog_label_admin'),
-			label3: $.string('spotlight_dialog_label_country')
+			label1: $.string('NAME'),
+			label2: $.string('REGION'),
+			label3: $.string('COUNTRY')
 		});
 	},
 

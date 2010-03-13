@@ -50,7 +50,7 @@ Map_Marker = Class.create(Whendle.Observable, {
 		return text
 			.substring(0, this.TEXT_LENGTH)
 			.strip()
-			.concat($.string('truncate_ellipses'));
+			.concat($.string('...'));
 	},
 
 	time: function(v) {
