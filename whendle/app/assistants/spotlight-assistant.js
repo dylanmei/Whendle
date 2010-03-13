@@ -132,6 +132,8 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 	},
 
 	on_slide_ready: function(slide, info, backdrop) {
+		if (!this.controller) return;
+
 		this.clear_carousel();
 		var tray = this.carousel.down('.tray');
 		tray.insert(info);

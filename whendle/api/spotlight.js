@@ -76,17 +76,26 @@ Whendle.Spotlight.Presenter = Class.create({
 	},
 
 	wire_timekeeper: function(view, id) {
+		this.unwire_timekeeper();
 		this.timekeeper.observe(Whendle.Timekeeper.Events.timer,
 			this.tick_handler = this.on_timekeeping_tick.bind(this, view, id));
 		this.timekeeper.observe(Whendle.Timekeeper.Events.system,
 			this.system_handler = this.on_timekeeping_change.bind(this, view, id));
 	},
 
-	destroy: function() {
-		if (this.tick_handler)
+	unwire_timekeeper: function() {
+		if (this.tick_handler) {
 			this.timekeeper.ignore(Whendle.Timekeeper.Events.timer, this.tick_handler);
-		if (this.system_handler)
+			this.tick_handler = null;
+		}
+		if (this.system_handler) {
 			this.timekeeper.ignore(Whendle.Timekeeper.Events.system, this.system_handler);
+			this.system_handler = null;
+		}
+	},
+
+	destroy: function() {
+		this.unwire_timekeeper();
 	},
 
 	on_loading: function(view, event) {
