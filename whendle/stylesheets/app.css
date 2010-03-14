@@ -6,7 +6,7 @@
 	left: 0px;
 	text-align: center;
 	background-color:#fff;
-	background: url('splash-background.png') left bottom repeat-x;
+	background: url('../resources/splash-background.png') left bottom repeat-x;
 	-webkit-border-radius: 24px;
 
 	-webkit-transition-property: top;
@@ -60,6 +60,7 @@
 }
 
 .finder-status {
+	font-size: 18px;
 	padding-top: 8px;
 	padding-bottom: 12px;
 }
@@ -108,7 +109,7 @@ body.map-body {
 	min-width: 24px;
 	min-height: 18px;
 	white-space: nowrap;
-	-webkit-border-image: url('map-marker.png') 10 18 / 10px 18px;
+	-webkit-border-image: url('../resources/map-marker.png') 10 18 / 10px 18px;
 }
 
 .map-marker>.content>.label {
@@ -126,7 +127,7 @@ body.map-body {
 	float:left;
 	margin-top: -4px;
 	margin-left: -8px;
-	background: url('map-marker-clock.png') center center no-repeat;
+	background: url('../resources/map-marker-clock.png') center center no-repeat;
 }
 
 .map-marker>.pointer {
@@ -135,7 +136,7 @@ body.map-body {
 	position: relative;
 	bottom: 4px;
 	margin: auto;
-	background: url('map-marker-point.png') center center no-repeat;
+	background: url('../resources/map-marker-point.png') center center no-repeat;
 }
 
 #spotlight-title, #spotlight-time  {
@@ -182,6 +183,7 @@ body.map-body {
 	color: white;
 	padding: 12px;
 	text-shadow: black 0px 0px 8px;
+	margin-bottom: 20px;
 }
 
 .weather-slide-tray .currently .temperature {
@@ -215,7 +217,7 @@ body.map-body {
 	color: white;
 	padding: 12px;
 	text-shadow: black 0px 0px 8px;
-	margin-bottom: 20px;
+	margin-bottom: 34px;
 }
 
 .photo-slide-tray .title {
@@ -240,7 +242,7 @@ body.map-body {
 }
 
 .palm-page-header .mini-icon {
-    background: url('icon-mini.png') center center no-repeat;
+    background: url('../resources/icon-mini.png') center center no-repeat;
 }
 
 #help, #prefs {
@@ -266,7 +268,7 @@ body.map-body {
 	min-height: 18px;
 	padding-left: 20px;
 	margin-top: 4px;
-	background: url('attribution-bullet.png') -1px left no-repeat;
+	background: url('../resources/attribution-bullet.png') -1px left no-repeat;
 }
 
 .help-copyright {
