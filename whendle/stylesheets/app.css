@@ -61,17 +61,16 @@
 
 .finder-status {
 	font-size: 18px;
-	padding-top: 8px;
+	padding: 8px;
 	padding-bottom: 12px;
 }
 
 .finder-spinner {
 	float: left;
-	margin-left: 10px;
+	margin-right: 10px;
 }
 
 .finder-text {
-	margin-left: 10px;
 }
 
 .finder-row .palm-row-wrapper,
