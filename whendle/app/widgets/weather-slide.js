@@ -121,7 +121,7 @@ Weather_Slide = Class.create({
 	},
 
 	compose_backdrop_image: function(condition_code) {
-		var description = Yahoo.Weather.condition_text(condition_code);
+		var description = this.select_condition_text(condition_code);
 		var name = this.select_a_weather_image(description);
 		this.pix.src = 'resources/' + name + '.png';
 	},
@@ -137,14 +137,18 @@ Weather_Slide = Class.create({
 		});
 
 		return new Element('div', { 'class': 'forecast' })
-			.insert(new Element('div', { 'class': 'temperature' }).update(forecast))
-			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
+			.insert(new Element('div', { 'class': 'temperature' })
+				.update(forecast))
+			.insert(new Element('div', { 'class': 'condition' })
+				.update($L(this.select_condition_text(code))));
 	},
 
 	new_weather_element: function(code, temp) {
 		return new Element('div', { 'class': 'currently' })
-			.insert(new Element('div', { 'class': 'temperature' }).update(this.format_temperature(temp)))
-			.insert(new Element('div', { 'class': 'condition' }).update(Yahoo.Weather.condition_text(code)));
+			.insert(new Element('div', { 'class': 'temperature' })
+				.update(this.format_temperature(temp)))
+			.insert(new Element('div', { 'class': 'condition' })
+				.update($L(this.select_condition_text(code))));
 	},
 
 	new_attribution: function(text) {
@@ -171,6 +175,62 @@ Weather_Slide = Class.create({
 
 	celsius_to_fahrenheit: function(c) {
 		return Math.round(((9 / 5) * c) + 32);
+	},
+
+	select_condition_text: function(condition_code) {
+		switch (parseInt(condition_code)) {
+			case 0: return 'Tornado';
+			case 1: return 'Tropical storm';
+			case 2: return 'Hurricane';
+			case 3: return 'Severe thunderstorms';
+			case 4: return 'Thunderstorms';
+			case 5: return 'Mixed rain and snow';
+			case 6: return 'Mixed rain and sleet';
+			case 7: return 'Mixed snow and sleet';
+			case 8: return 'Freezing drizzle';
+			case 9: return 'Drizzle';
+			case 10: return 'Freezing rain';
+			case 11: return 'Showers';
+			case 12: return 'Showers';
+			case 13: return 'Snow flurries';
+			case 14: return 'Light snow showers';
+			case 15: return 'Blowing snow';
+			case 16: return 'Snow';
+			case 17: return 'Hail';
+			case 18: return 'Sleet';
+			case 19: return 'Dust';
+			case 20: return 'Foggy';
+			case 21: return 'Haze';
+			case 22: return 'Smoky';
+			case 23: return 'Blustery';
+			case 24: return 'Windy';
+			case 25: return 'Cold';
+			case 26: return 'Cloudy';
+			case 27: return 'Mostly cloudy'; // night
+			case 28: return 'Mostly cloudy'; // day
+			case 29: return 'Partly cloudy'; // night
+			case 30: return 'Partly cloudy'; // day
+			case 31: return 'Clear'; // night
+			case 32: return 'Sunny';
+			case 33: return 'Fair'; // night
+			case 34: return 'Fair'; // day
+			case 35: return 'Mixed rain and hail';
+			case 36: return 'Hot';
+			case 37: return 'Isolated thunderstorms';
+			case 38: return 'Scattered thunderstorms';
+			case 39: return 'Scattered thunderstorms';
+			case 40: return 'Scattered showers';
+			case 41: return 'Heavy snow';
+			case 42: return 'Scattered snow showers';
+			case 43: return 'Heavy snow';
+			case 44: return 'Partly cloudy';
+			case 45: return 'Thundershowers';
+			case 46: return 'Snow showers';
+			case 47: return 'Isolated thundershowers';
+			case 3200:
+			default:
+				return 'Weather unavailable...';
+		}
 	},
 
 	select_a_weather_image: function(description) {
