@@ -59,6 +59,7 @@
 	, "Hmm, the photo service didn't like our request.": "Der Fotoservice gab einen Fehler zurück"
 	, "No photos available...": "Keine Fotos verfügbar ..."
 	, "Untitled": "ohne Titel"
+	, "by": "von"
 	, "#{days} days ago": "vor #{days} Tagen"
 	, "yesterday": "gestern"
 	, "#{hours} hours ago": "vor #{hours} Stunden"
