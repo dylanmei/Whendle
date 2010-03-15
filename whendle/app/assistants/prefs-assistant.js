@@ -26,8 +26,8 @@ PrefsAssistant = Class.create({
 		this.model = {
 			  time: profile.get('time_format', 'default')
 			, temperature: profile.get('temperature_format', 'c')
-			, weather: profile.get('show_weather_slides', true)
-			, photos: profile.get('show_photo_slides', true)
+			, weather: profile.get('show_weather_slides', Whendle.show_weather_default)
+			, photos: profile.get('show_photo_slides', Whendle.show_photos_default)
 		}
 	},
 
@@ -108,12 +108,12 @@ PrefsAssistant = Class.create({
 
 	on_photos_value: function(event) {
 		Whendle.profile()
-			.set('show_photos', event.value);
+			.set('show_photo_slides', event.value);
 	},
 
 	on_weather_value: function(event) {
 		Whendle.profile()
-			.set('show_weather', event.value);
+			.set('show_weather_slides', event.value);
 	},
 
 	cleanup: function(event) {

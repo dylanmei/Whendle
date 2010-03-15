@@ -120,15 +120,22 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		if (slide.in_error_state()) return false;
 
 		var profile = Whendle.profile();
+		var default_value = false;
 		var setting = false;
+
 		switch (slide.name) {
 			case 'weather':
-				setting = profile.get('show_weather_slides'); break;
+				default_value = Whendle.show_weather_default;
+				setting = profile.get('show_weather_slides');
+				break;
 			case 'photos':
-				setting = profile.get('show_photo_slides'); break;
+				default_value = Whendle.show_photos_default;
+				setting = profile.get('show_photo_slides');
+				break;
 		}
 
-		return Object.isUndefined(setting) ? true : setting;
+		return Object.isUndefined(setting) ?
+			default_value : setting;
 	},
 
 	on_slide_ready: function(slide, info, backdrop) {

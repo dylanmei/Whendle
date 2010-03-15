@@ -35,6 +35,9 @@ Whendle = {
 	show_splash: false,
 	reset_schema: false,
 
+	show_weather_default: true,
+	show_photos_default: false,
+
 	Status: {
 		installing: 'installing',
 		updating: 'updating',
