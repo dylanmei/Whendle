@@ -74,7 +74,7 @@
 	, "Tomorrow's high #{high}, low #{low}": "Morgen max. #{high}, min. #{low}"
 	, "Show local photos": "Regionale Fotos anzeigen"
 	, "Show local weather": "Regionales Wetter anzeigen"
-	, "Default time format": "Zeitformat"
+	, "Default time format": "System Zeitformat"
 	, "24 hour format": "24h Zeitformat"
 	, "12 hour format": "12h Zeitformat"
 	, "Temperature in Celsius": "Temperatur in °C"
