@@ -178,7 +178,7 @@ Whendle.Gallery.Presenter = Class.create({
 		this.timezone_locator.lookup(
 			place.latitude, place.longitude,
 			this._on_timezone_result.bind(this, view, place),
-			function(error) { view.added({ 'clocks': [], 'error': error }) }
+			this._on_timezone_error.bind(this, view)
 		);
 	},
 
@@ -188,6 +188,13 @@ Whendle.Gallery.Presenter = Class.create({
 			this._on_clock_added.bind(this, view, place),
 			function(error) { view.added({ 'clocks': [], 'error': error }) }
 		);
+	},
+
+	_on_timezone_error: function(view, error) {
+		view.added({
+			clocks: [],
+			error: { message: $L('Hmm, the timezone service didn\'t like our request.') }
+		});
 	},
 
 	_on_clock_added: function(view, place, identity) {

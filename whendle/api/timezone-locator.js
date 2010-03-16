@@ -52,7 +52,30 @@ Whendle.Timezone_Locator = Class.create({
 	},
 
 	_on_lookup_result: function(on_complete, on_error, response) {
-		this.load(response.timezoneId, on_complete, on_error);
+		if (this.is_service_error(response)) {
+			this.on_service_error(response, on_error);
+		}
+		else {
+			this.load(response.timezoneId, on_complete, on_error);
+		}
+	},
+
+	is_service_error: function(response) {
+		return Object.isUndefined(response.timezoneId);
+	},
+
+	on_service_error: function(response, on_error) {
+		var status = response.status;
+		var error = { code: 0 };
+		if (Object.isUndefined(status)) {
+			error.message = 'Unknown service error';
+		}
+		else {
+			error.code = status.value;
+			error.message = status.message;
+		}
+
+		on_error(error);
 	},
 
 	_on_lookup_error: function(on_error, error) {

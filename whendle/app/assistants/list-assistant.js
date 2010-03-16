@@ -167,7 +167,7 @@ ListAssistant = Class.create(Whendle.Gallery.View, {
 
 	report_error: function(error) {
 		if (!error) return false;
-		$.trace('error ' + error.message);
+		this.growler.mojo.info(error.message, 4);
 		return true;
 	},
 
