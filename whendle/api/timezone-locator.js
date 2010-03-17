@@ -25,7 +25,6 @@
 //
 
 Whendle.Timezone_Locator = Class.create({
-	URL_TIMEZONE_BY_LOCATION: 'http://ws.geonames.org/timezoneJSON',
 
 	initialize: function(ajax, tzloader) {
 		this.ajax = ajax || new Whendle.AjaxService();
@@ -44,11 +43,7 @@ Whendle.Timezone_Locator = Class.create({
 	},
 
 	_make_lookup_url: function(latitude, longitude) {
-		var s = this.URL_TIMEZONE_BY_LOCATION + '?';
-		return s + Object.toQueryString({
-			'lat': latitude,
-			'lng': longitude
-		});
+		return GeoNames.timezone_url(latitude, longitude);
 	},
 
 	_on_lookup_result: function(on_complete, on_error, response) {
