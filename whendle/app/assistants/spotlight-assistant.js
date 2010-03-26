@@ -241,8 +241,10 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		var clock = event.clock;
 
 		this.load_model(clock);
-		this.maplet.mojo.draw(clock.longitude, clock.latitude,
-			now.declination, now.hour_angle);
+		this.maplet.mojo.mark(clock.name,
+			{ x: clock.longitude, y: clock.latitude });
+		this.maplet.mojo.draw(now.declination, now.hour_angle);
+
 		if (!this.is_loaded) {
 			this.controller.setMenuVisible(Mojo.Menu.commandMenu, true);
 		}
@@ -279,12 +281,13 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 		var clock = event.clock;
 
 		this.set_clock_values(clock);
-		this.maplet.mojo.draw(clock.longitude, clock.latitude,
-			now.declination, now.hour_angle);
+		this.maplet.mojo.draw(now.declination, now.hour_angle);
 	},
 
 	saved: function(event) {
-		this.set_clock_values(event.clock);
+		var clock = event.clock;
+		this.set_clock_values(clock);
+		this.maplet.mojo.mark(clock.name);
 	},
 
 	handleCommand: function(event) {

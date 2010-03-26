@@ -6,6 +6,7 @@ Map_Clock = Class.create({
 	initialize: function() {
 		this.canvas = new Element('canvas', { width: this.WIDTH, height: this.HEIGHT });
 		new Element('div', { 'class': 'clock '})
+			.hide()
 			.insert(this.canvas);
 		this.draw();
 	},
@@ -23,6 +24,7 @@ Map_Clock = Class.create({
 	},
 
 	time: function(time) {
+		this.element().show();
 		this.draw(time);
 	},
 

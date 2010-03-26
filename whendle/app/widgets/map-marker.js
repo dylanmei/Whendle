@@ -38,7 +38,7 @@ Map_Marker = Class.create(Whendle.Observable, {
 	text: function(v) {
 		var el = this.element.down('.label');
 		if (v === undefined) return el.innerHTML;
-		el.innerHTML = this.format_text(v);
+		el.update(this.format_text(v));
 		return this;
 	},
 
@@ -87,7 +87,7 @@ Map_Marker = Class.create(Whendle.Observable, {
 		this.element.setStyle({
 			left: (point.x - size.x / 2) + 'px',
 			top: (point.y - size.y + this.DROP_PADDING) + 'px',
-			zIndex: 100 + Math.floor(point.y)
+			zIndex: 10 + Math.floor(point.y)
 		});
 	}
 });
