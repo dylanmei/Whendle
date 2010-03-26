@@ -44,13 +44,13 @@ StartupAssistant = Class.create(Whendle.Startup.View, {
 		else {
 			this.splash.mojo.interactive(true);
 			if (status == Whendle.Status.installing) {
-				this.splash.mojo.message($.string('Welcome! Tap to continue...'));
+				this.splash.mojo.message($L('Welcome! Tap to continue...'));
 			}
 			else if (status == Whendle.Status.updating) {
-				this.splash.mojo.message($.string('Update complete! Tap to continue...'));
+				this.splash.mojo.message($L('Update complete! Tap to continue...'));
 			}
 			else {
-				this.splash.mojo.message($.string('Tap to continue...'));
+				this.splash.mojo.message($L('Tap to continue...'));
 			}
 		}
 	},

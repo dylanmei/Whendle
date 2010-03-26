@@ -82,7 +82,7 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 		index = index || 0;
 		this.model.text = text;
 
-		this.status.mojo.spin($.string('Searching for #{text}...')
+		this.status.mojo.spin($L('Searching for #{text}...')
 			.interpolate({ 'text': text }));
 		this.fire(Whendle.Finder.Events.searching, { 'start': index, 'query': text });
 	},
@@ -103,13 +103,13 @@ FinderAssistant = Class.create(Whendle.Finder.View, {
 	update_status: function(count, total) {
 		var remaining = total - count;
 		var message = (remaining <= 0)
-			? total == 0 ? $.string('Sorry, we couldn\'t find anything.') : ''
-			: $.string('#{count} more...').interpolate({ 'count': remaining });
+			? total == 0 ? $L('Sorry, we couldn\'t find anything.') : ''
+			: $L('#{count} more...').interpolate({ 'count': remaining });
 		this.status.mojo.stop(message);
 	},
 
 	activate: function() {
-		this.status.mojo.stop($.string('Type to find a location...'));
+		this.status.mojo.stop($L('Type to find a location...'));
 	},
 
 	cleanup: function(event) {

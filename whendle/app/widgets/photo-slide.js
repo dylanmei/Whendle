@@ -79,7 +79,7 @@ Photo_Slide = Class.create({
 		}
 		else {
 			this.on_photo_error(on_ready,
-				{ message: $.string('No photos available...') }
+				{ message: $L('No photos available...') }
 			);
 		}
 	},
@@ -106,8 +106,8 @@ Photo_Slide = Class.create({
 
 	new_photo_title: function(photo) {
 		var title = photo.title.stripTags();
-		if (title.blank()) title = $.string('Untitled');
-		else title = title.truncate(80, $.string('...'));
+		if (title.blank()) title = $L('Untitled');
+		else title = title.truncate(80, $L('...'));
 
 		var url = Flickr.photo_url(photo);
 		return new Element('div', { 'class': 'title' })
@@ -120,7 +120,7 @@ Photo_Slide = Class.create({
 	new_photo_attribution: function(photo) {
 		var container = new Element('div', {'class': 'attribution'});
 
-		container.insert(new Element('span').update($.string('by')));
+		container.insert(new Element('span').update($L('by')));
 		container.insert(new Element('span', { 'class': 'who' }).update(photo.ownername));
 
 		var then = photo.dateupload;
@@ -143,15 +143,15 @@ Photo_Slide = Class.create({
 	format_time_ago: function(now, then) {
 
 		var span = now.since(then);
-		if (span.days > 1) return $.string('#{days} days ago').interpolate(span);
-		if (span.days == 1) return $.string('yesterday');
+		if (span.days > 1) return $L('#{days} days ago').interpolate(span);
+		if (span.days == 1) return $L('yesterday');
 
-		if (span.hours > 1) return $.string('#{hours} hours ago').interpolate(span);
-		if (span.hours == 1) return $.string('an hour ago');
+		if (span.hours > 1) return $L('#{hours} hours ago').interpolate(span);
+		if (span.hours == 1) return $L('an hour ago');
 
-		if (span.minutes > 1) return $.string('#{minutes} minutes ago').interpolate(span);
-		if (span.minutes == 1) return $.string('a minute ago');
+		if (span.minutes > 1) return $L('#{minutes} minutes ago').interpolate(span);
+		if (span.minutes == 1) return $L('a minute ago');
 
-		return $.string('a moment ago');
+		return $L('a moment ago');
 	}
 });

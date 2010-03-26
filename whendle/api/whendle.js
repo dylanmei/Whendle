@@ -98,6 +98,3 @@ if (typeof(Mojo) != 'undefined') {
 	$.trace = Mojo.Log.info;
 }
 
-$.string = function(key, def) {
-	return (typeof($L) == 'undefined') ? (def || key) : $L(key);
-}

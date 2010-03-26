@@ -75,7 +75,7 @@ PrefsAssistant = Class.create({
 	setup_weather_option: function() {
 		this.weather = this.controller.get('weather');
 		this.weather.next('.title')
-			.update($.string('Show local weather'));
+			.update($L('Show local weather'));
 		this.controller.setupWidget(this.weather.id, {
 			modelProperty: 'weather'
 		}, this.model);
@@ -84,7 +84,7 @@ PrefsAssistant = Class.create({
 	setup_photos_option: function() {
 		this.photos = this.controller.get('photos');
 		this.photos.next('.title')
-			.update($.string('Show local photos'));
+			.update($L('Show local photos'));
 		this.controller.setupWidget(this.photos.id, {
 			modelProperty: 'photos'
 		}, this.model);

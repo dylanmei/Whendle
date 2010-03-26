@@ -95,7 +95,7 @@ Weather_Slide = Class.create({
 		this.data = { error: 1 };
 		this.clear_tray();
 		this.div.insert(new Element('div', { 'class': 'error' })
-			.update($.string('Weather unavailable...')));
+			.update($L('Weather unavailable...')));
 
 		on_ready(this.tray());
 	},
@@ -128,8 +128,8 @@ Weather_Slide = Class.create({
 
 	new_forecast_element: function(day, code, high, low) {
 		var template = day == 'today' ?
-			$.string('Today\'s high #{high}, low #{low}') :
-			$.string('Tomorrow\'s high #{high}, low #{low}');
+			$L('Today\'s high #{high}, low #{low}') :
+			$L('Tomorrow\'s high #{high}, low #{low}');
 
 		var forecast = template.interpolate({
 			high: this.format_temperature(high),
@@ -158,11 +158,11 @@ Weather_Slide = Class.create({
 
 	format_temperature: function(t) {
 		if (this.select_temperature_format() == 'f') {
-			return $.string('#{temp} &deg;F')
+			return $L('#{temp} &deg;F')
 				.interpolate({ temp: this.celsius_to_fahrenheit(t) });
 		}
 		else {
-			return $.string('#{temp} &deg;C').interpolate({ temp: t });
+			return $L('#{temp} &deg;C').interpolate({ temp: t });
 		}
 	},
 
