@@ -1,8 +1,8 @@
 docs/*
 spikes/*
-whendle/*.ipk
 whendle/framework_config.json
 whendle/tzdata/*
 whendle/api/yahoo.js
+*.ipk
 *.kpf
 *.bat
