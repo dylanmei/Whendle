@@ -1,0 +1,7 @@
+{
+	"title": "Whendle",
+	"main": "../../index.html",
+	"icon": "../../images/icon.png",
+	"splashicon": "../../images/icon-splash.png",
+	"splashBackground":"../../images/splash-blank.png"
+}

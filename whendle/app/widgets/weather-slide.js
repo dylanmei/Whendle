@@ -123,7 +123,7 @@ Weather_Slide = Class.create({
 	compose_backdrop_image: function(condition_code) {
 		var description = this.select_condition_text(condition_code);
 		var name = this.select_a_weather_image(description);
-		this.pix.src = 'resources/' + name + '.png';
+		this.pix.src = 'images/' + name + '.png';
 	},
 
 	new_forecast_element: function(day, code, high, low) {

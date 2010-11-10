@@ -1,6 +1,6 @@
 
 Mojo.Widget.Maplet = Class.create({
-	SURFACE_FILE: 'resources/map-1040x520.png',
+	SURFACE_FILE: 'images/map-1040x520.png',
 
 	initialize: function() {
  		this.longitude = this.latitude = 0;

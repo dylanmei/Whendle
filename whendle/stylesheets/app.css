@@ -6,7 +6,7 @@
 	left: 0px;
 	text-align: center;
 	background-color:#fff;
-	background: url('../resources/splash-background.png') left bottom repeat-x;
+	background: url('../images/splash-background.png') left bottom repeat-x;
 	-webkit-border-radius: 24px;
 
 	-webkit-transition-property: top;
@@ -108,7 +108,7 @@ body.map-body {
 	min-width: 24px;
 	min-height: 18px;
 	white-space: nowrap;
-	-webkit-border-image: url('../resources/map-marker.png') 10 18 / 10px 18px;
+	-webkit-border-image: url('../images/map-marker.png') 10 18 / 10px 18px;
 }
 
 .map-marker>.content>.label {
@@ -125,7 +125,7 @@ body.map-body {
 	margin-top: -4px;
 	margin-left: -8px;
 	margin-right: 4px;
-	background: url('../resources/map-marker-clock.png') center center no-repeat;
+	background: url('../images/map-marker-clock.png') center center no-repeat;
 }
 
 .map-marker>.pointer {
@@ -134,7 +134,7 @@ body.map-body {
 	position: relative;
 	bottom: 4px;
 	margin: auto;
-	background: url('../resources/map-marker-point.png') center center no-repeat;
+	background: url('../images/map-marker-point.png') center center no-repeat;
 }
 
 #spotlight-title, #spotlight-time  {
@@ -239,7 +239,7 @@ body.map-body {
 }
 
 .palm-page-header .mini-icon {
-    background: url('../resources/icon-mini.png') center center no-repeat;
+    background: url('../images/icon-mini.png') center center no-repeat;
 }
 
 #help, #prefs {
@@ -265,7 +265,7 @@ body.map-body {
 	min-height: 18px;
 	padding-left: 20px;
 	margin-top: 4px;
-	background: url('../resources/attribution-bullet.png') -1px left no-repeat;
+	background: url('../images/attribution-bullet.png') -1px left no-repeat;
 }
 
 .help-copyright {

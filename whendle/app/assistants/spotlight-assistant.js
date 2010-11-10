@@ -40,7 +40,7 @@ SpotlightAssistant = Class.create(Whendle.Spotlight.View, {
 				visible: false,
 				items: [
 					{},
-					{ label: $L('Map'), command: 'maps', iconPath: 'resources/menu-icon-maps.png' },
+					{ label: $L('Map'), command: 'maps', iconPath: 'images/menu-icon-maps.png' },
 					{ label: $L('Edit'), command:'save' }
 				]
 			}

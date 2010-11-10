@@ -1,12 +1,12 @@
 {
 	"id": "org.fastlap.whendle",
-	"version": "0.2.2",
+	"version": "0.5.0",
 	"vendor": "Fastlap Farms",
 	"type": "web",
  	"main": "index.html",
 	"title": "Whendle",
-	"icon": "resources/icon.png",
+	"icon": "images/icon.png",
 	"removable": true,
-	"splashicon": "resources/icon-splash.png",
-	"splashBackground":"resources/splash-blank.png"
+	"splashicon": "images/icon-splash.png",
+	"splashBackground":"images/splash-blank.png"
 }

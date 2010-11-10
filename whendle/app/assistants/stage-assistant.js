@@ -70,10 +70,10 @@ StageAssistant.Gallery_menu = {
 		items: [{
 			toggleCmd: '',
 			items: [
-				{ label: $L('Map'), iconPath: 'resources/menu-icon-globe.png', command: 'map' },
-				{ label: $L('List'), iconPath: 'resources/menu-icon-list.png', command: 'list' }
+				{ label: $L('Map'), iconPath: 'images/menu-icon-globe.png', command: 'map' },
+				{ label: $L('List'), iconPath: 'images/menu-icon-list.png', command: 'list' }
 			]
 		},
-		{ label: $L('Find'), iconPath: 'resources/menu-icon-find.png', command: 'add' }
+		{ label: $L('Find'), iconPath: 'images/menu-icon-find.png', command: 'add' }
 	]}
 };
