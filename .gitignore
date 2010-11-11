@@ -1,4 +1,5 @@
 etc/*
+.idea
 whendle/tzdata/*
 whendle/api/yahoo.js
 whendle/framework_config.json
