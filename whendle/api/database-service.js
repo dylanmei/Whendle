@@ -160,7 +160,7 @@ Whendle.DatabaseService = Class.create({
 	remove: function(statement, parameters, on_complete, on_error) {
 		this.scalar(statement, parameters, on_complete, on_error);
 	},
-
+	
 	scalar: function(statement, parameters, on_result, on_error) {
 		on_result = this._on_scalar.bind(this, on_result || Prototype.emptyFunction);
 		on_error = this._on_error.bind(this, on_error || Prototype.emptyFunction);

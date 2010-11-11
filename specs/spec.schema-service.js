@@ -1,34 +1,10 @@
 
 describe 'Schema Service'
 	before
-		database = new Whendle.DatabaseService(new Object());
-		service = new Whendle.SchemaService(database);
+		database = new Whendle.DatabaseService(new Object())
+		service = new Whendle.SchemaService(database)
 	end
-	
-	describe 'reading the schema'
-		before
-			a = null
-			e = null
-			database.scalar = function(s, p, on_result) {
-				// second call fetches the version
-				database.scalar = function(s, p, on_result) {
-					on_result('ABC')
-				}
-				on_result(true);
-			}
-			service.read(function(v) { a = v; }, function(error) { e = error; });
-		end
-	
-		it 'should provide the version'
-			a.should.be 'ABC'
-			service.version().should.be 'ABC'
-		end
-		
-		it 'should not return an error'
-			e.should.be_null
-		end
-	end
-	
+
 	describe 'reading the schema for the first time'
 		before
 			a = null
@@ -49,6 +25,27 @@ describe 'Schema Service'
 		end
 	end
 	
+	describe 'reading an existing schema'
+		before
+			a = null
+			e = null
+			database.scalar = function(s, p, on_result) {
+				if (s.indexOf('select count') == 0) on_result(true)
+				if (s.indexOf('select version') == 0) on_result('ABC')
+			}
+			service.read(function(v) { a = v; }, function(error) { e = error; })
+		end
+	
+		it 'should provide the version'
+			a.should.be 'ABC'
+			service.version().should.be 'ABC'
+		end
+		
+		it 'should not return an error'
+			e.should.be_null
+		end
+	end
+
 	describe 'reading the schema causes an error'
 		before
 			a = null
