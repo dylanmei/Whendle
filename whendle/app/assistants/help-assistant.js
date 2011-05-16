@@ -27,7 +27,7 @@ HelpAssistant = Class.create({
 				parameters: {
 					id: 'com.palm.app.browser',
 						params: {
-							target: Whendle.homepage
+							target: Whendle.helppage + '?v=' + Whendle.version
 						}
 					}
 				})
