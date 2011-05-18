@@ -12,6 +12,8 @@ function runSuites() {
 	$('versions').insert('<div>Whendle #{w}, Prototype #{p}</div>'
 		.interpolate({ w: Whendle.version, p: Prototype.Version }));
 
+	TZ.path = '../whendle/tzdata';
+	
 	JSpec
 		.exec('spec.tzrule.js')
 		.exec('spec.tzzone.js')
@@ -36,6 +38,7 @@ function runSuites() {
 		.exec('spec.spotlight.changing.js')
 		.exec('spec.finder.js')
 		.exec('spec.place-locator.js')
+		.exec('spec.tzdata.js')
 	.run({ failuresOnly: true })
 	.report();
 }
@@ -60,6 +63,10 @@ function runSuites() {
 		<script src="../whendle/api/place-locator.js"></script>
 		<script src="../whendle/api/place-repository.js"></script>
 		<script src="../whendle/api/timekeeper-service.js"></script>
+		<script src="../whendle/api/ajax-service.js"></script>
+
+		<!-- all timezones -->		
+		<script src="tzdata.json"></script>
 
 		<link type="text/css" rel="stylesheet" href="../jspec/lib/jspec.css" />
 	</head>
