@@ -1,6 +1,6 @@
 {
 	"id": "org.fastlap.whendle",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"vendor": "Fastlap Farms",
 	"type": "web",
  	"main": "index.html",

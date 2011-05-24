@@ -162,4 +162,16 @@ describe 'Timezone'
 			timezone.rules.should.have_length 2
 		end
 	end
+	
+	describe 'offset for zone with negative non-hour GMTOFF'
+		timezone = new Whendle.Timezone('', [
+			new Whendle.TzZone('Zone	X/Y	-1:30	-	f	2999')
+			],
+			[]);	
+		
+		it 'should include the non-hour in the offset'
+			a = timezone.zone(new Date(2000, 0))
+			timezone.offset(new Date(2000, 0)).should.equal(-90);
+		end
+	end
 end

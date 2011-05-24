@@ -35,7 +35,7 @@ Whendle.Timezone = Class.create({
 		var minutes = 0;
 		var zone = this.zone(date);
 		if (zone) {
-			var minutes = this._parse_minutes(zone.GMTOFF);
+			minutes = this._parse_minutes(zone.GMTOFF);
 			var rule = this.rule(zone.RULES, date);
 			if (rule != null) {
 				minutes += this._parse_minutes(rule.SAVE);
@@ -48,12 +48,14 @@ Whendle.Timezone = Class.create({
 	_parse_minutes: function(s) {
 		var parts = s.split(':');
 		var time = [
-			  parseInt(parts[0], 10)
+			  Math.abs(parseInt(parts[0], 10))
 			, parts.length > 1 ? parseInt(parts[1]) : 0
 			, parts.length > 2 ? parseInt(parts[2]) : 0
 		];
 
-		return ((time[0] * 60 + time[1]) * 60 + time[2]) / 60;
+        var dir   = s[0] == '-' ? -1 : 1,
+            value = ((time[0] * 60 + time[1]) * 60 + time[2]) / 60;
+        return value * dir;
 	},
 
 	zone: function(date) {
