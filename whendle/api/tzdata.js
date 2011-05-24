@@ -130,7 +130,7 @@ Whendle.TzDay = Class.create({
 		var month = this._month();
 		var day = this._day_of_month();
 		var time = this._time();
-		return new Date(year, month, date, time[0], time[1], time[2]);
+		return new Date(year, month, day, time[0], time[1], time[2]);
 	},
 
 	empty: function() {
@@ -145,8 +145,7 @@ Whendle.TzDay = Class.create({
 		return this._compare(date, year || date.getUTCFullYear()) == 1;
 	},
 
-	_compare: function(d, y) {
-		var year = y;
+	_compare: function(d, year) {
 		var month = this._month();
 		var date = this._day_of_month(year, month);
 		var time = this._time();
@@ -167,28 +166,28 @@ Whendle.TzDay = Class.create({
 			return 31; // FIXME: last day in month?
 
 		var code = this._d;
-		var num = parseInt(code, 10);
+		var day, date, num = parseInt(code, 10);
 		if (!isNaN(num))
 			return num;
 
 		if (code.startsWith('last')) {
-			var day = Whendle.TzDay.DAYS[code.substr(4)];
-			var date = new Date(Date.UTC(year, month + 1, 1));
+			day = Whendle.TzDay.DAYS[code.substr(4)];
+			date = new Date(Date.UTC(year, month + 1, 1));
 			date.setUTCHours(-24);
 			date.setUTCHours(date.getUTCHours() - 24 * ((7 - day + date.getUTCDay()) % 7));
 			return date.getUTCDate();
 		}
 		else if (code.indexOf('>=') != -1) {
-			var day = Whendle.TzDay.DAYS[code.substr(0, 3)];
-			var num = parseInt(code.substr(5), 10);
-			var date = new Date(Date.UTC(year, month, num));
+			day = Whendle.TzDay.DAYS[code.substr(0, 3)];
+			num = parseInt(code.substr(5), 10);
+			date = new Date(Date.UTC(year, month, num));
 			date.setUTCHours(date.getUTCHours() + 24 * ((7 + day - date.getUTCDay()) % 7));
 			return date.getUTCDate();
 		}
 		else if (code.indexOf('<=') != -1) {
-			var day = Whendle.TzDay.DAYS[code.substr(0, 3)];
-			var num = parseInt(code.substr(5), 10);
-			var date = new Date(Date.UTC(year, month, num));
+			day = Whendle.TzDay.DAYS[code.substr(0, 3)];
+			num = parseInt(code.substr(5), 10);
+			date = new Date(Date.UTC(year, month, num));
 			date.setUTCHours(date.getUTCHours() - 24 * ((7 - day + date.getUTCDay()) % 7));
 			return date.getUTCDate();
 		}
@@ -201,12 +200,11 @@ Whendle.TzDay = Class.create({
 			return [23, 59, 59];
 
 		var parts = this._t.split(':');
-		var time = [
+		return [
 			  parseInt(parts[0], 10)
 			, parts.length > 1 ? parseInt(parts[1], 10) : 0
 			, parts.length > 2 ? parseInt(parts[2], 10) : 0
 		];
-		return time;
 	}
 });
 

@@ -67,15 +67,14 @@ Whendle.Timezone = Class.create({
 			var until = self._parse_until(z.UNTIL);
 
 			if (year < until.year) return true;
-			if (year == until.year && until.day.after(date)) return true;
-			return false;
+			return (year == until.year && until.day.after(date));
 		});
 
 		return value || null;
 	},
 
 	_parse_until: function(s) {
-		var rex = /^(\d+)\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*(\w+)?\s*(\d+:\d+:?\d*)?([wsugz])?$/;
+		var rex = /^(\d+)\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*([\w>=]+)?\s*(\d+:\d+:?\d*)?([wsugz])?$/;
 		var parts = rex.exec(s);
 		return {
 			year: parseInt(parts[1], 10),
@@ -152,7 +151,7 @@ Whendle.Timezone = Class.create({
 			});
 		}
 		if (Object.isString(v)) {
-			t = v.evalJSON();
+			var t = v.evalJSON();
 			this.name = t.name;
 			this.rules = t.rules.collect(function(s) { return new Whendle.TzRule(s); });
 			this.zones = t.zones.collect(function(s) { return new Whendle.TzZone(s); });
