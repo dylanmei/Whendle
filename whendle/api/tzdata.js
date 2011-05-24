@@ -420,7 +420,7 @@ Whendle.TzLoader = Class.create({
 
 	_zone_in_contents: function(zone, text) {
 		if (zone.endsWith('/*')) zone = zone.split('/')[0];
-		var rex = new RegExp("^(Link\\s\\w+/\\w+|Zone)\\s" + zone, "m");
+		var rex = new RegExp("^(Link\\s\\w+/\\w+|Zone)\\s" + zone + "+(\\s|$)+", "m");
 		return rex.test(text);
 	},
 
