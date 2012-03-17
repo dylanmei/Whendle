@@ -1,4 +1,5 @@
 # encoding: utf-8
+# example: ruby crush.rb ../etc/tzdata2012b/ ../whendle/tzdata/
 
 class String
   def blank?

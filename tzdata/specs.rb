@@ -1,4 +1,5 @@
 # encoding: utf-8
+# example: ruby specs.rb ../etc/tzdata2012b/ ../specs/
 
 class String
   def blank?
